@@ -7,6 +7,7 @@
 import os
 from time import time
 import datetime, calendar
+import traceback
 
 import re
 import string
@@ -16,7 +17,7 @@ from sklearn.datasets import load_svmlight_file
 from sklearn.model_selection import GridSearchCV
 from sklearn.svm import SVC
 from classification.DocPreProcess import strProcess
-from classification.FeatureWeight import feature
+from classification.FeatureWeight import feature_list, feature_dict
 from classification.DocPreProcess import category_list
 from classification.DocPreProcess import logger
 from classification.FeatureWeight import train_svm_file
@@ -57,23 +58,27 @@ def getIdfOfTrain():
 def writeSvmFile(text, file_path, idf_val):
     try:
         svm_file = open(file_path, 'a')
-        print 'strProcess begin'
-        t0 = time()
         words = strProcess(text)
-        print 'strProcess : {0}'.format(time() - t0)
         svm_file.write(str(-1) + ' ')
-        for i in range(len(feature)):
-            if feature[i] in words:
-                featureCount = words.count(feature[i])
-                currTf = float(featureCount)/len(words)
-                val = idf_val[feature[i]]*currTf
-                svm_file.write(str(i+1)+":"+str(val) + " ")
-        print 'cal idf : {0}'.format(time() - t0)
+        checked = []
+        data = dict()
+        for w in words:
+            w_utf = w.encode('utf-8')
+            if feature_dict.get(w_utf) and w_utf not in checked:
+                checked.append(w_utf)
+                feature_count = words.count(w)
+                currTf = float(feature_count)/len(words)
+                val = idf_val[w_utf]*currTf
+                data[int(feature_dict[w_utf])] = str(val)
+        data_list = sorted(data.iteritems(), key=lambda d:d[0])
+        for item in data_list:
+            svm_file.write(str(item[0]) + ':' + item[1] + ' ')
         svm_file.write('\n')
         svm_file.close()
     except IOError as e:
         logger.error('I/O error({0}):{1}'.format(e.errno, e.strerror))
-    except:
+    except Exception, e:
+        logger.error(traceback.format_exc())
         logger.error('Unexpected error when writeSvmFile:{0}'.format(sys.exc_info()[0]))
 
 #预测单个文本
@@ -142,17 +147,16 @@ def svmPredictOnSrcid(srcid, category='all'):
     pred = svmPredictTexts(texts)
     today = str(datetime.datetime.now())[0:10]
     time = str(datetime.datetime.now())[11:19]
-    result_file_name = today + '.' + time + '.' + str(srcid)
+    result_file_name = './result/' + today + '.' + time + '.' + str(srcid)
     logger.info('result file is ' + result_file_name)
     result_file = open(result_file_name, 'w')
     cates_dict = {}
     for i in range(len(category_list)):
         cates_dict[category_list[i]] = []
     for i in range(len(texts)):
-        result_file.write(category_list[int(pred[i])] + '-----' +  texts[i] + '\n')
+        result_file.write(category_list[int(pred[i])] + '-----' + texts[i] + '\n')
         cates_dict[category_list[int(pred[i])]].append(nids[i])
     result_file.close()
-    print 'predict done!!!!!'
     logger.info('-------------predict news of srcid:{0} done!--------------'.format(str(srcid)))
     if category == 'all':
         return {'bSuccess': True, 'nids': cates_dict}

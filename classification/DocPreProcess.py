@@ -69,6 +69,7 @@ ad_nids2 =[5524442, 4808083,4736576,4785403,4760140, 5796932, 5052048, 5038690,5
 
 news_file_path = './NewsFile/'
 news_cut_file_path = './NewsFileCut/'
+idf_file = './result/idf.txt'
 #ads_path = './AdsFile/'
 #ads_cut_path = './AdsFileCut/'
 
@@ -110,7 +111,7 @@ def getAdsFile():
 sql_nid = 'select nid, title, content from newslist_v2 where nid={0}'
 def getTextOfNewsNid(nid):
     conn, cursor = get_postgredb()
-    cursor.execute(channle_sql.format(str(nid)))
+    cursor.execute(sql_nid.format(str(nid)))
     rows = cursor.fetchall()
     text = ''
     for row in rows:
@@ -210,10 +211,9 @@ def strProcess(str):
     txt_no_html = filter_tags(str)
     jieba.load_userdict('./util/networds.txt')
     jieba.analyse.set_stop_words('./util/stopwords.txt')
-    jieba.analyse.set_idf_path('idf.txt')
+    jieba.analyse.set_idf_path(idf_file)
     words = jieba.analyse.extract_tags(txt_no_html, 30)
-    final_words = words
-    return final_words
+    return words
 
 #去除html标签及停用词
 def strProcess2(str):

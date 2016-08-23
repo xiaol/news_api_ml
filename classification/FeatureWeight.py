@@ -11,6 +11,7 @@ from DocPreProcess import DOC_NUM
 from DocPreProcess import TRAIN_DOC
 from DocPreProcess import category_list
 from DocPreProcess import logger
+from DocPreProcess import idf_file
 from FeatureSelection import svm_feature_file
 TestDocCount = DOC_NUM - TRAIN_DOC #每个类别选取200篇文档
 
@@ -26,13 +27,15 @@ def readFeature(featureName):
     featureFile = open(featureName, 'r')
     featureContent = featureFile.read().split('\n')
     featureFile.close()
-    feature = list()
+    feature_list = list()
+    feature_dict = dict()
     for eachfeature in featureContent:
         eachfeature = eachfeature.split(" ")
         if (len(eachfeature)==2):
-            feature.append(eachfeature[1])
+            feature_list.append(eachfeature[1])
+            feature_dict[eachfeature[1]] = eachfeature[0]
     # print(feature)
-    return feature
+    return feature_list, feature_dict
 
 
 # 读取所有类别的训练样本到字典中,每个文档是一个list
@@ -118,16 +121,16 @@ def writeIdfToFile(idffeature_dict):
         file0.write(key + ' ' + str(idffeature_dict[key]) + '\n')
     file0.close()
 
-feature = readFeature(svm_feature_file)#读取所有的特征词
+feature_list, feature_dict = readFeature(svm_feature_file)#读取所有的特征词
 
 def featureWeight():
-    global feature
+    global feature_list
     logger.info('featureWeight being...')
     dic = readFileToList(textCutBasePath, category_list, TRAIN_DOC)
-    idffeature = featureIDF(dic, feature, "dffeature.txt")
+    idffeature = featureIDF(dic, feature_list, "dffeature.txt")
     writeIdfToFile(idffeature)
     #train 数据
-    TFIDFCal(feature, dic, idffeature, train_svm_file)
+    TFIDFCal(feature_list, dic, idffeature, train_svm_file)
     logger.info('featureWeight done!')
     #test数据
     #test_dic = readTestFileToList(textCutBasePath, category_list, TRAIN_DOC, TestDocCount)
