@@ -5,7 +5,6 @@
 # @File    : SVMClassify.py
 # @Software: PyCharm Community Edition
 import os
-from time import time
 import datetime, calendar
 import traceback
 
@@ -33,9 +32,10 @@ def getModel():
     global n_feature
     X_train, y_train = load_svmlight_file(train_svm_file)
     n_feature = X_train.shape[1]
-    t0 = time()
+    start_time = datetime.datetime.now()
     clf.fit(X_train, y_train)
-    logger.info('train done in %0.3fs' % (time() - t0))
+    end_time = datetime.datetime.now()
+    logger.info('train done in {0}s'.format((end_time - start_time).total_seconds()))
     #X_test, y_test = load_svmlight_file('test.svm', n_features=X_train.shape[1])#没有指定n_features时出现X_test.shape[1] != X_train.shape[1]
     #pred = clf.predict(X_test)
     #from sklearn.metrics import accuracy_score
@@ -116,6 +116,7 @@ on \
 a.chid = b.id '
 #根据srcid从数据库中去数据进行预测
 def svmPredictOnSrcid(srcid, category='all'):
+    start_time = datetime.datetime.now()
     logger.info('svmPredictOnSrcid begin...')
     if not category:
         category = 'all'
@@ -157,23 +158,13 @@ def svmPredictOnSrcid(srcid, category='all'):
         result_file.write(category_list[int(pred[i])] + '-----' + texts[i] + '\n')
         cates_dict[category_list[int(pred[i])]].append(nids[i])
     result_file.close()
-    logger.info('-------------predict news of srcid:{0} done!--------------'.format(str(srcid)))
+    end_time = datetime.datetime.now()
+    t = (end_time - start_time).total_seconds()
+    logger.info('---predict news of srcid:{0} done, in {1}s!--------'.format(str(srcid), t))
     if category == 'all':
         return {'bSuccess': True, 'nids': cates_dict}
     else:
         return {'bSuccess': True, 'nids': cates_dict[category]}
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

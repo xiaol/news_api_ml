@@ -18,10 +18,7 @@ def calChi(a, b, c, d):
     else:
         return float(pow((a*d - b*c), 2)) / float((a+c) * (a+b) * (b+d) * (c+d))
 
-#ClassCode = ['automobile', 'finance', 'science', 'health', 'sports', 'travel', 'militry', 'food',
-#             'entertainment', 'game']
 #分词后的文件的路径
-#textCutBasePath = sys.path[0] + '/Cut/'
 textCutBasePath = './NewsFileCut/'
 svm_feature_file = './result/SVMFeature.txt'
 

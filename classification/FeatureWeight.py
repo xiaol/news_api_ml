@@ -13,16 +13,13 @@ from DocPreProcess import category_list
 from DocPreProcess import logger
 from DocPreProcess import idf_file
 from FeatureSelection import svm_feature_file
+from FeatureSelection import textCutBasePath
+
 TestDocCount = DOC_NUM - TRAIN_DOC #每个类别选取200篇文档
-
-
-#category_list = ['automobile', 'finance', 'science', 'health', 'sports', 'travel', 'militry', 'food',
-#             'entertainment', 'game']
-
-textCutBasePath = './NewsFileCut/'
 train_svm_file = './result/train.svm'
 idf_file = './result/idf.txt'
 
+#feature_dict是为了后面的快速查询, feature_list是为了提供给训练的接口
 def readFeature(featureName):
     featureFile = open(featureName, 'r')
     featureContent = featureFile.read().split('\n')
@@ -34,7 +31,6 @@ def readFeature(featureName):
         if (len(eachfeature)==2):
             feature_list.append(eachfeature[1])
             feature_dict[eachfeature[1]] = eachfeature[0]
-    # print(feature)
     return feature_list, feature_dict
 
 
@@ -49,7 +45,6 @@ def readFileToList(textCutBasePath, classCode, documentCount):
             eachfilecontent = eachfile.read()
             eachfilewords = eachfilecontent.split(" ")
             eachclasslist.append(eachfilewords)
-            # print(eachfilewords)
         dic[eachclass] = eachclasslist
     return dic
 

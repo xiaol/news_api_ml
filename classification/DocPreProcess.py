@@ -26,7 +26,7 @@ sys.setdefaultencoding('utf8')
 import os
 
 DOC_NUM = 100 #总数据集
-TRAIN_DOC = 100 #训练集
+TRAIN_DOC = 100 #训练集. 这里TRAIN_DOC=DOC_NUM, 是将每个类别的100篇都当做训练集
 
 POSTGRE_USER = 'postgres'
 POSTGRE_PWD = 'ly@postgres&2015'
@@ -38,9 +38,6 @@ def get_postgredb():
     cursor = connection.cursor()
     return connection, cursor
 
-
-#category_dict = {'汽车':'automobile', '娱乐':'entertainment', '财经':'finance', '美食':'food', '游戏':'game',
-#                 '健康':'health', '军事':'militry', '科技':'science', '体育':'sports', '旅游':'travel'}
 category_dict = {'科技':'technology', '外媒':'MediaAbroad', '社会':'society', '财经':'finance', '体育':'sports',
                  '汽车':'aotumobile', '国际':'international', '时尚':'fashion','探索':'discovery',
                  '科学':'science', '娱乐':'entertainment', '趣图':'fannypicture', '搞笑':'fanny', '养生':'healthcare',
@@ -63,15 +60,13 @@ ad_nids = [5663445, 5663406, 3945020, 5709777, 3961793, 5693457, 4727101, 551381
            3604645, 5134496, 5240866, 5466346, 4565071, 4825802, 4952450, 3887672, 5233347, 5417679,
            5487921, 4696618, 3729552, 3895200, 5011992, 5044157, 5610834, 5705926, 3127365, 3607194,
            4791877, 4032237, 5458201, 5545768, 3675194, 5239236, 5657210, 4824631, 5589556, 4042448]
-
+#后备的广告,会随时添加
 ad_nids2 =[5524442, 4808083,4736576,4785403,4760140, 5796932, 5052048, 5038690,5500876, 5684128, 5463030,
            4962484, 5082874, 5710311, 5709832]
 
 news_file_path = './NewsFile/'
 news_cut_file_path = './NewsFileCut/'
 idf_file = './result/idf.txt'
-#ads_path = './AdsFile/'
-#ads_cut_path = './AdsFileCut/'
 
 channle_sql ='SELECT a.title,a.content, a.nid, c.cname \
 FROM \
@@ -81,6 +76,7 @@ ON \
 a.chid=c."id" LIMIT 300'
 
 #####################################广告处理部分 start
+#将使用的广告的nid写入文件,方便以后对比
 #def writeAdNidToFile():
 #    ad_nids_file = open(ads_nids_file_name, 'w')
 #    for item in ad_nids:
@@ -235,17 +231,14 @@ def cutAndRemoveUseless(file_path, new_file_path):
     portion = os.path.splitext(file_name)
     new_file_name =portion[0] + '.cut'
     file_full_path = new_file_path + new_file_name
-    print file_full_path
     if (os.path.exists(file_full_path)):
         return
     txtlist=orgFile.read()
     orgFile.close()
     words = strProcess(txtlist)
-    result = ''
     f = open(new_file_path + new_file_name, 'w')
     for w in words:
         f.write(w + ' ')
-
     f.close()
 
 
@@ -288,7 +281,6 @@ def removeSpace(inFilePath, outFilePath):
     f2 = open(outFilePath, 'a')
     txt = f1.readlines()
     f1.close()
-    list1=[]
     for line in txt:
         if not line.split():
             line_clean = ' '.join(line.split())
@@ -307,7 +299,6 @@ def clearDir(dirPath):
 #收集所有类型的新闻数据,产生新闻文件
 def collectEveryCatagoryNews(start_id, end_id):
     clearDir(news_file_path)
-    #category = category_dict.values()
     category = category_list  #所有类别,汉字
     for cata in category:
         if cata == '广告':
@@ -321,7 +312,6 @@ def collectEveryCatagoryNews(start_id, end_id):
 #将原始的新闻数据进行预处理后保存
 def preProcessNews():
     clearDir(news_cut_file_path)
-    #categories = category_dict.values()
     categories = category_list
     for cate in categories:
         cate_cut_path = news_cut_file_path + cate

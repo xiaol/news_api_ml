@@ -65,7 +65,6 @@ if __name__ == "__main__":
     #FeatureWeight.featureWeight()
     SVMClassify.getModel()
     #SVMClassify.svmPredictOnSrcid(3874)
-    #SVMClassify.svmPredict('长按二维码“识别”关注 推荐理由： 世界上最动听的三个字，不是“我爱你”，而是“你瘦了”！教你如何瘦身、瘦腰、瘦脸、瘦大腿、瘦手臂，与你分享健康的生活方式，要么瘦，要么死！ 营销通 微信号：iyingxiaotong')
 
     port = sys.argv[1]
     http_server = tornado.httpserver.HTTPServer(Application())
