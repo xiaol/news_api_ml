@@ -37,8 +37,8 @@ class FetchContent(tornado.web.RequestHandler):
 
 class NewsClassifyOnNid(tornado.web.RequestHandler):
     def get(self):
-        nid = self.get_argument('nid', None)
-        text = DocPreProcess.getTextOfNewsNid(nid)
+        text = self.get_argument('text', None)
+        #text = DocPreProcess.getTextOfNewsNid(nid)
         res = SVMClassify.svmPredictOneText(text)
         self.write(json.dumps(res))
 
