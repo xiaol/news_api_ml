@@ -93,9 +93,9 @@ def svmPredictOneText(text):
     X_pre, y_pre = load_svmlight_file(svm_file, n_features=n_feature)
     pred = clf.predict(X_pre)
     if pred and int(pred[0]):
-        return {'res': True, 'category': category_list[int(pred[0])]}
+        return {'bSuccess': True, 'category': category_list[int(pred[0])]}
     else:
-        return {'res': False, 'category': ''}
+        return {'bSuccess': False, 'category': ''}
 
 #预测多个文本
 def svmPredictTexts(texts):
