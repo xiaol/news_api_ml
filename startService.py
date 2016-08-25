@@ -36,17 +36,21 @@ class FetchContent(tornado.web.RequestHandler):
                 self.write(json.dumps(ret))
 
 class NewsClassifyOnNid(tornado.web.RequestHandler):
-    def get(self):
+    def post(self):
         text = self.get_argument('text', None)
         #text = DocPreProcess.getTextOfNewsNid(nid)
         res = SVMClassify.svmPredictOneText(text)
         self.write(json.dumps(res))
 
 class NewsClassifyOnSrcid(tornado.web.RequestHandler):
-    def get(self):
+    def post(self):
         srcid = self.get_argument('srcid', None)
         category = self.get_argument('category', None)
-        ret = SVMClassify.svmPredictOnSrcid(srcid, category)
+        #nids = self.get_arguments('nids')
+        nids = self.get_body_arguments('nids')
+        #texts = self.get_arguments('texts')
+        texts = self.get_body_arguments('texts')
+        ret = SVMClassify.svmPredictOnSrcid(srcid, nids, texts, category)
         self.write(json.dumps(ret))
 
 class Application(tornado.web.Application):

@@ -13,6 +13,7 @@ import string
 
 import sys
 from sklearn.datasets import load_svmlight_file
+#from sklearn.grid_search import GridSearchCV
 from sklearn.model_selection import GridSearchCV
 from sklearn.svm import SVC
 from classification.DocPreProcess import strProcess
@@ -115,7 +116,7 @@ INNER JOIN channellist_v2 b \
 on \
 a.chid = b.id '
 #根据srcid从数据库中去数据进行预测
-def svmPredictOnSrcid(srcid, category='all'):
+def svmPredictOnSrcid(srcid, nids, texts, category='all'):
     start_time = datetime.datetime.now()
     logger.info('svmPredictOnSrcid begin...')
     if not category:
@@ -123,28 +124,25 @@ def svmPredictOnSrcid(srcid, category='all'):
     if category and category != 'all' and (category not in category_list):
         logger.error('unkown category:{0}'.format(category))
         return {'bSuccess':False, 'message':'{0} is not a known category.'.format(category)}
-    from classification.DocPreProcess import get_postgredb
-    conn, cursor = get_postgredb()
-    cursor.execute(sql.format(srcid))
-    rows = cursor.fetchall()
-    nids = []
-    texts = []
-    n = 0
-    for row in rows:
-        title = row[1]
-        id = row[0]
-        text = ''
-        content_list = row[2]
-        if content_list:
-            for content in content_list:
-                if 'txt' in content.keys():
-                    text =text + content['txt'] + ' '
-        news = title + ' '+ text
-        texts.append(news)
-        nids.append(id)
-        n += 1
-
-    logger.info('totaly predict text num =' + str(n))
+    #from classification.DocPreProcess import get_postgredb
+    #conn, cursor = get_postgredb()
+    #cursor.execute(sql.format(srcid))
+    #rows = cursor.fetchall()
+    #nids = []
+    #texts = []
+    #for row in rows:
+    #    title = row[1]
+    #    id = row[0]
+    #    text = ''
+    #    content_list = row[2]
+    #    if content_list:
+    #        for content in content_list:
+    #            if 'txt' in content.keys():
+    #                text =text + content['txt'] + ' '
+    #    news = title + ' '+ text
+    #    texts.append(news)
+    #    nids.append(id)
+    #conn.close()
     pred = svmPredictTexts(texts)
     today = str(datetime.datetime.now())[0:10]
     time = str(datetime.datetime.now())[11:19]
