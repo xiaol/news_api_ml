@@ -25,11 +25,9 @@ class FetchContent(tornado.web.RequestHandler):
         txt = self.get_argument('txt', None)
         name_instance = match_name.NameFactory(type)
         if name_instance:
-            name_dict = name_instance.getArticalTypeList(txt)
-            name_list = list(name_dict)
-            sorted_names = sorted(name_list, key=operator.itemgetter(1), reverse=True)
-            if sorted_names:
-                ret = {'bSuccess': True, 'name': sorted_names[0]}
+            name = name_instance.getArticalTypeList(txt)
+            if name:
+                ret = {'bSuccess': True, 'name': name}
                 self.write(json.dumps(ret))
             else:
                 ret = {'bSuccess': False, 'msg': 'Can not get any {0} name from the txt'.format(type)}
