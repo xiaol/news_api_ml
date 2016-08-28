@@ -21,24 +21,28 @@ def calChi(a, b, c, d):
 #分词后的文件的路径
 textCutBasePath = './NewsFileCut/'
 svm_feature_file = './result/SVMFeature.txt'
+if not os.path.exists(svm_feature_file):
+    f = open(svm_feature_file, 'w')
+    f.close()
 
 #构建每个类别的最初词向量。set内包含所有特征词
 #每个类别下的文档集合用list<set>表示,每个set表示一个文档,整体用一个dict表示
-def buildItemSets(classDocCount):
+def buildItemSets():
     termDic = dict()
     termClassDic = dict()
     for eachclass in category_list:
         currClassPath = textCutBasePath + eachclass + '/'
         eachClassWordSets = set()
         eachClassWordList = list()
-        for i in range(classDocCount):
+        count = len(os.listdir(currClassPath))
+        for i in range(count):
             eachDocPath = currClassPath + str(i) + '.cut'
             eachFileObj = open(eachDocPath, 'r')
             eachFileContent = eachFileObj.read()
             eachFileWords = eachFileContent.split(' ')
             eachFileSet = set()
             for eachword in eachFileWords:
-                if len(eachword) ==0:
+                if len(eachword) == 0:
                     continue
                 eachFileSet.add(eachword)
                 eachClassWordSets.add(eachword)
@@ -104,7 +108,7 @@ def writeFeatureToFile(termCounDic, fileName):
 
 def featureSelect():
     logger.info('featureSelect begin...')
-    termDic, termClassDic = buildItemSets(DOC_NUM)
+    termDic, termClassDic = buildItemSets()
     termCountDic = featureSelection(termDic, termClassDic, FEATURE_NUM)
     writeFeatureToFile(termCountDic, svm_feature_file)
     logger.info('featureSelect done!')

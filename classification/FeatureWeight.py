@@ -6,6 +6,7 @@
 # @Software: PyCharm Community Edition
 
 import math
+import os
 from time import time
 from DocPreProcess import DOC_NUM
 from DocPreProcess import TRAIN_DOC
@@ -15,7 +16,7 @@ from DocPreProcess import idf_file
 from FeatureSelection import svm_feature_file
 from FeatureSelection import textCutBasePath
 
-TestDocCount = DOC_NUM - TRAIN_DOC #每个类别选取200篇文档
+TestDocCount = DOC_NUM - TRAIN_DOC #作為test的文档数目
 train_svm_file = './result/train.svm'
 idf_file = './result/idf.txt'
 
@@ -39,8 +40,9 @@ def readFileToList(textCutBasePath, classCode, documentCount):
     dic = dict()
     for eachclass in classCode:
         currClassPath = textCutBasePath + eachclass + "/"
+        n = len(os.listdir(currClassPath))
         eachclasslist = list()
-        for i in range(documentCount):
+        for i in range(n):
             eachfile = open(currClassPath+str(i)+".cut")
             eachfilecontent = eachfile.read()
             eachfilewords = eachfilecontent.split(" ")

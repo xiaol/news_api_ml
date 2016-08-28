@@ -24,8 +24,6 @@ reload(sys)
 sys.setdefaultencoding('utf8')
 import os
 
-DOC_NUM = 100 #总数据集
-TRAIN_DOC = 100 #训练集. 这里TRAIN_DOC=DOC_NUM, 是将每个类别的100篇都当做训练集
 
 POSTGRE_USER = 'postgres'
 POSTGRE_PWD = 'ly@postgres&2015'
@@ -41,12 +39,13 @@ category_dict = {'科技':'technology', '外媒':'MediaAbroad', '社会':'societ
                  '汽车':'aotumobile', '国际':'international', '时尚':'fashion','探索':'discovery',
                  '科学':'science', '娱乐':'entertainment', '趣图':'fannypicture', '搞笑':'fanny', '养生':'healthcare',
                  '育儿':'childbearing', '股票':'stock', '互联网':'internet',
-                 '美食':'food', '健康':'health', '影视':'movie', '奇闻':'odd', '军事':'military', '历史':'history',
+                 '美食':'food', '健康':'health', '影视':'movie', '军事':'military', '历史':'history',
                  '故事':'story', '旅游':'travel', '美文':'essay',
                  '萌宠':'pet', '游戏':'games', '美女':'beauty', '广告':'Ads'}
+#目前没有加入分类的有奇闻,点集,自媒体,奇点
 category_list = [u'科技', u'外媒', u'社会', u'财经', u'体育', u'汽车', u'国际', u'时尚',u'探索', u'科学',
                  u'娱乐', u'趣图', u'搞笑', u'养生', u'育儿', u'股票', u'互联网', u'美食', u'健康', u'影视',
-                 u'奇闻', u'军事', u'历史', u'故事', u'旅游', u'美文', u'萌宠', u'游戏', u'美女', u'广告']
+                 u'军事', u'历史', u'故事', u'旅游', u'美文', u'萌宠', u'游戏', u'美女', u'广告']
 
 #手工选出的广告新闻
 ad_nids = [5663445, 5663406, 3945020, 5709777, 3961793, 5693457, 4727101, 5513815, 4851274, 5578330,
@@ -61,9 +60,12 @@ ad_nids = [5663445, 5663406, 3945020, 5709777, 3961793, 5693457, 4727101, 551381
            4791877, 4032237, 5458201, 5545768, 3675194, 5239236, 5657210, 4824631, 5589556, 4042448]
 #后备的广告,会随时添加
 ad_nids2 = [5524442, 4808083, 4736576, 4785403, 4760140, 5796932, 5052048, 5038690, 5500876, 5684128,
-            5463030, 4962484, 5082874, 5710311, 5709832, 5968570, 5797085, 5796932, 6027250, 5967860,
-            4043182]
+            5463030, 4962484, 5082874, 5710311, 5709832, 5968570, 5797085, 6027250, 5967860, 4043182]
+ad_nids.extend(ad_nids2)
 
+DOC_NUM = 300 #总数据集
+TRAIN_DOC = 300 #训练集. 这里TRAIN_DOC=DOC_NUM, 是将每个类别的100篇都当做训练集
+ADs_NUM = len(ad_nids) #广告数目
 news_file_path = './NewsFile/'
 news_cut_file_path = './NewsFileCut/'
 idf_file = './result/idf.txt'
@@ -207,7 +209,8 @@ def strProcess(str):
     txt_no_html = filter_tags(str)
     jieba.load_userdict('./util/networds.txt')
     jieba.analyse.set_stop_words('./util/stopwords.txt')
-    jieba.analyse.set_idf_path(idf_file)
+    #if idf_file_path:
+    #    jieba.analyse.set_idf_path(idf_file)
     words = jieba.analyse.extract_tags(txt_no_html, 30)
     return words
 
@@ -216,13 +219,13 @@ def strProcess2(str):
     #删除html标签
     txt_no_html = filter_tags(str)
     jieba.load_userdict('./util/networds.txt')
-    words=jieba.cut(txt_no_html)
-    stopwords = {}.fromkeys([line.rstrip() for line in open('./util/stopwords.txt')])
+    words = jieba.cut(txt_no_html)  #unicode is returned
+    stopwords = {}.fromkeys([line.rstrip() for line in open('./util/stopwords.txt')]) #utf-8
+    stopwords_set = set(stopwords)
     final_words = []
-    for i in words:
-        if not i.isspace() and (i not in stopwords.keys()):
-            #print i
-            final_words.append(i)
+    for w in words:
+        if not w.encode('utf-8') in stopwords_set:
+            final_words.append(w)
     return final_words
 
 def cutAndRemoveUseless(file_path, new_file_path):
@@ -231,11 +234,11 @@ def cutAndRemoveUseless(file_path, new_file_path):
     portion = os.path.splitext(file_name)
     new_file_name =portion[0] + '.cut'
     file_full_path = new_file_path + new_file_name
-    if (os.path.exists(file_full_path)):
-        return
+    #if (os.path.exists(file_full_path)):
+    #    return
     txtlist=orgFile.read()
     orgFile.close()
-    words = strProcess(txtlist)
+    words = strProcess2(txtlist)
     f = open(new_file_path + new_file_name, 'w')
     for w in words:
         f.write(w + ' ')
@@ -298,8 +301,11 @@ def clearDir(dirPath):
 
 #收集所有类型的新闻数据,产生新闻文件
 def collectEveryCatagoryNews(start_id, end_id):
+    if not os.path.exists(news_file_path):
+        os.mkdir(news_file_path)
     clearDir(news_file_path)
     category = category_list  #所有类别,汉字
+
     for cata in category:
         if cata == '广告':
             getAdsFile()
@@ -311,6 +317,8 @@ def collectEveryCatagoryNews(start_id, end_id):
 
 #将原始的新闻数据进行预处理后保存
 def preProcessNews():
+    if not os.path.exists(news_cut_file_path):
+        os.mkdir(news_cut_file_path)
     clearDir(news_cut_file_path)
     categories = category_list
     for cate in categories:
@@ -327,8 +335,8 @@ def preProcessNews():
 
 def docPreProcess():
     logger.info('docPreProcess begin...')
-    start_id = 3500000
-    end_id = 4600000
+    start_id = 5600000
+    end_id = 6000000
     collectEveryCatagoryNews(start_id, end_id)
     preProcessNews()
     logger.info('docPreProcess done!')
