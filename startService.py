@@ -51,12 +51,24 @@ class NewsClassifyOnSrcid(tornado.web.RequestHandler):
         ret = SVMClassify.svmPredictOnSrcid(srcid, nids, texts, category)
         self.write(json.dumps(ret))
 
+#按照chennel id. 主要用於测试自媒体、点集、奇闻
+class NewsClassifyOnChid(tornado.web.RequestHandler):
+    def post(self):
+        chid = self.get_argument('chid', None)
+        #nids = self.get_arguments('nids')
+        nids = self.get_body_arguments('nids')
+        #texts = self.get_arguments('texts')
+        texts = self.get_body_arguments('texts')
+        ret = SVMClassify.svmPredictOnSrcid(chid, nids, texts)
+        self.write(json.dumps(ret))
+
 class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
             (r"/ml/fetchContent", FetchContent),
             (r"/ml/newsClassifyOnNid", NewsClassifyOnNid),
-            (r"/ml/newsClassifyOnSrcid", NewsClassifyOnSrcid)
+            (r"/ml/newsClassifyOnSrcid", NewsClassifyOnSrcid),
+            (r"/ml/newsClassifyOnChid", NewsClassifyOnChid)
         ]
         settings = {}
         tornado.web.Application.__init__(self, handlers, **settings)

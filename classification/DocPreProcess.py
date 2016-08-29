@@ -211,6 +211,7 @@ def strProcess(str):
     jieba.analyse.set_stop_words('./util/stopwords.txt')
     #if idf_file_path:
     #    jieba.analyse.set_idf_path(idf_file)
+    length = max(30, len(txt_no_html)/3)
     words = jieba.analyse.extract_tags(txt_no_html, 30)
     return words
 
