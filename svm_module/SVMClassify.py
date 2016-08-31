@@ -22,7 +22,8 @@ from classification.DocPreProcess import category_list
 from classification.DocPreProcess import logger
 from classification.FeatureWeight import train_svm_file
 from classification.FeatureWeight import idf_file
-
+import tornado
+import tornado.gen
 param_grid = {'C': [10, 100, 1000], 'gamma': [0.001, 0.0001]}
 clf = GridSearchCV(SVC(kernel='rbf'), param_grid)
 svm_file = './result/svm_predict.txt'
@@ -83,6 +84,7 @@ def writeSvmFile(text, file_path, idf_val):
         logger.error('Unexpected error when writeSvmFile:{0}'.format(sys.exc_info()[0]))
 
 #预测单个文本
+@tornado.gen.coroutine
 def svmPredictOneText(text):
     if text =='' or text.isspace():
         return {'res': False, 'category': ''}
@@ -116,7 +118,8 @@ INNER JOIN channellist_v2 b \
 on \
 a.chid = b.id '
 #根据srcid从数据库中去数据进行预测
-def svmPredictOnSrcid(srcid, nids, texts, category='all'):
+@tornado.gen.coroutine
+def svmPredictNews(srcid, nids, texts, category='all'):
     start_time = datetime.datetime.now()
     logger.info('svmPredictOnSrcid begin...')
     if not category:
