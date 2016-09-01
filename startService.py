@@ -21,13 +21,14 @@ from classification import FeatureWeight
 from svm_module import SVMClassify
 
 class FetchContent(tornado.web.RequestHandler):
-    @tornado.gen.coroutine
+    #@tornado.gen.coroutine
     def get(self):
         type = self.get_argument('type', None)
         txt = self.get_argument('txt', None)
         name_instance = match_name.NameFactory(type)
         if name_instance:
-            name = yield name_instance.getArticalTypeList(txt)
+            #name = yield name_instance.getArticalTypeList(txt)
+            name = name_instance.getArticalTypeList(txt)
             if name:
                 ret = {'bSuccess': True, 'name': name}
                 self.write(json.dumps(ret))
@@ -36,15 +37,16 @@ class FetchContent(tornado.web.RequestHandler):
                 self.write(json.dumps(ret))
 
 class NewsClassifyOnNid(tornado.web.RequestHandler):
-    @tornado.gen.coroutine
+    #@tornado.gen.coroutine
     def post(self):
         text = self.get_argument('text', None)
         #text = DocPreProcess.getTextOfNewsNid(nid)
-        res = yield SVMClassify.svmPredictOneText(text)
+        #res = yield SVMClassify.svmPredictOneText(text)
+        res = SVMClassify.svmPredictOneText(text)
         self.write(json.dumps(res))
 
 class NewsClassifyOnSrcid(tornado.web.RequestHandler):
-    @tornado.gen.coroutine
+    #@tornado.gen.coroutine
     def post(self):
         srcid = self.get_argument('srcid', None)
         category = self.get_argument('category', None)
@@ -52,19 +54,21 @@ class NewsClassifyOnSrcid(tornado.web.RequestHandler):
         nids = self.get_body_arguments('nids')
         #texts = self.get_arguments('texts')
         texts = self.get_body_arguments('texts')
-        ret = yield SVMClassify.svmPredictNews(srcid, nids, texts, category)
+        #ret = yield SVMClassify.svmPredictNews(srcid, nids, texts, category)
+        ret = SVMClassify.svmPredictNews(srcid, nids, texts, category)
         self.write(json.dumps(ret))
 
 #按照chennel id. 主要用於测试自媒体、点集、奇闻
 class NewsClassifyOnChid(tornado.web.RequestHandler):
-    @tornado.gen.coroutine
+    #@tornado.gen.coroutine
     def post(self):
         chid = self.get_argument('chid', None)
         #nids = self.get_arguments('nids')
         nids = self.get_body_arguments('nids')
         #texts = self.get_arguments('texts')
         texts = self.get_body_arguments('texts')
-        ret = yield SVMClassify.svmPredictNews(chid, nids, texts)
+        #ret = yield SVMClassify.svmPredictNews(chid, nids, texts)
+        ret = SVMClassify.svmPredictNews(chid, nids, texts)
         self.write(json.dumps(ret))
 
 class Application(tornado.web.Application):

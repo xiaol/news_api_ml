@@ -84,7 +84,7 @@ def writeSvmFile(text, file_path, idf_val):
         logger.error('Unexpected error when writeSvmFile:{0}'.format(sys.exc_info()[0]))
 
 #预测单个文本
-@tornado.gen.coroutine
+#@tornado.gen.coroutine
 def svmPredictOneText(text):
     if text =='' or text.isspace():
         return {'res': False, 'category': ''}
@@ -118,7 +118,7 @@ INNER JOIN channellist_v2 b \
 on \
 a.chid = b.id '
 #根据srcid从数据库中去数据进行预测
-@tornado.gen.coroutine
+#@tornado.gen.coroutine
 def svmPredictNews(srcid, nids, texts, category='all'):
     start_time = datetime.datetime.now()
     logger.info('svmPredictOnSrcid begin...')

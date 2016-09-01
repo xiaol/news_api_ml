@@ -10,8 +10,8 @@ import string
 import xlrd
 import jieba
 import jieba.analyse
-import tornado
-import tornado.gen
+#import tornado
+#import tornado.gen
 import sys
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -64,7 +64,7 @@ class Names(object):
 
 
     #获取文章相关的名字
-    @tornado.gen.coroutine
+    #@tornado.gen.coroutine
     def getArticalTypeList(self, txt):
         #先用书名号检查
         name = self.getNameByQuotationMarks(txt)
