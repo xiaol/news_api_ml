@@ -119,7 +119,7 @@ on \
 a.chid = b.id '
 #根据srcid从数据库中去数据进行预测
 #@tornado.gen.coroutine
-def svmPredictNews(srcid, nids, texts, category='all'):
+def svmPredictNews(nids, texts, _id = 0, category='all'):
     start_time = datetime.datetime.now()
     logger.info('svmPredictOnSrcid begin...')
     if not category:
@@ -149,7 +149,7 @@ def svmPredictNews(srcid, nids, texts, category='all'):
     pred = svmPredictTexts(texts)
     today = str(datetime.datetime.now())[0:10]
     time = str(datetime.datetime.now())[11:19]
-    result_file_name = './result/' + today + '.' + time + '.' + str(srcid)
+    result_file_name = './result/' + today + '.' + time + '.' + str(_id)
     logger.info('result file is ' + result_file_name)
     result_file = open(result_file_name, 'w')
     cates_dict = {}
@@ -161,7 +161,7 @@ def svmPredictNews(srcid, nids, texts, category='all'):
     result_file.close()
     end_time = datetime.datetime.now()
     t = (end_time - start_time).total_seconds()
-    logger.info('---predict news of srcid:{0} done, in {1}s!--------'.format(str(srcid), t))
+    logger.info('---predict news of srcid:{0} done, in {1}s!--------'.format(str(_id), t))
     if category == 'all':
         return {'bSuccess': True, 'nids': cates_dict}
     else:

@@ -36,14 +36,16 @@ class FetchContent(tornado.web.RequestHandler):
                 ret = {'bSuccess': False, 'msg': 'Can not get any {0} name from the txt'.format(type)}
                 self.write(json.dumps(ret))
 
-class NewsClassifyOnNid(tornado.web.RequestHandler):
+class NewsClassifyOnNids(tornado.web.RequestHandler):
     #@tornado.gen.coroutine
     def post(self):
-        text = self.get_argument('text', None)
+        nids = self.get_body_arguments('nids')
+        texts = self.get_body_arguments('texts')
         #text = DocPreProcess.getTextOfNewsNid(nid)
         #res = yield SVMClassify.svmPredictOneText(text)
-        res = SVMClassify.svmPredictOneText(text)
-        self.write(json.dumps(res))
+        #res = SVMClassify.svmPredictOneText(texts)
+        ret = SVMClassify.svmPredictNews(nids, texts)
+        self.write(json.dumps(ret))
 
 class NewsClassifyOnSrcid(tornado.web.RequestHandler):
     #@tornado.gen.coroutine
@@ -55,7 +57,7 @@ class NewsClassifyOnSrcid(tornado.web.RequestHandler):
         #texts = self.get_arguments('texts')
         texts = self.get_body_arguments('texts')
         #ret = yield SVMClassify.svmPredictNews(srcid, nids, texts, category)
-        ret = SVMClassify.svmPredictNews(srcid, nids, texts, category)
+        ret = SVMClassify.svmPredictNews(nids, texts, srcid, category)
         self.write(json.dumps(ret))
 
 #按照chennel id. 主要用於测试自媒体、点集、奇闻
@@ -68,14 +70,14 @@ class NewsClassifyOnChid(tornado.web.RequestHandler):
         #texts = self.get_arguments('texts')
         texts = self.get_body_arguments('texts')
         #ret = yield SVMClassify.svmPredictNews(chid, nids, texts)
-        ret = SVMClassify.svmPredictNews(chid, nids, texts)
+        ret = SVMClassify.svmPredictNews(nids, texts, chid)
         self.write(json.dumps(ret))
 
 class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
             (r"/ml/fetchContent", FetchContent),
-            (r"/ml/newsClassifyOnNid", NewsClassifyOnNid),
+            (r"/ml/newsClassifyOnNids", NewsClassifyOnNids),
             (r"/ml/newsClassifyOnSrcid", NewsClassifyOnSrcid),
             (r"/ml/newsClassifyOnChid", NewsClassifyOnChid)
         ]
