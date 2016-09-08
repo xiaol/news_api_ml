@@ -19,7 +19,7 @@ from classification import DocPreProcess
 from classification import FeatureSelection
 from classification import FeatureWeight
 from svm_module import SVMClassify
-from classification.MongodbProcess import checkAds
+#from classification.MongodbProcess import checkAds
 
 class FetchContent(tornado.web.RequestHandler):
     #@tornado.gen.coroutine
