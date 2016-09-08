@@ -46,6 +46,11 @@ category_dict = {'科技':'technology', '外媒':'MediaAbroad', '社会':'societ
 category_list = [u'科技', u'外媒', u'社会', u'财经', u'体育', u'汽车', u'国际', u'时尚',u'探索', u'科学',
                  u'娱乐', u'趣图', u'搞笑', u'养生', u'育儿', u'股票', u'互联网', u'美食', u'健康', u'影视',
                  u'军事', u'历史', u'故事', u'旅游', u'美文', u'萌宠', u'游戏', u'美女', u'广告']
+category_name_id_dict = {u'科技':4, u'外媒':29 , u'社会': 2, u'财经':7, u'体育':6, u'汽车':5, u'国际':9,
+                         u'时尚':10,u'探索':14, u'科学':25, u'娱乐':3, u'趣图':23, u'搞笑':21, u'养生':17,
+                         u'育儿':16, u'股票':20, u'互联网':22, u'美食':15, u'健康':24, u'影视':30,
+                         u'军事':8, u'历史':13, u'故事':18, u'旅游':12, u'美文':19, u'萌宠':32, u'游戏':11,
+                         u'美女':26,u'广告':-1}
 
 sql_channel = "select id, cname from channellist_v2"
 def getCategoryNameIdDict():
