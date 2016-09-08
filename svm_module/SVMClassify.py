@@ -20,7 +20,6 @@ from classification.DocPreProcess import strProcess
 from classification.FeatureWeight import feature_list, feature_dict
 from classification.DocPreProcess import category_list
 from classification.DocPreProcess import getCategoryNameIdDict
-from classification.DocPreProcess import category_name_id_dict
 from classification.DocPreProcess import logger
 from classification.FeatureWeight import train_svm_file
 from classification.FeatureWeight import idf_file
@@ -152,14 +151,14 @@ def svmPredictNews(nids, texts, _id = 0, category='all'):
         return {'bSuccess': True, 'nids': cates_dict[category]}
 
 
+category_name_id_dict = {}
 #返回格式不同
 def svmPredictNews2(nids, texts):
-    start_time = datetime.datetime.now()
+    global category_name_id_dict
     logger.info('svmPredictOnSrcid begin...')
     pred = svmPredictTexts(texts)
     nid_cate_list = []
-    global category_name_id_dict
-    if not category_name_id_dict:
+    if len(category_name_id_dict) == 0:
         category_name_id_dict = getCategoryNameIdDict()
     for i in range(len(texts)):
         nid_cate_list.append({"nid": nids[i], 'chid': category_name_id_dict[category_list[int(pred[i])]]})

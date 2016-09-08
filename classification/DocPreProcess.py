@@ -48,15 +48,15 @@ category_list = [u'科技', u'外媒', u'社会', u'财经', u'体育', u'汽车
                  u'军事', u'历史', u'故事', u'旅游', u'美文', u'萌宠', u'游戏', u'美女', u'广告']
 
 sql_channel = "select id, cname from channellist_v2"
-category_name_id_dict = {}
 def getCategoryNameIdDict():
-    global category_name_id_dict
+    category_name_id_dict = {}
     conn, cursor = get_postgredb()
     cursor.execute(sql_channel)
     rows = cursor.fetchall()
     for r in rows:
-        if r[1] in category_list:
-            category_name_id_dict[r[1]] = r[0]
+        _uni = r[1].decode('utf-8')
+        if _uni in category_list:
+            category_name_id_dict[_uni] = r[0]
     conn.close()
     return category_name_id_dict
 
