@@ -19,6 +19,8 @@ from sklearn.svm import SVC
 from classification.DocPreProcess import strProcess
 from classification.FeatureWeight import feature_list, feature_dict
 from classification.DocPreProcess import category_list
+from classification.DocPreProcess import getCategoryNameIdDict
+from classification.DocPreProcess import category_name_id_dict
 from classification.DocPreProcess import logger
 from classification.FeatureWeight import train_svm_file
 from classification.FeatureWeight import idf_file
@@ -127,25 +129,6 @@ def svmPredictNews(nids, texts, _id = 0, category='all'):
     if category and category != 'all' and (category not in category_list):
         logger.error('unkown category:{0}'.format(category))
         return {'bSuccess':False, 'message':'{0} is not a known category.'.format(category)}
-    #from classification.DocPreProcess import get_postgredb
-    #conn, cursor = get_postgredb()
-    #cursor.execute(sql.format(srcid))
-    #rows = cursor.fetchall()
-    #nids = []
-    #texts = []
-    #for row in rows:
-    #    title = row[1]
-    #    id = row[0]
-    #    text = ''
-    #    content_list = row[2]
-    #    if content_list:
-    #        for content in content_list:
-    #            if 'txt' in content.keys():
-    #                text =text + content['txt'] + ' '
-    #    news = title + ' '+ text
-    #    texts.append(news)
-    #    nids.append(id)
-    #conn.close()
     pred = svmPredictTexts(texts)
     today = str(datetime.datetime.now())[0:10]
     time = str(datetime.datetime.now())[11:19]
@@ -168,4 +151,18 @@ def svmPredictNews(nids, texts, _id = 0, category='all'):
         return {'bSuccess': True, 'nids': cates_dict[category]}
 
 
+#返回格式不同
+def svmPredictNews2(nids, texts):
+    start_time = datetime.datetime.now()
+    logger.info('svmPredictOnSrcid begin...')
+    pred = svmPredictTexts(texts)
+    nid_cate_list = []
+    global category_name_id_dict
+    if not category_name_id_dict:
+        category_name_id_dict = getCategoryNameIdDict()
+    for i in range(len(texts)):
+        nid_cate_list.append({"nid": nids[i], 'chid': category_name_id_dict[category_list[int(pred[i])]]})
+
+    logger.info('---predict news done!--------')
+    return {'bSuccess': True, 'result': nid_cate_list}
 

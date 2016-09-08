@@ -47,6 +47,19 @@ category_list = [u'科技', u'外媒', u'社会', u'财经', u'体育', u'汽车
                  u'娱乐', u'趣图', u'搞笑', u'养生', u'育儿', u'股票', u'互联网', u'美食', u'健康', u'影视',
                  u'军事', u'历史', u'故事', u'旅游', u'美文', u'萌宠', u'游戏', u'美女', u'广告']
 
+sql_channel = "select id, cname from channellist_v2"
+category_name_id_dict = {}
+def getCategoryNameIdDict():
+    global category_name_id_dict
+    conn, cursor = get_postgredb()
+    cursor.execute(sql_channel)
+    rows = cursor.fetchall()
+    for r in rows:
+        if r[1] in category_list:
+            category_name_id_dict[r[1]] = r[0]
+    conn.close()
+    return category_name_id_dict
+
 #手工选出的广告新闻
 ad_nids = [5663445, 5663406, 3945020, 5709777, 3961793, 5693457, 4727101, 5513815, 4851274, 5578330,
            5049199, 4692648, 5094801, 5392324, 3994872, 4695941, 5192098, 5439278, 3475114, 3785035,
@@ -61,7 +74,7 @@ ad_nids = [5663445, 5663406, 3945020, 5709777, 3961793, 5693457, 4727101, 551381
 #后备的广告,会随时添加
 ad_nids2 = [5524442, 4808083, 4736576, 4785403, 4760140, 5796932, 5052048, 5038690, 5500876, 5684128,
             5463030, 4962484, 5082874, 5710311, 5709832, 5968570, 5797085, 6027250, 5967860, 4043182,
-            6139753]
+            6139753, 6230816]
 ad_nids.extend(ad_nids2)
 
 DOC_NUM = 300 #总数据集

@@ -19,6 +19,7 @@ from classification import DocPreProcess
 from classification import FeatureSelection
 from classification import FeatureWeight
 from svm_module import SVMClassify
+from classification.MongodbProcess import checkAds
 
 class FetchContent(tornado.web.RequestHandler):
     #@tornado.gen.coroutine
@@ -44,7 +45,7 @@ class NewsClassifyOnNids(tornado.web.RequestHandler):
         #text = DocPreProcess.getTextOfNewsNid(nid)
         #res = yield SVMClassify.svmPredictOneText(text)
         #res = SVMClassify.svmPredictOneText(texts)
-        ret = SVMClassify.svmPredictNews(nids, texts)
+        ret = SVMClassify.svmPredictNews2(nids, texts)
         self.write(json.dumps(ret))
 
 class NewsClassifyOnSrcid(tornado.web.RequestHandler):
