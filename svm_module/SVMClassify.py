@@ -34,6 +34,7 @@ n_feature = 0
 def getModel():
     global clf
     global n_feature
+    logger.info('Begin to train...')
     X_train, y_train = load_svmlight_file(train_svm_file)
     n_feature = X_train.shape[1]
     start_time = datetime.datetime.now()
