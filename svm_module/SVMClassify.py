@@ -157,7 +157,7 @@ def svmPredictNews2(nids, texts):
     pred = svmPredictTexts(texts)
     nid_cate_list = []
     for i in range(len(texts)):
-        nid_cate_list.append({"nid": nids[i], 'chid': category_name_id_dict[category_list[int(pred[i])]]})
+        nid_cate_list.append({'chid': category_name_id_dict[category_list[int(pred[i])]], "nid": int(nids[i])})
     logger.info('---predict news done!--------')
     return {'bSuccess': True, 'result': nid_cate_list}
 
