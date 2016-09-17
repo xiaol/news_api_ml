@@ -79,11 +79,11 @@ ad_nids = [5663445, 5663406, 3945020, 5709777, 3961793, 5693457, 4727101, 551381
 #后备的广告,会随时添加
 ad_nids2 = [5524442, 4808083, 4736576, 4785403, 4760140, 5796932, 5052048, 5038690, 5500876, 5684128,
             5463030, 4962484, 5082874, 5710311, 5709832, 5968570, 5797085, 6027250, 5967860, 4043182,
-            6139753, 6230816]
+            6139753, 6230816, 6577304, 6597544]
 ad_nids.extend(ad_nids2)
 
-DOC_NUM = 300 #总数据集
-TRAIN_DOC = 300 #训练集. 这里TRAIN_DOC=DOC_NUM, 是将每个类别的100篇都当做训练集
+DOC_NUM = 3000 #总数据集
+TRAIN_DOC = 2000 #训练集. 这里TRAIN_DOC=DOC_NUM, 是将每个类别的100篇都当做训练集
 ADs_NUM = len(ad_nids) #广告数目
 news_file_path = './NewsFile/'
 news_cut_file_path = './NewsFileCut/'
@@ -94,7 +94,7 @@ FROM \
 (select * from newslist_v2 where nid >= %s and nid <=%s) a \
 RIGHT OUTER JOIN (select * from channellist_v2 where "cname"=%s) c \
 ON \
-a.chid=c."id" LIMIT 300'
+a.chid=c."id" LIMIT %s'
 
 #####################################广告处理部分 start
 #将使用的广告的nid写入文件,方便以后对比
@@ -154,7 +154,7 @@ def writeNewsToFile(filePath, title, content_list):
 #准备新闻数据
 def collectNews(start_id, end_id, category):
     conn, cursor = get_postgredb()
-    cursor.execute(channle_sql, [start_id, end_id, category])
+    cursor.execute(channle_sql, [start_id, end_id, category, str(DOC_NUM)])
     rows = cursor.fetchall()
     num = 0
     for row in rows:
@@ -355,7 +355,7 @@ def preProcessNews():
 
 def docPreProcess():
     logger.info('docPreProcess begin...')
-    start_id = 5600000
+    start_id = 2000000
     end_id = 6000000
     collectEveryCatagoryNews(start_id, end_id)
     preProcessNews()

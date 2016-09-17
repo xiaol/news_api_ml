@@ -13,11 +13,12 @@ from DocPreProcess import TRAIN_DOC
 from DocPreProcess import category_list
 from DocPreProcess import logger
 from DocPreProcess import idf_file
-from FeatureSelection import svm_feature_file
-from FeatureSelection import textCutBasePath
+from FeatureSelectionbak import svm_feature_file
+from FeatureSelectionbak import textCutBasePath
 
 TestDocCount = DOC_NUM - TRAIN_DOC #作為test的文档数目
 train_svm_file = './result/train.svm'
+test_svm_file = './result/test.svm'
 idf_file = './result/idf.txt'
 
 #feature_dict是为了后面的快速查询, feature_list是为了提供给训练的接口
@@ -130,8 +131,8 @@ def featureWeight():
     TFIDFCal(feature_list, dic, idffeature, train_svm_file)
     logger.info('featureWeight done!')
     #test数据
-    #test_dic = readTestFileToList(textCutBasePath, category_list, TRAIN_DOC, TestDocCount)
-    #TFIDFCal(feature, test_dic, idffeature, "test.svm")
+    test_dic = readTestFileToList(textCutBasePath, category_list, TRAIN_DOC, TestDocCount)
+    TFIDFCal(feature_list, test_dic, idffeature, test_svm_file)
 
 
 

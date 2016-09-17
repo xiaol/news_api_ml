@@ -86,9 +86,13 @@ class Application(tornado.web.Application):
         tornado.web.Application.__init__(self, handlers, **settings)
 
 if __name__ == "__main__":
+    print 'doc process'
     #DocPreProcess.docPreProcess()
-    #FeatureSelection.featureSelect()
-    #FeatureWeight.featureWeight()
+    print 'feature select'
+    FeatureSelection.featureSelect()
+    print 'feature weight'
+    FeatureWeight.featureWeight()
+    print 'get model'
     SVMClassify.getModel()
     #SVMClassify.svmPredictOnSrcid(3874)
 
@@ -96,3 +100,5 @@ if __name__ == "__main__":
     http_server = tornado.httpserver.HTTPServer(Application())
     http_server.listen(port)
     tornado.ioloop.IOLoop.instance().start()
+
+
