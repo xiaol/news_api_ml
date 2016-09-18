@@ -35,7 +35,7 @@ termClassDict = Manager().dict()
 def collDate(catetory, eachClassWordSet, eachClassWordList):
     mylock.acquire()
     global termClassDict
-    global termClassDict
+    global termDict
     termDict[catetory] = eachClassWordSet
     termClassDict[catetory] = eachClassWordList
     mylock.release()
@@ -47,7 +47,6 @@ def readCategoryFileProc(catetory):
     eachClassWordList = list()
     count = len(os.listdir(currClassPath))
     for i in range(count):
-        print catetory, '  ', str(i)
         eachDocPath = currClassPath + str(i) + '.cut'
         eachFileObj = open(eachDocPath, 'r')
         eachFileContent = eachFileObj.read()
