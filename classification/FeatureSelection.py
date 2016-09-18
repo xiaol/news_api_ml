@@ -66,9 +66,9 @@ def readCategoryFileProc(catetory):
         #del eachFileContent
         #del eachFileWords
         #gc.collect()
-    print 'coll data begin'
+    print 'coll' + catetory + 'data begin'
     collDate(catetory, eachClassWordSets, eachClassWordList)
-    print 'coll data finished'
+    print 'coll' + catetory + 'data end'
 
 
 def buildItemSetsMutiProc():
