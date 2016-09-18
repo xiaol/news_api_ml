@@ -13,8 +13,8 @@ from DocPreProcess import TRAIN_DOC
 from DocPreProcess import category_list
 from DocPreProcess import logger
 from DocPreProcess import idf_file
-from FeatureSelectionbak import svm_feature_file
-from FeatureSelectionbak import textCutBasePath
+from FeatureSelection import svm_feature_file
+from FeatureSelection import textCutBasePath
 
 TestDocCount = DOC_NUM - TRAIN_DOC #作為test的文档数目
 train_svm_file = './result/train.svm'

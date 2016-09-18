@@ -119,8 +119,9 @@ def buildItemSets():
 #计算卡方,选取特征词
 #K为每个类别的特征词数目
 def featureSelection(termDic, termClassDic, K):
+    logger.info('featureSelect...')
     termCountDic = dict()
-    for key in termDic:
+    for key in termDic.keys():
         #classWordSets = termDic[key]
         classTermCountDic = dict()
         for eachword in termDic[key]:
@@ -128,7 +129,7 @@ def featureSelection(termDic, termClassDic, K):
             b = 0
             c = 0
             d = 0
-            for eachclass in termClassDic:
+            for eachclass in termClassDic.keys():
                 if eachclass == key: #在这个类别下处理
                     for eachdocset in termClassDic[eachclass]:
                         if eachword in eachdocset:
@@ -155,9 +156,11 @@ def featureSelection(termDic, termClassDic, K):
         del classTermCountDic
         del sortedClassTermCountDic
         gc.collect()
+    logger.info('featureSelect finished...')
     return termCountDic
 
 def writeFeatureToFile(termCounDic, fileName):
+    logger.info('write features to file ...')
     featureSet = set()
     for key in termCounDic:
         for eachkey in termCounDic[key]:
@@ -171,6 +174,7 @@ def writeFeatureToFile(termCounDic, fileName):
             file.write(str(count) + ' ' + feature + '\n')
             count += 1
     file.close()
+    logger.info('write features to file finished!')
 
 def featureSelect():
     global termDict
