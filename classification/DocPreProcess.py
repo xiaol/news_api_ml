@@ -248,6 +248,23 @@ def strProcess2(str):
             final_words.append(w)
     return final_words
 
+#去除html标签及停用词并筛选词性
+def strProcess3(str):
+    #删除html标签
+    txt_no_html = filter_tags(str)
+    real_path = os.path.split(os.path.realpath(__file__))[0] #文件所在路径
+    import jieba.posseg
+    jieba.load_userdict(real_path + '/../util/networds.txt')
+    words = jieba.posseg.cut(txt_no_html)  #unicode is returned
+    words_filter = filterPOS2(words)
+    stopwords = {}.fromkeys([line.rstrip() for line in open(real_path + '/../util/stopwords.txt')]) #utf-8
+    stopwords_set = set(stopwords)
+    final_words = []
+    for w in words_filter:
+        if not w.encode('utf-8') in stopwords_set and (not w.isspace()):
+            final_words.append(w)
+    return final_words
+
 def cutAndRemoveUseless(file_path, new_file_path):
     orgFile=open(file_path, 'r')
     file_name = basename(file_path)
@@ -297,6 +314,17 @@ def filterPOS(filePath, resultFilePath):
             f2.write(letter)
         else:
             f2.write(v)
+
+def filterPOS2(org_text):
+    txtlist = []
+    POS = ['zg', 'uj', 'ul', 'e', 'd', 'uz', 'y']
+    # 去除特定词性的词
+    for w in org_text:
+        if w.flag in POS:
+            pass
+        else:
+            txtlist.append(w.word)
+    return txtlist
 
 #去除空行,空白字符等等
 def removeSpace(inFilePath, outFilePath):
