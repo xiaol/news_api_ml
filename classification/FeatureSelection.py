@@ -57,17 +57,13 @@ def readCategoryFileProc(catetory):
                 continue
             eachFileSet.add(eachword)
             eachClassWordSets.add(eachword)
-            del eachword
-            gc.collect()
         eachClassWordList.append(eachFileSet)
         eachFileObj.close()
-        #del eachFileSet
-        #del eachFileContent
-        #del eachFileWords
-        #gc.collect()
     print 'coll' + catetory + 'data begin'
+    logger.info('coll' + catetory + 'data begin')
     collDate(catetory, eachClassWordSets, eachClassWordList)
     print 'coll' + catetory + 'data end'
+    logger.info('coll' + catetory + 'data end')
 
 
 def buildItemSetsMutiProc():
@@ -119,7 +115,8 @@ def buildItemSets():
 #计算卡方,选取特征词
 #K为每个类别的特征词数目
 def featureSelection(termDic, termClassDic, K):
-    logger.info('featureSelect...')
+    logger.info('featureSelect()...')
+    print 'featureSelect() begin...'
     termCountDic = dict()
     for key in termDic.keys():
         #classWordSets = termDic[key]
@@ -153,10 +150,8 @@ def featureSelection(termDic, termClassDic, K):
         for i in range(n):
             subDic[sortedClassTermCountDic[i][0]] = sortedClassTermCountDic[i][1]
         termCountDic[key] = subDic
-        del classTermCountDic
-        del sortedClassTermCountDic
-        gc.collect()
-    logger.info('featureSelect finished...')
+    logger.info('featureSelect() finished...')
+    print 'featureSelect() end...'
     return termCountDic
 
 def writeFeatureToFile(termCounDic, fileName):
