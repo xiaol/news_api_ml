@@ -57,17 +57,13 @@ def readCategoryFileProc(catetory):
                 continue
             eachFileSet.add(eachword)
             eachClassWordSets.add(eachword)
-            del eachword
-            gc.collect()
         eachClassWordList.append(eachFileSet)
         eachFileObj.close()
-        #del eachFileSet
-        #del eachFileContent
-        #del eachFileWords
-        #gc.collect()
     print 'coll' + catetory + 'data begin'
+    logger.info('coll' + catetory + 'data begin')
     collDate(catetory, eachClassWordSets, eachClassWordList)
     print 'coll' + catetory + 'data end'
+    logger.info('coll' + catetory + 'data end')
 
 
 def buildItemSetsMutiProc():
@@ -119,8 +115,10 @@ def buildItemSets():
 #计算卡方,选取特征词
 #K为每个类别的特征词数目
 def featureSelection(termDic, termClassDic, K):
+    logger.info('featureSelect()...')
+    print 'featureSelect() begin...'
     termCountDic = dict()
-    for key in termDic:
+    for key in termDic.keys():
         #classWordSets = termDic[key]
         classTermCountDic = dict()
         for eachword in termDic[key]:
@@ -128,7 +126,7 @@ def featureSelection(termDic, termClassDic, K):
             b = 0
             c = 0
             d = 0
-            for eachclass in termClassDic:
+            for eachclass in termClassDic.keys():
                 if eachclass == key: #在这个类别下处理
                     for eachdocset in termClassDic[eachclass]:
                         if eachword in eachdocset:
@@ -152,12 +150,12 @@ def featureSelection(termDic, termClassDic, K):
         for i in range(n):
             subDic[sortedClassTermCountDic[i][0]] = sortedClassTermCountDic[i][1]
         termCountDic[key] = subDic
-        del classTermCountDic
-        del sortedClassTermCountDic
-        gc.collect()
+    logger.info('featureSelect() finished...')
+    print 'featureSelect() end...'
     return termCountDic
 
 def writeFeatureToFile(termCounDic, fileName):
+    logger.info('write features to file ...')
     featureSet = set()
     for key in termCounDic:
         for eachkey in termCounDic[key]:
@@ -171,6 +169,7 @@ def writeFeatureToFile(termCounDic, fileName):
             file.write(str(count) + ' ' + feature + '\n')
             count += 1
     file.close()
+    logger.info('write features to file finished!')
 
 def featureSelect():
     global termDict
