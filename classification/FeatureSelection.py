@@ -137,7 +137,7 @@ def buildItemSets():
     print "buildItemSets finished!"
     return termDic, termClassDic
 
-def featureSelection(K):
+def featureSelection2(K):
     print 'featureSelection(K) begin...'
     global summary
     word_cate_count = {} #用于统计一个词语在不同分类中出现的次数
@@ -247,7 +247,7 @@ def featureSelect():
     #termDic, termClassDic = buildItemSets()
     buildItemSetsMutiProc()
     #termCountDic = featureSelection(termDict, termClassDict, FEATURE_NUM)
-    termCountDic = featureSelection(FEATURE_NUM)
+    termCountDic = featureSelection2(FEATURE_NUM)
     writeFeatureToFile(termCountDic, svm_feature_file)
     logger.info('featureSelect done!')
 
