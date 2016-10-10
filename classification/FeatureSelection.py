@@ -56,7 +56,7 @@ def readCategoryFileProc(category):
     count = len(os.listdir(currClassPath))
     file_words_count_list = []  #每个文件中词在本文件中出现的次数.
     words_newsnum_dict = {}  #用于统计包含词语的文章的数量
-    count = min(count, 10)
+    #count = min(count, 10)
     for i in range(count):
         eachDocPath = currClassPath + str(i) + '.cut'
         eachFileObj = open(eachDocPath, 'r')
@@ -143,7 +143,6 @@ def featureSelection2(K):
     global summary
     global word_cate_count
     global news_total_num
-    print summary.keys()
     for category in summary.keys():
         words_dict = summary[category]['words']
         for word in words_dict.keys():
@@ -158,7 +157,6 @@ def featureSelection2(K):
 
     cate_selected_dict = {}
     for category in summary.keys():
-        print 'getting features of ', category
         word_chi = {}
         data = summary[category]
         count = data['count']

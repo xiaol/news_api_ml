@@ -43,7 +43,7 @@ def readFileToList(textCutBasePath, classCode, documentCount):
     for eachclass in classCode:
         currClassPath = textCutBasePath + eachclass + "/"
         n = len(os.listdir(currClassPath))
-        n = min(n, 10)
+        #n = min(n, 10)
         eachclasslist = list()
         for i in range(n):
             eachfile = open(currClassPath+str(i)+".cut")
