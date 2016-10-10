@@ -15,6 +15,8 @@ from DocPreProcess import logger
 from DocPreProcess import idf_file
 from FeatureSelection import svm_feature_file
 from FeatureSelection import textCutBasePath
+from FeatureSelection import word_cate_count
+from FeatureSelection import news_total_num
 
 TestDocCount = DOC_NUM - TRAIN_DOC #作為test的文档数目
 train_svm_file = './result/train.svm'
@@ -38,10 +40,12 @@ def readFeature(featureName):
 
 # 读取所有类别的训练样本到字典中,每个文档是一个list
 def readFileToList(textCutBasePath, classCode, documentCount):
+    print 'readFileToList'
     dic = dict()
     for eachclass in classCode:
         currClassPath = textCutBasePath + eachclass + "/"
         n = len(os.listdir(currClassPath))
+        n = min(n, 10)
         eachclasslist = list()
         for i in range(n):
             eachfile = open(currClassPath+str(i)+".cut")
@@ -66,30 +70,18 @@ def readTestFileToList(textCutBasePath, classCode, documentCount, testDocCount):
     return dic
 
 # 计算特征的逆文档频率
-def featureIDF(dic, feature, dffilename):
-    dffile = open(dffilename, "w")
-    dffile.close()
-    dffile = open(dffilename, "a")
-    totaldoccount = 0
-    idffeature = dict()
-    dffeature = dict()
-    for eachfeature in feature:
-        docfeature = 0
-        for key in dic:
-            totaldoccount = totaldoccount + len(dic[key])
-            classfiles = dic[key]
-            for eachfile in classfiles:
-                if eachfeature in eachfile:
-                    docfeature = docfeature + 1
-        # 计算特征的逆文档频率
-        featurevalue = math.log(float(totaldoccount)/(docfeature+1))
-        dffeature[eachfeature] = docfeature
-        # 写入文件，特征的文档频率
-        dffile.write(eachfeature + " " + str(docfeature)+"\n")
-        # print(eachfeature+" "+str(docfeature))
-        idffeature[eachfeature] = featurevalue
-    dffile.close()
-    return idffeature
+def featureIDF(dic, feature):
+    print 'featureIDF'
+    idf_dict = dict()
+    global news_total_num
+    global word_cate_count
+    for word in word_cate_count.keys():
+        n = 0
+        cate_count_dict = word_cate_count[word]
+        for val in cate_count_dict.values():
+            n += val
+        idf_dict[word] = math.log(float(news_total_num)/(n))
+    return idf_dict
 
 # 计算Feature's TF-IDF 值
 def TFIDFCal(feature, dic, idffeature, filename):
@@ -125,14 +117,14 @@ def featureWeight():
     global feature_list
     logger.info('featureWeight being...')
     dic = readFileToList(textCutBasePath, category_list, TRAIN_DOC)
-    idffeature = featureIDF(dic, feature_list, "dffeature.txt")
+    idffeature = featureIDF(dic, feature_list)
     writeIdfToFile(idffeature)
     #train 数据
     TFIDFCal(feature_list, dic, idffeature, train_svm_file)
     logger.info('featureWeight done!')
     #test数据
-    test_dic = readTestFileToList(textCutBasePath, category_list, TRAIN_DOC, TestDocCount)
-    TFIDFCal(feature_list, test_dic, idffeature, test_svm_file)
+    #test_dic = readTestFileToList(textCutBasePath, category_list, TRAIN_DOC, TestDocCount)
+    #TFIDFCal(feature_list, test_dic, idffeature, test_svm_file)
 
 
 
