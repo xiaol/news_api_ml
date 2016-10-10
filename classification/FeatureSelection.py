@@ -42,11 +42,10 @@ def collData(catetory, file_words_count_list, words_newsnum_dict):
     #global termDict
     global summary
     summary[catetory] = {}
-    summary[catetory]['count'] = len(file_words_count_list)
-    summary[catetory]['words'] = words_newsnum_dict
-    #termDict[catetory] = eachClassWordSet
-    #termClassDict[catetory] = eachClassWordList
-
+    tmp_dict = {}
+    tmp_dict['count'] = len(file_words_count_list)
+    tmp_dict['words'] = words_newsnum_dict
+    summary[catetory] = tmp_dict
     mylock.release()
 
 def readCategoryFileProc(category):
@@ -141,6 +140,7 @@ def featureSelection2(K):
     print 'featureSelection(K) begin...'
     global summary
     word_cate_count = {} #用于统计一个词语在不同分类中出现的次数
+    print summary.keys()
     for category in summary.keys():
         words_dict = summary[category]['words']
         for word in words_dict.keys():
