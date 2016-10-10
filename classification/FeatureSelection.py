@@ -32,38 +32,64 @@ from multiprocessing import Process, Lock, Manager
 mylock = Lock()
 termDict = Manager().dict()
 termClassDict = Manager().dict()
-def collDate(catetory, eachClassWordSet, eachClassWordList):
+summary = Manager().dict()
+#file_words_count_list : 每个文件中词语及其出现次数的字典
+#words_newsnum_dict: 该类别中出现的词语及其次数
+#summary : {'科技': {'count':1000, 'words':{手机:50, 小米:10} }, ....}
+def collData(catetory, file_words_count_list, words_newsnum_dict):
     mylock.acquire()
-    global termClassDict
-    global termDict
-    termDict[catetory] = eachClassWordSet
-    termClassDict[catetory] = eachClassWordList
+    #global termClassDict
+    #global termDict
+    global summary
+    summary[catetory] = {}
+    summary[catetory]['count'] = len(file_words_count_list)
+    summary[catetory]['words'] = words_newsnum_dict
+    #termDict[catetory] = eachClassWordSet
+    #termClassDict[catetory] = eachClassWordList
+
     mylock.release()
 
-def readCategoryFileProc(catetory):
+def readCategoryFileProc(category):
     print 'process id:', str(os.getpid())
-    currClassPath = textCutBasePath + catetory + '/'
-    eachClassWordSets = set()
-    eachClassWordList = list()
+    currClassPath = textCutBasePath + category + '/'
+    #eachClassWordSets = set()
+    #eachClassWordList = list()
     count = len(os.listdir(currClassPath))
+    file_words_count_list = []  #每个文件中词在本文件中出现的次数.
+    words_newsnum_dict = {}  #用于统计包含词语的文章的数量
+    count = max(count, 10)
     for i in range(count):
         eachDocPath = currClassPath + str(i) + '.cut'
         eachFileObj = open(eachDocPath, 'r')
         eachFileContent = eachFileObj.read()
         eachFileWords = eachFileContent.split(' ')
-        eachFileSet = set()
+        #eachFileSet = set()
+        words_count_dict = {}
         for eachword in eachFileWords:
             if len(eachword) == 0:
                 continue
-            eachFileSet.add(eachword)
-            eachClassWordSets.add(eachword)
-        eachClassWordList.append(eachFileSet)
+            if eachword in words_count_dict.keys():
+                words_count_dict[eachword] += 1
+                continue
+            else:
+                words_count_dict[eachword] = 1
+        for word in words_count_dict.keys():
+            if word in words_newsnum_dict.keys():
+                words_newsnum_dict[word] += 1
+            else:
+                words_newsnum_dict[word] = 1
+
+        file_words_count_list.append(words_count_dict)
+            #eachFileSet.add(eachword)
+            #eachClassWordSets.add(eachword)
+        #eachClassWordList.append(eachFileSet)
         eachFileObj.close()
-    print 'coll' + catetory + 'data begin'
-    logger.info('coll' + catetory + 'data begin')
-    collDate(catetory, eachClassWordSets, eachClassWordList)
-    print 'coll' + catetory + 'data end'
-    logger.info('coll' + catetory + 'data end')
+    print 'coll' + category + 'data begin'
+    logger.info('coll' + category + 'data begin')
+    #collDate(catetory, eachClassWordSets, eachClassWordList)
+    collData(category, file_words_count_list, words_newsnum_dict)
+    print 'coll' + category + 'data end'
+    logger.info('coll' + category + 'data end')
 
 
 def buildItemSetsMutiProc():
@@ -111,6 +137,49 @@ def buildItemSets():
     print "buildItemSets finished!"
     return termDic, termClassDic
 
+def featureSelection(K):
+    print 'featureSelection(K) begin...'
+    global summary
+    word_cate_count = {} #用于统计一个词语在不同分类中出现的次数
+    for category in summary.keys():
+        words_dict = summary[category]['words']
+        for word in words_dict.keys():
+            if word not in word_cate_count.keys():
+                word_cate_count[word] = {}
+                word_cate_count[word][category] = words_dict[word]
+            else:
+                word_cate_count[word][category] = words_dict[word]
+
+    news_total_num = 0 #文章总数
+    for cate in summary.keys():
+        news_total_num += summary[cate]['count']
+
+    cate_selected_dict = {}
+    for category in summary.keys():
+        print 'getting features of ', category
+        word_chi = {}
+        data = summary[category]
+        count = data['count']
+        words = data['words']
+        for word in words.keys():
+            a = words[word] #该类下改词出现的次数
+            b = 0 #不在该类下,该词出现的次数
+            cate_num_dict = word_cate_count[word]
+            for cate in cate_num_dict.keys():
+                if cate != category:
+                    b += cate_num_dict[cate]
+            c = count - a #该类下不包含该词的数目
+            d = news_total_num - count - b #不在该类,且不包含该词
+            word_chi[word] = calChi(a, b, c, d)
+        #排序后取前K个
+        #排序后返回的是元组的列表
+        sorted_word_chi = sorted(word_chi.items(), key=lambda d:d[1], reverse=True)
+        subDic = dict()
+        n = min(len(sorted_word_chi), K)
+        for i in range(n):
+            subDic[sorted_word_chi[i][0]] = sorted_word_chi[i][1]
+        cate_selected_dict[category] = subDic
+    return cate_selected_dict
 
 #计算卡方,选取特征词
 #K为每个类别的特征词数目
@@ -177,7 +246,8 @@ def featureSelect():
     logger.info('featureSelect begin...')
     #termDic, termClassDic = buildItemSets()
     buildItemSetsMutiProc()
-    termCountDic = featureSelection(termDict, termClassDict, FEATURE_NUM)
+    #termCountDic = featureSelection(termDict, termClassDict, FEATURE_NUM)
+    termCountDic = featureSelection(FEATURE_NUM)
     writeFeatureToFile(termCountDic, svm_feature_file)
     logger.info('featureSelect done!')
 
