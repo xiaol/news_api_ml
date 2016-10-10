@@ -136,10 +136,13 @@ def buildItemSets():
     print "buildItemSets finished!"
     return termDic, termClassDic
 
+word_cate_count = {} #用于统计一个词语在不同分类中出现的次数
+news_total_num = 0 #文章总数
 def featureSelection2(K):
     print 'featureSelection(K) begin...'
     global summary
-    word_cate_count = {} #用于统计一个词语在不同分类中出现的次数
+    global word_cate_count
+    global news_total_num
     print summary.keys()
     for category in summary.keys():
         words_dict = summary[category]['words']
@@ -150,7 +153,6 @@ def featureSelection2(K):
             else:
                 word_cate_count[word][category] = words_dict[word]
 
-    news_total_num = 0 #文章总数
     for cate in summary.keys():
         news_total_num += summary[cate]['count']
 
