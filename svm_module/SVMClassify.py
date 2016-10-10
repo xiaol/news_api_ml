@@ -13,8 +13,8 @@ import string
 
 import sys
 from sklearn.datasets import load_svmlight_file
-#from sklearn.grid_search import GridSearchCV
-from sklearn.model_selection import GridSearchCV
+from sklearn.grid_search import GridSearchCV
+#from sklearn.model_selection import GridSearchCV
 from sklearn.svm import SVC
 from classification.DocPreProcess import strProcess
 from classification.FeatureWeight import feature_list, feature_dict
@@ -40,10 +40,10 @@ def getModel():
     clf.fit(X_train, y_train)
     end_time = datetime.datetime.now()
     logger.info('train done in {0}s'.format((end_time - start_time).total_seconds()))
-    X_test, y_test = load_svmlight_file('test.svm', n_features=X_train.shape[1])#没有指定n_features时出现X_test.shape[1] != X_train.shape[1]
-    pred = clf.predict(X_test)
-    from sklearn.metrics import accuracy_score
-    print accuracy_score(y_test, pred)
+    #X_test, y_test = load_svmlight_file('test.svm', n_features=X_train.shape[1])#没有指定n_features时出现X_test.shape[1] != X_train.shape[1]
+    #pred = clf.predict(X_test)
+    #from sklearn.metrics import accuracy_score
+    #print accuracy_score(y_test, pred)
 
 def getIdfOfTrain():
     idf = {}

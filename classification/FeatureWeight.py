@@ -15,8 +15,6 @@ from DocPreProcess import logger
 from DocPreProcess import idf_file
 from FeatureSelection import svm_feature_file
 from FeatureSelection import textCutBasePath
-from FeatureSelection import word_cate_count
-from FeatureSelection import news_total_num
 
 TestDocCount = DOC_NUM - TRAIN_DOC #作為test的文档数目
 train_svm_file = './result/train.svm'
@@ -72,15 +70,19 @@ def readTestFileToList(textCutBasePath, classCode, documentCount, testDocCount):
 # 计算特征的逆文档频率
 def featureIDF(dic, feature):
     print 'featureIDF'
+    import FeatureSelection
+    news_total_num = FeatureSelection.news_total_num
+    word_cate_count = FeatureSelection.word_cate_count
     idf_dict = dict()
-    global news_total_num
-    global word_cate_count
     for word in word_cate_count.keys():
         n = 0
         cate_count_dict = word_cate_count[word]
         for val in cate_count_dict.values():
             n += val
-        idf_dict[word] = math.log(float(news_total_num)/float(n))
+        if n == 0:
+            idf_dict[word] = 0
+        else:
+            idf_dict[word] = math.log(float(news_total_num)/float(n))
     return idf_dict
 
 # 计算Feature's TF-IDF 值
