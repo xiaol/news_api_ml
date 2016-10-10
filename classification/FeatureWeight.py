@@ -80,7 +80,7 @@ def featureIDF(dic, feature):
         cate_count_dict = word_cate_count[word]
         for val in cate_count_dict.values():
             n += val
-        idf_dict[word] = math.log(float(news_total_num)/(n))
+        idf_dict[word] = math.log(float(news_total_num)/float(n))
     return idf_dict
 
 # 计算Feature's TF-IDF 值
