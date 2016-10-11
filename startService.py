@@ -77,8 +77,12 @@ class NewsClassifyOnChid(tornado.web.RequestHandler):
 
 class NewsAdsExtract(tornado.web.RequestHandler):
     def post(self):
-        news_dict = self.get_body_argument('data')
-        d = json.loads(news_dict.encode('utf-8'))
+        ads_raw_data_file = './result/ads_raw_data.txt'
+        data = ''
+        with open(ads_raw_data_file, 'r') as f:
+            data = f.read()
+        #news_dict = self.get_body_argument('data')
+        d = json.loads(data.encode('utf-8'))
         result = AdsExtract.extract_ads(d)
         self.write(json.dumps(result))
 
