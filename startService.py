@@ -20,6 +20,7 @@ from classification import FeatureSelection
 from classification import FeatureWeight
 from svm_module import SVMClassify
 #from classification.MongodbProcess import checkAds
+from classification import AdsExtract
 
 class FetchContent(tornado.web.RequestHandler):
     #@tornado.gen.coroutine
@@ -74,13 +75,21 @@ class NewsClassifyOnChid(tornado.web.RequestHandler):
         ret = SVMClassify.svmPredictNews(nids, texts, chid)
         self.write(json.dumps(ret))
 
+class NewsAdsExtract(tornado.web.RequestHandler):
+    def post(self):
+        news_dict = self.get_body_argument('data')
+        d = json.loads(news_dict.encode('utf-8'))
+        result = AdsExtract.extract_ads(d)
+        self.write(json.dumps(result))
+
 class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
             (r"/ml/fetchContent", FetchContent),
             (r"/ml/newsClassifyOnNids", NewsClassifyOnNids),
             (r"/ml/newsClassifyOnSrcid", NewsClassifyOnSrcid),
-            (r"/ml/newsClassifyOnChid", NewsClassifyOnChid)
+            (r"/ml/newsClassifyOnChid", NewsClassifyOnChid),
+            (r"/ml/NewsAdsExtract", NewsAdsExtract)
         ]
         settings = {}
         tornado.web.Application.__init__(self, handlers, **settings)
@@ -100,5 +109,4 @@ if __name__ == "__main__":
     http_server = tornado.httpserver.HTTPServer(Application())
     http_server.listen(port)
     tornado.ioloop.IOLoop.instance().start()
-
 
