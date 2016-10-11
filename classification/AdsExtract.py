@@ -122,10 +122,11 @@ def extract_ads_proc(name, news):
 
     coll_result(name, ads_list)
 
+real_path = os.path.split(os.path.realpath(__file__))[0] #文件所在路径
+ads_data_file = real_path + '/../result/ads_data.txt'
 def extract_ads(news_dict):
     global out_dict
     pool = Pool(30)
-    #for item in news_dict.items():
     for item in news_dict.items():
         pool.apply_async(extract_ads_proc(item[0], item[1]))
     pool.close()
@@ -133,7 +134,11 @@ def extract_ads(news_dict):
     ret = {}
     for item in out_dict.items():
         ret[item[0]] = item[1]
-    return ret
+    import json
+    f = open(ads_data_file, 'w')
+    f.write(json.dumps(ret))
+    f.close()
+    return
 
 
 

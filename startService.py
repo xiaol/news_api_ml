@@ -81,10 +81,9 @@ class NewsAdsExtract(tornado.web.RequestHandler):
         data = ''
         with open(ads_raw_data_file, 'r') as f:
             data = f.read()
-        #news_dict = self.get_body_argument('data')
         d = json.loads(data.encode('utf-8'))
         result = AdsExtract.extract_ads(d)
-        self.write(json.dumps(result))
+        #self.write(json.dumps(result))
 
 class Application(tornado.web.Application):
     def __init__(self):
