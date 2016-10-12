@@ -69,6 +69,34 @@ def get_same_paras(paras1, paras2):
     else:
         return True, dict()   #相同文章
 
+#求两篇新闻相同的段落
+def get_same_paras2(paras1, paras2):
+    same_para_info = {}
+    N1 = len(paras1)
+    N2 = len(paras2)
+    n1 = 0
+    same_num = 0
+    #判断开头是否一样
+    for i in xrange(min(N1, N2)):
+        if is_sentenses_same(paras1[i], paras2[i]):
+            same_para_info[str(i)] = paras1[i]
+            same_num += 1
+        else:
+            break
+    #判断结尾是否一直
+    for i in xrange(-1, 0-min(N1, N2), -1):
+        if is_sentenses_same(paras1[i], paras2[i]):
+            same_para_info[str(i)] = paras1[i]
+            same_num += 1
+        else:
+            break
+    #重复度<90%才认为是不同的文章,否则认定为内容相同
+    #if float(same_num) < float(N1 + N2)/2 * 0.9:
+    if (float(same_num) < float(N1) * 0.9) and (float(same_num) < float(N2) * 0.9):
+        return False, same_para_info    #不是同一篇文章,返回相同的段落
+    else:
+        return True, dict()   #相同文章
+
 #结果汇总
 from multiprocessing import Process, Lock, Manager, Pool
 mylock = Lock()
@@ -94,7 +122,7 @@ def extract_ads_proc(name, news):
     while i < len(news):
         k = i + 1
         while k < len(news):
-            bSameNews, same_dict = get_same_paras(news[i], news[k])
+            bSameNews, same_dict = get_same_paras2(news[i], news[k])
             if bSameNews:
                 del news[k]
                 continue
