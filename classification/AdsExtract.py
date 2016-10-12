@@ -4,6 +4,7 @@
 # @Brief   : 
 # @File    : AdsExtract.py.py
 # @Software: PyCharm Community Edition
+import json
 import os
 
 import jieba
@@ -162,12 +163,80 @@ def extract_ads(news_dict):
     ret = {}
     for item in out_dict.items():
         ret[item[0]] = item[1]
-    import json
     f = open(ads_data_file, 'w')
     f.write(json.dumps(ret))
     f.close()
+    read_model()
     print '***********************extract finished!'
     return
+
+ads_dict = {}
+def read_model():
+    global ads_dict
+    with open(ads_data_file, 'r') as f:
+        r = f.read()
+        ads_dict = json.loads(r)
+
+def get_ads_paras(pname, content_list):
+    global ads_dict
+    if len(ads_dict) == 0:
+        read_model()
+    if pname not in ads_dict:
+        return
+    ads_paras = ads_dict[pname]
+    i = 0
+    to_remove = []
+    while i < len(ads_paras):
+        if ads_paras[i][0] < 0: #结尾有广告
+            para = ads_paras[i]
+            n = int(para[0])
+            if len(content_list) < abs(n):
+                i += 1
+                continue
+            content = content_list[int(para[0])]
+            if is_sentenses_same(content, para[1]):
+                to_remove.append(para[1])
+                if i + 1 >= len(ads_paras):
+                    break
+                for k in xrange(i + 1, len(ads_paras)):
+                    if ads_paras[k][0] < 0:
+                        i = k +1
+                        continue
+                    else:
+                        i = k
+                        break
+            else:
+                i += 1
+                continue
+        else: #只有新闻开头有广告
+            k = len(ads_paras) - 1
+            while k >= i:
+                para = ads_paras[k]
+                n = int(para[0])
+                if len(content_list) < abs(n):
+                    k -= 1
+                    continue
+                content = content_list[int(para[0])]
+                if is_sentenses_same(content, para[1]):
+                    to_remove.append(para[0])
+                    break
+                else:
+                    k -= 1
+            break
+
+    result = {}
+    for i in to_remove:
+        if int(i) < 0:
+            result.update({'End Ads:':content_list[int(i)]})
+        else:
+            result.update({'Begin Ads:':content_list[int(i)]})
+    print '!Get ads done'
+    return result
+
+
+
+
+
 
 
 

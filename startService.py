@@ -85,6 +85,13 @@ class NewsAdsExtract(tornado.web.RequestHandler):
         result = AdsExtract.extract_ads(d)
         #self.write(json.dumps(result))
 
+class NewsAdsExtractOnnid(tornado.web.RequestHandler):
+    def post(self):
+        pname = self.get_body_argument('pname')
+        content_list = self.get_body_argument('contents')
+        response = AdsExtract.get_ads_paras(pname, content_list)
+        self.write(json.dumps(response))
+
 class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
@@ -92,7 +99,8 @@ class Application(tornado.web.Application):
             (r"/ml/newsClassifyOnNids", NewsClassifyOnNids),
             (r"/ml/newsClassifyOnSrcid", NewsClassifyOnSrcid),
             (r"/ml/newsClassifyOnChid", NewsClassifyOnChid),
-            (r"/ml/NewsAdsExtract", NewsAdsExtract)
+            (r"/ml/NewsAdsExtract", NewsAdsExtract),
+            (r"/ml/NewsAdsExtractOnnid", NewsAdsExtractOnnid)
         ]
         settings = {}
         tornado.web.Application.__init__(self, handlers, **settings)
