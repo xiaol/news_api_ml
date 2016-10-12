@@ -156,7 +156,7 @@ def extract_ads(news_dict):
     global out_dict
     pool = Pool(30)
     for item in news_dict.items():
-        pool.apply_async(extract_ads_proc(item[0], item[1]))
+        pool.apply_async(extract_ads_proc, (item[0], item[1]))
     pool.close()
     pool.join()
     ret = {}
