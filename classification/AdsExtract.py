@@ -166,6 +166,7 @@ def extract_ads(news_dict):
     f = open(ads_data_file, 'w')
     f.write(json.dumps(ret))
     f.close()
+    print '***********************extract finished!'
     return
 
 
