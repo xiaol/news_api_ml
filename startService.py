@@ -88,7 +88,7 @@ class NewsAdsExtract(tornado.web.RequestHandler):
 class NewsAdsExtractOnnid(tornado.web.RequestHandler):
     def post(self):
         pname = self.get_body_argument('pname')
-        content_list = self.get_body_argument('contents')
+        content_list = json.loads(self.get_body_argument('contents'))
         response = AdsExtract.get_ads_paras(pname, content_list)
         self.write(json.dumps(response))
 
