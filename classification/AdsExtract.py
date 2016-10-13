@@ -227,9 +227,9 @@ def get_ads_paras(pname, content_list):
     result = {}
     for i in to_remove:
         if i < 0:
-            result.update({'新闻结尾广告:':content_list[i]})
+            result.update({str(i):content_list[i]})
         else:
-            result.update({'新闻开头广告:':content_list[i]})
+            result.update({str(i):content_list[i]})
     print '!Get ads done'
     return result
 
