@@ -193,9 +193,9 @@ def get_ads_paras(pname, content_list):
             if len(content_list) < abs(n):
                 i += 1
                 continue
-            content = content_list[int(para[0])]
+            content = content_list[n]
             if is_sentenses_same(content, para[1]):
-                to_remove.append(para[1])
+                to_remove.append(n)
                 if i + 1 >= len(ads_paras):
                     break
                 for k in xrange(i + 1, len(ads_paras)):
@@ -216,9 +216,9 @@ def get_ads_paras(pname, content_list):
                 if len(content_list) < abs(n):
                     k -= 1
                     continue
-                content = content_list[int(para[0])]
+                content = content_list[n]
                 if is_sentenses_same(content, para[1]):
-                    to_remove.append(para[0])
+                    to_remove.append(n)
                     break
                 else:
                     k -= 1
@@ -226,10 +226,10 @@ def get_ads_paras(pname, content_list):
 
     result = {}
     for i in to_remove:
-        if int(i) < 0:
-            result.update({'End Ads:':content_list[int(i)]})
+        if i < 0:
+            result.update({'新闻结尾广告:':content_list[i]})
         else:
-            result.update({'Begin Ads:':content_list[int(i)]})
+            result.update({'新闻开头广告:':content_list[i]})
     print '!Get ads done'
     return result
 
