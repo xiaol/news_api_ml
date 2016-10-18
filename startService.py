@@ -85,6 +85,16 @@ class NewsAdsExtract(tornado.web.RequestHandler):
         result = AdsExtract.extract_ads(d)
         #self.write(json.dumps(result))
 
+class GetAdsOfOneWechat(tornado.web.RequestHandler):
+    def post(self):
+        name = self.get_body_argument('name')
+        print name
+        self.write(json.dumps(AdsExtract.get_ads_of_one_wechat(name)))
+
+class ModifyNewsAdsResults(tornado.web.RequestHandler):
+    def post(self):
+        pass
+
 class NewsAdsExtractOnnid(tornado.web.RequestHandler):
     def post(self):
         pname = self.get_body_argument('pname')
@@ -100,7 +110,8 @@ class Application(tornado.web.Application):
             (r"/ml/newsClassifyOnSrcid", NewsClassifyOnSrcid),
             (r"/ml/newsClassifyOnChid", NewsClassifyOnChid),
             (r"/ml/NewsAdsExtract", NewsAdsExtract),
-            (r"/ml/NewsAdsExtractOnnid", NewsAdsExtractOnnid)
+            (r"/ml/NewsAdsExtractOnnid", NewsAdsExtractOnnid),
+            (r"/ml/GetAdsOfOneWechat", GetAdsOfOneWechat),
         ]
         settings = {}
         tornado.web.Application.__init__(self, handlers, **settings)

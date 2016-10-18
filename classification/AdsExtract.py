@@ -70,7 +70,7 @@ def get_same_paras(paras1, paras2):
     else:
         return True, dict()   #相同文章
 
-#求两篇新闻相同的段落
+#求两篇新闻相同的段落, 严格从开头和结尾逐段查找
 def get_same_paras2(paras1, paras2):
     same_para_info = {}
     N1 = len(paras1)
@@ -123,7 +123,8 @@ def extract_ads_proc(name, news):
     while i < len(news):
         k = i + 1
         while k < len(news):
-            bSameNews, same_dict = get_same_paras2(news[i], news[k])
+            #bSameNews, same_dict = get_same_paras2(news[i], news[k])
+            bSameNews, same_dict = get_same_paras(news[i], news[k])
             if bSameNews:
                 del news[k]
                 continue
@@ -177,6 +178,17 @@ def read_model():
         r = f.read()
         ads_dict = json.loads(r)
 
+def get_ads_of_one_wechat(name):
+    global ads_dict
+    if len(ads_dict) == 0:
+        read_model()
+    print type(name)
+    for i in ads_dict.keys():
+        print type(i)
+        break
+    return ads_dict[name.encode('utf-8')]
+
+#为基于nid获取广告提供的方法
 def get_ads_paras(pname, content_list):
     global ads_dict
     if len(ads_dict) == 0:
@@ -233,6 +245,8 @@ def get_ads_paras(pname, content_list):
     print '!Get ads done'
     return result
 
+def modify_ads_results(modify_type, modify_data):
+    pass
 
 
 
