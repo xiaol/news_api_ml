@@ -182,11 +182,7 @@ def get_ads_of_one_wechat(name):
     global ads_dict
     if len(ads_dict) == 0:
         read_model()
-    print type(name)
-    for i in ads_dict.keys():
-        print type(i)
-        break
-    return ads_dict[name.encode('utf-8')]
+    return ads_dict[name]
 
 #为基于nid获取广告提供的方法
 def get_ads_paras(pname, content_list):
