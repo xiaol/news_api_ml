@@ -247,9 +247,9 @@ def get_ads_paras(pname, content_list):
 def modify_ads_results(modify_type, modify_data):
     global ads_dict
     data = modify_data.split(':')
-    if len(data) < 3 or data[0] not in ads_dict.keys():
-        return False, 'error input data'
     name = data[0]
+    if len(data) < 3 or name not in ads_dict.keys():
+        return False, 'error input data'
     p_num = data[1]
     p_text = data[2]
     print 'name=', name
@@ -258,14 +258,17 @@ def modify_ads_results(modify_type, modify_data):
     paras = ads_dict[name]
     if modify_type == 'delete':
         for item in paras:
-            if item[0] == p_num and item[1] == p_text:
+            print type(item(0))
+            print type(p_num)
+            if item[0] == int(p_num) and item[1] == p_text:
+                print 'rrrrrrrr'
                 paras.remove(item)
                 break
     elif modify_type == 'add':
         add = []
         add.append(p_num)
         add.append(p_text)
-        ads_dict[name].append(add)
+        #ads_dict[name].append(add)
 
     return True, 'sucess'
 
