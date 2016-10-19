@@ -40,6 +40,7 @@ def get_same_paras(paras1, paras2):
         bP1Finished = False
         p1_len = len(p1)
         if p1_len == 0:
+            n1 += 1
             continue
         for p2 in paras2:
             if len(p2)==0 or (p1_len > 1.5 * len(p2) or len(p2) > 1.5* p1_len) or ((p1[0] not in p2) and (p2[0] not in p1)):
@@ -241,8 +242,33 @@ def get_ads_paras(pname, content_list):
     print '!Get ads done'
     return result
 
+#modify_type: 操作类型,指添加还是删除
+#modify_data: 操作数据. 结构:   微信号名称:段落号:段落内容
 def modify_ads_results(modify_type, modify_data):
-    pass
+    global ads_dict
+    data = modify_data.splite(':')
+    if len(data) <= 3 or data[0] not in ads_dict.keys():
+        return False, 'error input data'
+    name = data[0]
+    p_num = data[1]
+    p_text = data[2]
+    paras = ads_dict[name]
+    if modify_type == 'delete':
+        for item in paras:
+            if item[0] == p_num and item[1] == p_text:
+                paras.remove(item)
+                break
+    elif modify_type == 'add':
+        add = []
+        add.append(p_num)
+        add.append(p_text)
+        ads_dict[name].append(add)
+
+    return True, 'sucess'
+
+def get_checked_name():
+    global ads_dict
+    return ads_dict.keys()
 
 
 
