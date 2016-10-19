@@ -252,6 +252,9 @@ def modify_ads_results(modify_type, modify_data):
     name = data[0]
     p_num = data[1]
     p_text = data[2]
+    print 'name=', name
+    print 'pnum=', str(p_num)
+    print 'p_text', p_text
     paras = ads_dict[name]
     if modify_type == 'delete':
         for item in paras:
