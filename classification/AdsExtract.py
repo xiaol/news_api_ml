@@ -246,8 +246,8 @@ def get_ads_paras(pname, content_list):
 #modify_data: 操作数据. 结构:   微信号名称:段落号:段落内容
 def modify_ads_results(modify_type, modify_data):
     global ads_dict
-    data = modify_data.splite(':')
-    if len(data) <= 3 or data[0] not in ads_dict.keys():
+    data = modify_data.split(':')
+    if len(data) < 3 or data[0] not in ads_dict.keys():
         return False, 'error input data'
     name = data[0]
     p_num = data[1]

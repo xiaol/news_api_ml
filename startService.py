@@ -96,8 +96,8 @@ class GetAdsOfOneWechat(tornado.web.RequestHandler):
 
 class ModifyNewsAdsResults(tornado.web.RequestHandler):
     def post(self):
-        modify_type = self.get_body_argument('modify_type')
-        modify_data = self.get_body_argument('modify_data')
+        modify_type = self.get_body_argument('modify_type').encode('utf-8')
+        modify_data = self.get_body_argument('modify_data').encode('utf-8')
         AdsExtract.modify_ads_results(modify_type, modify_data)
 
 class NewsAdsExtractOnnid(tornado.web.RequestHandler):
