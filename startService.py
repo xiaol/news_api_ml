@@ -98,6 +98,7 @@ class ModifyNewsAdsResults(tornado.web.RequestHandler):
     def post(self):
         modify_type = self.get_body_argument('modify_type')
         modify_data = self.get_body_argument('modify_data')
+        AdsExtract.modify_ads_results(modify_type, modify_data)
 
 class NewsAdsExtractOnnid(tornado.web.RequestHandler):
     def post(self):
@@ -117,6 +118,7 @@ class Application(tornado.web.Application):
             (r"/ml/NewsAdsExtractOnnid", NewsAdsExtractOnnid),
             (r"/ml/GetAdsOfOneWechat", GetAdsOfOneWechat),
             (r"/ml/GetCheckedNames", GetCheckedNames),
+            (r"/ml/ModifyNewsAdsResults", ModifyNewsAdsResults),
 
         ]
         settings = {}
