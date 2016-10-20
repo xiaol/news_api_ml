@@ -214,6 +214,7 @@ def get_ads_paras(pname, content_list):
                     else:
                         i = k
                         break
+                break
             else:
                 i += 1
                 continue
@@ -267,9 +268,9 @@ def modify_ads_results(modify_type, modify_data):
         print 'add'
         add = []
         add.append(int(p_num))
-        add.append(p_text)
+        add.append(p_text.decode('utf-8'))
         paras.append(add)
-        sorted(paras, key=lambda l:l[0])
+        ads_dict[name.decode('utf-8')] = sorted(paras, key=lambda l: l[0])
 
     return True, 'sucess'
 
