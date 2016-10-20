@@ -266,14 +266,17 @@ def modify_ads_results(modify_type, modify_data):
                 break
     elif modify_type == 'add':
         add = []
-        add.append(p_num)
+        add.append(int(p_num))
         add.append(p_text)
-        #ads_dict[name].append(add)
+        paras.append(add)
+        sorted(paras, key=lambda l:l[0])
 
     return True, 'sucess'
 
 def get_checked_name():
     global ads_dict
+    if len(ads_dict)== 0:
+        read_model()
     return ads_dict.keys()
 
 
