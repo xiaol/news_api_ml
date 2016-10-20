@@ -139,6 +139,37 @@ def buildItemSets():
 
 word_cate_count = {} #用于统计一个词语在不同分类中出现的次数
 news_total_num = 0 #文章总数
+#收集特征
+mylock2 = Lock()
+def coll_feature(category_name_id_dict, category, subDic):
+    mylock2.acquire()
+    category_name_id_dict[category] = subDic
+    mylock2.release()
+
+#featureSelection子进程
+def feature_select_proc(K, data, category, word_cate_count, news_total_num, category_name_id_dict):
+    word_chi = {}
+    count = data['count']
+    words = data['words']
+    for word in words.keys():
+        a = words[word] #该类下改词出现的次数
+        b = 0 #不在该类下,该词出现的次数
+        cate_num_dict = word_cate_count[word]
+        for cate in cate_num_dict.keys():
+            if cate != category:
+                b += cate_num_dict[cate]
+        c = count - a #该类下不包含该词的数目
+        d = news_total_num - count - b #不在该类,且不包含该词
+        word_chi[word] = calChi(a, b, c, d)
+    #排序后取前K个
+    #排序后返回的是元组的列表
+    sorted_word_chi = sorted(word_chi.items(), key=lambda d:d[1], reverse=True)
+    subDic = dict()
+    n = min(len(sorted_word_chi), K)
+    for i in range(n):
+        subDic[sorted_word_chi[i][0]] = sorted_word_chi[i][1]
+    coll_feature(category_name_id_dict, category, subDic)
+
 def featureSelection2(K):
     print 'featureSelection(K) begin...'
     global summary
@@ -157,29 +188,14 @@ def featureSelection2(K):
         news_total_num += summary[cate]['count']
 
     cate_selected_dict = {}
+    from multiprocessing import Pool
+    pool = Pool(30)
     for category in summary.keys():
-        word_chi = {}
         data = summary[category]
-        count = data['count']
-        words = data['words']
-        for word in words.keys():
-            a = words[word] #该类下改词出现的次数
-            b = 0 #不在该类下,该词出现的次数
-            cate_num_dict = word_cate_count[word]
-            for cate in cate_num_dict.keys():
-                if cate != category:
-                    b += cate_num_dict[cate]
-            c = count - a #该类下不包含该词的数目
-            d = news_total_num - count - b #不在该类,且不包含该词
-            word_chi[word] = calChi(a, b, c, d)
-        #排序后取前K个
-        #排序后返回的是元组的列表
-        sorted_word_chi = sorted(word_chi.items(), key=lambda d:d[1], reverse=True)
-        subDic = dict()
-        n = min(len(sorted_word_chi), K)
-        for i in range(n):
-            subDic[sorted_word_chi[i][0]] = sorted_word_chi[i][1]
-        cate_selected_dict[category] = subDic
+        pool.apply_async(feature_select_proc(), (K, data, category, word_cate_count, news_total_num, cate_selected_dict))
+    pool.close()
+    pool.join()
+
     return cate_selected_dict
 
 #计算卡方,选取特征词
