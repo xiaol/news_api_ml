@@ -141,13 +141,15 @@ word_cate_count = {} #用于统计一个词语在不同分类中出现的次数
 news_total_num = 0 #文章总数
 #收集特征
 mylock2 = Lock()
-def coll_feature(category_name_id_dict, category, subDic):
+cate_selected_dict = Manager().dict()
+def coll_feature(category, subDic):
     mylock2.acquire()
-    category_name_id_dict[category] = subDic
+    global cate_selected_dict
+    cate_selected_dict[category] = subDic
     mylock2.release()
 
 #featureSelection子进程
-def feature_select_proc(K, data, category, word_cate_count, news_total_num, category_name_id_dict):
+def feature_select_proc(K, data, category, word_cate_count, news_total_num):
     word_chi = {}
     count = data['count']
     words = data['words']
@@ -168,13 +170,15 @@ def feature_select_proc(K, data, category, word_cate_count, news_total_num, cate
     n = min(len(sorted_word_chi), K)
     for i in range(n):
         subDic[sorted_word_chi[i][0]] = sorted_word_chi[i][1]
-    coll_feature(category_name_id_dict, category, subDic)
+    print '----' + str(len(subDic))
+    coll_feature(category, subDic)
 
 def featureSelection2(K):
     print 'featureSelection(K) begin...'
     global summary
     global word_cate_count
     global news_total_num
+    global cate_selected_dict
     for category in summary.keys():
         words_dict = summary[category]['words']
         for word in words_dict.keys():
@@ -187,12 +191,11 @@ def featureSelection2(K):
     for cate in summary.keys():
         news_total_num += summary[cate]['count']
 
-    cate_selected_dict = {}
     from multiprocessing import Pool
     pool = Pool(30)
     for category in summary.keys():
         data = summary[category]
-        pool.apply_async(feature_select_proc, (K, data, category, word_cate_count, news_total_num, cate_selected_dict))
+        pool.apply_async(feature_select_proc, (K, data, category, word_cate_count, news_total_num))
     pool.close()
     pool.join()
 
