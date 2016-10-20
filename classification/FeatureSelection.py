@@ -246,7 +246,7 @@ def featureSelection(termDic, termClassDic, K):
 def writeFeatureToFile(termCounDic, fileName):
     logger.info('write features to file ...')
     featureSet = set()
-    for key in termCounDic:
+    for key in termCounDic.keys():
         for eachkey in termCounDic[key]:
             featureSet.add(eachkey)
     count = 1
