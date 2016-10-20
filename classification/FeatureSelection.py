@@ -192,7 +192,7 @@ def featureSelection2(K):
     pool = Pool(30)
     for category in summary.keys():
         data = summary[category]
-        pool.apply_async(feature_select_proc(), (K, data, category, word_cate_count, news_total_num, cate_selected_dict))
+        pool.apply_async(feature_select_proc, (K, data, category, word_cate_count, news_total_num, cate_selected_dict))
     pool.close()
     pool.join()
 
