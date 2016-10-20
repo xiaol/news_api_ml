@@ -88,38 +88,53 @@ def featureIDF(dic, feature):
             idf_dict[word] = math.log(float(news_total_num)/float(n))
     return idf_dict
 
+
+from multiprocessing import Lock, Pool
+mylock = Lock()
+#将tfidf写入文件
+def write_tfidf_to_file(filename, s_list):
+    mylock.acquire()
+    file = open(filename, 'a')
+    for s in s_list:
+        file.write(s)
+    file.close()
+    mylock.release()
+
+#计算idf进程
+def cal_tfidf_proc(feature, idffeature, classid, classFiles, filename):
+    #计算每个文件内特征词的tfidf
+    s_list = []  #存放每个文件的tfidf 字符串
+    for eachfile in classFiles:
+        s = ''
+        s += str(classid) + ' '
+        for i in range(len(feature)):
+            if feature[i] in eachfile:
+                currentfeature = feature[i]
+                featurecount = eachfile.count(feature[i])
+                tf = float(featurecount)/(len(eachfile))
+                # 计算逆文档频率
+                if currentfeature in idffeature.keys():
+                    featurevalue = idffeature[currentfeature]*tf
+                    s += str(i+1)+":"+str(featurevalue) + " "
+        s_list.append(s)
+    write_tfidf_to_file(filename, s_list)
+
+
 # 计算Feature's TF-IDF 值
 def TFIDFCal(feature, dic, idffeature, filename):
     file = open(filename, 'w')
     file.close()
-    file = open(filename, 'a')
     print 'TFIDFCal --- feature num =' + str(len(feature))
     print '-------------dic num ='+ str(len(dic))
     print '-------------idf num ='+ str(len(idffeature))
+    pool = Pool(30)
     for key in dic:
         classFiles = dic[key]
-        # 谨记字典的键是无序的
         classid = category_list.index(key)
-        for eachfile in classFiles:
-            #print 'file len='+str(len(eachfile))
-            # 对每个文件进行特征向量转化
-            file.write(str(classid)+" ")
-            for i in range(len(feature)):
-                if feature[i] in eachfile:
-                    currentfeature = feature[i]
-                    featurecount = eachfile.count(feature[i])
-                    tf = float(featurecount)/(len(eachfile))
-                    # 计算逆文档频率
-                    if currentfeature not in idffeature.keys():
-                        print currentfeature
-                        print type(currentfeature)
-                        for item in idffeature.items():
-                            print item[0]
-                            print type(item[0])
-                            break
-                    featurevalue = idffeature[currentfeature]*tf
-                    file.write(str(i+1)+":"+str(featurevalue) + " ")
-            file.write("\n")
+        pool.apply_async(cal_tfidf_proc, (feature, idffeature, classid, classFiles, filename))
+    pool.close()
+    pool.join()
+
 
 def writeIdfToFile(idffeature_dict):
     file0 = open(idf_file, 'w')
