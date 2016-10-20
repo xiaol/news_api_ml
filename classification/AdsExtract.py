@@ -255,25 +255,28 @@ def modify_ads_results(modify_type, modify_data):
     print 'name=', name
     print 'pnum=', str(p_num)
     print 'p_text', p_text
-    paras = ads_dict[name]
+    paras = ads_dict[name.decode("utf-8")]
     if modify_type == 'delete':
         for item in paras:
-            print type(item(0))
-            print type(p_num)
-            if item[0] == int(p_num) and item[1] == p_text:
-                print 'rrrrrrrr'
+            para = ''.join(item[1].encode('utf-8').split())
+            if item[0] == int(p_num) and para == ''.join(p_text.split()):
+                print 'delete'
                 paras.remove(item)
                 break
     elif modify_type == 'add':
+        print 'add'
         add = []
-        add.append(p_num)
+        add.append(int(p_num))
         add.append(p_text)
-        #ads_dict[name].append(add)
+        paras.append(add)
+        sorted(paras, key=lambda l:l[0])
 
     return True, 'sucess'
 
 def get_checked_name():
     global ads_dict
+    if len(ads_dict)== 0:
+        read_model()
     return ads_dict.keys()
 
 
