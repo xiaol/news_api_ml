@@ -116,7 +116,7 @@ def cal_tfidf_proc(feature, idffeature, classid, classFiles, filename):
                 if currentfeature in idffeature.keys():
                     featurevalue = idffeature[currentfeature]*tf
                     s += str(i+1)+":"+str(featurevalue) + " "
-        s_list.append(s)
+        s_list.append(s + '\n')
     write_tfidf_to_file(filename, s_list)
 
 
