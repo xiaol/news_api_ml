@@ -82,8 +82,8 @@ ad_nids2 = [5524442, 4808083, 4736576, 4785403, 4760140, 5796932, 5052048, 50386
             6139753, 6230816, 6577304, 6597544]
 ad_nids.extend(ad_nids2)
 
-DOC_NUM = 3000 #总数据集
-TRAIN_DOC = 2000 #训练集. 这里TRAIN_DOC=DOC_NUM, 是将每个类别的100篇都当做训练集
+DOC_NUM = 1000 #总数据集
+TRAIN_DOC = 800 #训练集. 这里TRAIN_DOC=DOC_NUM, 是将每个类别的100篇都当做训练集
 ADs_NUM = len(ad_nids) #广告数目
 news_file_path = './NewsFile/'
 news_cut_file_path = './NewsFileCut/'

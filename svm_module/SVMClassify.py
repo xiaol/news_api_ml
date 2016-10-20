@@ -17,7 +17,6 @@ from sklearn.grid_search import GridSearchCV
 #from sklearn.model_selection import GridSearchCV
 from sklearn.svm import SVC
 from classification.DocPreProcess import strProcess
-from classification.FeatureWeight import feature_list, feature_dict
 from classification.DocPreProcess import category_list
 from classification.DocPreProcess import category_name_id_dict
 from classification.DocPreProcess import logger
@@ -60,6 +59,7 @@ def getIdfOfTrain():
     return idf
 
 def writeSvmFile(text, file_path, idf_val):
+    from classification.FeatureWeight import feature_dict
     try:
         svm_file = open(file_path, 'a')
         words = strProcess(text)

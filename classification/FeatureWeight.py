@@ -43,7 +43,7 @@ def readFileToList(textCutBasePath, classCode, documentCount):
     for eachclass in classCode:
         currClassPath = textCutBasePath + eachclass + "/"
         n = len(os.listdir(currClassPath))
-        #n = min(n, 10)
+        n = min(n, DOC_NUM)
         eachclasslist = list()
         for i in range(n):
             eachfile = open(currClassPath+str(i)+".cut")
@@ -74,7 +74,10 @@ def featureIDF(dic, feature):
     news_total_num = FeatureSelection.news_total_num
     word_cate_count = FeatureSelection.word_cate_count
     idf_dict = dict()
+    print 'featureIDF  word_cate_count='+str(len(word_cate_count))
     for word in word_cate_count.keys():
+        if word not in feature_list:
+            continue
         n = 0
         cate_count_dict = word_cate_count[word]
         for val in cate_count_dict.values():
@@ -90,11 +93,15 @@ def TFIDFCal(feature, dic, idffeature, filename):
     file = open(filename, 'w')
     file.close()
     file = open(filename, 'a')
+    print 'TFIDFCal --- feature num =' + str(len(feature))
+    print '-------------dic num ='+ str(len(dic))
+    print '-------------idf num ='+ str(len(idffeature))
     for key in dic:
         classFiles = dic[key]
         # 谨记字典的键是无序的
         classid = category_list.index(key)
         for eachfile in classFiles:
+            #print 'file len='+str(len(eachfile))
             # 对每个文件进行特征向量转化
             file.write(str(classid)+" ")
             for i in range(len(feature)):
@@ -103,6 +110,13 @@ def TFIDFCal(feature, dic, idffeature, filename):
                     featurecount = eachfile.count(feature[i])
                     tf = float(featurecount)/(len(eachfile))
                     # 计算逆文档频率
+                    if currentfeature not in idffeature.keys():
+                        print currentfeature
+                        print type(currentfeature)
+                        for item in idffeature.items():
+                            print item[0]
+                            print type(item[0])
+                            break
                     featurevalue = idffeature[currentfeature]*tf
                     file.write(str(i+1)+":"+str(featurevalue) + " ")
             file.write("\n")
@@ -113,10 +127,14 @@ def writeIdfToFile(idffeature_dict):
         file0.write(key + ' ' + str(idffeature_dict[key]) + '\n')
     file0.close()
 
-feature_list, feature_dict = readFeature(svm_feature_file)#读取所有的特征词
+#feature_list, feature_dict = readFeature(svm_feature_file)#读取所有的特征词
+feature_list = []
+feature_dict = {}
 
 def featureWeight():
     global feature_list
+    global feature_dict
+    feature_list, feature_dict = readFeature(svm_feature_file)#读取所有的特征词
     logger.info('featureWeight being...')
     dic = readFileToList(textCutBasePath, category_list, TRAIN_DOC)
     idffeature = featureIDF(dic, feature_list)

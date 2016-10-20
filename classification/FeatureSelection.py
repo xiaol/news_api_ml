@@ -56,7 +56,8 @@ def readCategoryFileProc(category):
     count = len(os.listdir(currClassPath))
     file_words_count_list = []  #每个文件中词在本文件中出现的次数.
     words_newsnum_dict = {}  #用于统计包含词语的文章的数量
-    #count = min(count, 10)
+    #from DocPreProcess import DOC_NUM
+    count = min(count, DOC_NUM)
     for i in range(count):
         eachDocPath = currClassPath + str(i) + '.cut'
         eachFileObj = open(eachDocPath, 'r')
