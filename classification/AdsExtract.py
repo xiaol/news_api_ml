@@ -140,7 +140,8 @@ def extract_ads_proc(name, news):
                     ads_nid_dict[el].append(item[1][1])
                 else:
                     ads_dict[el] += 1
-                    ads_nid_dict[el].append(item[1][1])
+                    if item[1][1] not in ads_nid_dict and len(ads_nid_dict) < 4:
+                        ads_nid_dict[el].append(item[1][1])
             k += 1
         i += 1
     sorted_dict = sorted(ads_dict.items(), key=lambda d:d[1], reverse=True)
