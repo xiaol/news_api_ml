@@ -31,8 +31,10 @@ def is_sentenses_same(s1, s2):
 #求两篇新闻相同的段落
 def get_same_paras(paras1, paras2):
     same_para_info = {}
-    N1 = len(paras1)
-    N2 = len(paras2)
+    nid1 = paras1[0]
+    nid2 = paras2[0]
+    N1 = len(paras1) - 1
+    N2 = len(paras2) - 1
     n1 = 0
     same_num = 0
     for p1 in paras1:
@@ -49,15 +51,15 @@ def get_same_paras(paras1, paras2):
             if is_sentenses_same(p1, p2):
                 if n2 < 5 and n1 < 5:
                     if n2 == n1:
-                        same_para_info[str(n1)] = p1
+                        same_para_info[str(n1)] = (p1, nid1)
                     else:
-                        same_para_info[str(n1)] = p1
-                        same_para_info[str(n2)] = p2
+                        same_para_info[str(n1)] = (p1, nid1)
+                        same_para_info[str(n2)] = (p2, nid2)
                 elif n1 - N1 == n2 - N2: #位于文章结尾
-                    same_para_info[str(n1 - N1)] = p1
+                    same_para_info[str(n1 - N1)] = (p1, nid1)
                 else:
-                    same_para_info[str(n1 - N1)] = p1
-                    same_para_info[str(n2 - N2)] = p2
+                    same_para_info[str(n1 - N1)] = (p1, nid1)
+                    same_para_info[str(n2 - N2)] = (p2, nid2)
                 same_num += 1
                 bP1Finished = True
             n2 += 1
@@ -121,6 +123,7 @@ def extract_ads_proc(name, news):
     num = len(news)
     i = 0
     ads_dict = {}
+    ads_nid_dict = {}
     while i < len(news):
         k = i + 1
         while k < len(news):
@@ -130,11 +133,14 @@ def extract_ads_proc(name, news):
                 del news[k]
                 continue
             for item in same_dict.items():
-                el = item[0] + '\t|' + item[1]
+                el = item[0] + '\t|' + item[1][0] #item[1][0]是段落字符串, item[1][0]是nid
                 if el not in ads_dict:
                     ads_dict[el] = 1
+                    ads_nid_dict[el] = []
+                    ads_nid_dict[el].append(item[1][1])
                 else:
                     ads_dict[el] += 1
+                    ads_nid_dict[el].append(item[1][1])
             k += 1
         i += 1
     sorted_dict = sorted(ads_dict.items(), key=lambda d:d[1], reverse=True)
@@ -143,13 +149,11 @@ def extract_ads_proc(name, news):
     for i in sorted_dict:
         if float(i[1]) > float(num/3):
             para = i[0].split('\t|')
-            tmp_list.append( (int(para[0]), para[1]) )
+            tmp_list.append( (int(para[0]), para[1], ads_nid_dict[i[0]]) )
     sorted_list = sorted(tmp_list, key=lambda d:d[0])
     ads_list = []
     for para in sorted_list:
-        para_num = int(para[0])
-        para_text = para[1]
-        ads_list.append( (para_num, para_text))
+        ads_list.append( (int(para[0]), para[1], para[2]))
 
     coll_result(name, ads_list)
 
