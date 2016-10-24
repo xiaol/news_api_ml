@@ -214,11 +214,10 @@ def get_ads_paras(pname, content_list):
                     else:
                         i = k
                         break
-                break
             else:
                 i += 1
                 continue
-        else: #只有新闻开头有广告
+        else: #新闻开头有广告
             k = len(ads_paras) - 1
             while k >= i:
                 para = ads_paras[k]
