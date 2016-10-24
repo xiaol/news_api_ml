@@ -140,7 +140,7 @@ def extract_ads_proc(name, news):
                     ads_nid_dict[el].append(item[1][1])
                 else:
                     ads_dict[el] += 1
-                    if item[1][1] not in ads_nid_dict and len(ads_nid_dict) < 4:
+                    if item[1][1] not in ads_nid_dict[el] and len(ads_nid_dict[el]) < 4:
                         ads_nid_dict[el].append(item[1][1])
             k += 1
         i += 1
