@@ -230,10 +230,10 @@ def merge_data():
                 modifed = True
             for update_elem in update_para_list:
                 if not modifed:
-                    s1.add(str(update_elem[0] + update_elem[1]))
+                    s1.add(str(update_elem[0]) + update_elem[1])
                 for old_elem in old_para_list:
                     if not modifed:
-                        s2.add(str(old_elem[0] + old_elem[1]))
+                        s2.add(str(old_elem[0]) + old_elem[1])
                     if old_elem[0] > update_elem[0]:
                         modify_dict.add(item[0])
                         modifed = True
