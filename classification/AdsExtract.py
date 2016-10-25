@@ -154,12 +154,13 @@ def extract_ads_proc(name, news):
     sorted_list = sorted(tmp_list, key=lambda d:d[0])
     ads_list = []
     for para in sorted_list:
-        ads_list.append( (int(para[0]), para[1], para[2]))
+        ads_list.append( (int(para[0]), para[1], para[2], 1)) #第四个元素1表示checked。当页面上去选时,置为0
 
     coll_result(name, ads_list)
 
 real_path = os.path.split(os.path.realpath(__file__))[0] #文件所在路径
 ads_data_file = real_path + '/../result/ads_data.txt'
+ads_update_data_file = real_path + '/../result/ads_update_data_.txt'
 def extract_ads(news_dict):
     global out_dict
     pool = Pool(30)
@@ -167,34 +168,93 @@ def extract_ads(news_dict):
         pool.apply_async(extract_ads_proc, (item[0], item[1]))
     pool.close()
     pool.join()
+    #将结果由Manager.dict换到普通dict
     ret = {}
     for item in out_dict.items():
         ret[item[0]] = item[1]
-    f = open(ads_data_file, 'w')
-    f.write(json.dumps(ret))
-    f.close()
-    read_model()
+    if not os.path.exists(ads_data_file):
+        f = open(ads_data_file, 'w')
+        f.write(json.dumps(ret))
+        f.close()
+        read_data()
+    else:
+        f = open(ads_update_data_file, 'w')
+        f.write(json.dumps(ret))
+        f.close()
+        read_data()
+        read_update_data()
+        merge_data()
     print '***********************extract finished!'
     return
 
 ads_dict = {}
-def read_model():
+#读取广告数据
+def read_data():
     global ads_dict
     with open(ads_data_file, 'r') as f:
         r = f.read()
         ads_dict = json.loads(r)
+#读取最新的广告数据
+ads_update_dict = {}
+def read_update_data():
+    global ads_update_dict
+    with open(ads_update_data_file, 'r') as f:
+        r = f.read()
+        ads_update_dict = json.loads(r)
+
+#广告变更
+modify_dict = set()
+#整合最新的广告数据和以前的数据, 主要是获取就数据中已经被手动去除的段落
+def merge_data():
+    global ads_dict
+    global ads_update_dict
+    #检查每一个公众号
+    for item in ads_update_dict.items():
+        modifed = False
+        if item[0] not in ads_dict.keys():
+            modify_dict.add(item[0])
+            modifed = True
+        else:
+            #判断流程:先判断是否有段落上的变化,有的话添加到modify_dict; 另外需要更新最新数据中的check状态
+            update_para_list = item[1]
+            old_para_list = ads_dict[item[0]]
+            s1 = set() #用于保存最新的广告段落
+            s2 = set() #用于保存久的广告段落
+            if len(update_para_list) != len(old_para_list):
+                modifed = True
+            for update_elem in update_para_list:
+                if not modifed:
+                    s1.add(str(update_elem[0] + update_elem[1]))
+                for old_elem in old_para_list:
+                    if not modifed:
+                        s2.add(str(old_elem[0] + old_elem[1]))
+                    if old_elem[0] > update_elem[0]:
+                        modify_dict.add(item[0])
+                        modifed = True
+                        break
+                    if old_elem[3] != 0 or update_elem[0] != old_elem[0] or update_elem[1] != old_elem[1]:
+                        continue
+                    update_elem[3] = 0
+            if modifed == False:
+                if len(s1 - s2) != 0:
+                    modifed = True
+                    modify_dict.add(item[0])
+    #替换原先的文件
+    ads_dict = ads_update_dict
+    save_ads_modify()
+
 
 def get_ads_of_one_wechat(name):
     global ads_dict
     if len(ads_dict) == 0:
-        read_model()
+        read_data()
     return ads_dict[name]
 
 #为基于nid获取广告提供的方法
 def get_ads_paras(pname, content_list):
     global ads_dict
     if len(ads_dict) == 0:
-        read_model()
+        read_data()
     if pname not in ads_dict:
         return
     ads_paras = ads_dict[pname]
@@ -281,7 +341,7 @@ def modify_ads_results(modify_type, modify_data):
 def get_checked_name():
     global ads_dict
     if len(ads_dict)== 0:
-        read_model()
+        read_data()
     return ads_dict.keys()
 
 def save_ads_modify():
