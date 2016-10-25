@@ -62,6 +62,10 @@ def get_same_paras(paras1, paras2):
                 else:
                     same_para_info[str(n1 - N1)] = (p1, nid1)
                     same_para_info[str(n2 - N2)] = (p2, nid2)
+                if n1 - N1 == 0:
+                    print 'n1 === N1 ==== ' + p1
+                if n2 - N2 == 0:
+                    print 'n2 === N2 ==== '+ p2
                 same_num += 1
                 bP1Finished = True
             n2 += 1
