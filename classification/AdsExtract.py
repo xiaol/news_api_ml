@@ -37,14 +37,16 @@ def get_same_paras(paras1, paras2):
     N2 = len(paras2) - 1
     n1 = 0
     same_num = 0
-    for p1 in paras1:
+    paras1_p = paras1[1:]
+    paras2_p = paras2[1:]
+    for p1 in paras1_p:
         n2 = 0
         bP1Finished = False
         p1_len = len(p1)
         if p1_len == 0:
             n1 += 1
             continue
-        for p2 in paras2:
+        for p2 in paras2_p:
             if len(p2)==0 or (p1_len > 1.5 * len(p2) or len(p2) > 1.5* p1_len) or ((p1[0] not in p2) and (p2[0] not in p1)):
                 n2 += 1
                 continue
