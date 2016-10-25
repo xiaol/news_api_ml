@@ -330,6 +330,9 @@ def modify_ads_results(modify_type, modify_data):
     if modify_type == 'delete':
         for item in paras:
             para = ''.join(item[1].encode('utf-8').split())
+            print item[0]
+            print para
+            print p_text
             if item[0] == int(p_num) and para == ''.join(p_text.split()):
                 print 'delete'
                 paras.remove(item)
