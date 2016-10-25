@@ -240,6 +240,8 @@ def merge_data():
                         s2.add(str(old_elem[0]) + old_elem[1])
                     if old_elem[0] > update_elem[0]:
                         print '---old_elem[0] > update_elem[0]:' + item[0]
+                        print old_elem[0]
+                        print update_elem[0]
                         modify_dict.add(item[0])
                         modifed = True
                         break
