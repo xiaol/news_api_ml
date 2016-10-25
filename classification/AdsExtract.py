@@ -154,7 +154,8 @@ def extract_ads_proc(name, news):
 
     tmp_list = []
     for i in sorted_dict:
-        if float(i[1]) > float(num/3):
+        #if float(i[1]) > float(num/3):
+        if float(i[1]) > float((num * (num -1))/10):
             para = i[0].split('\t|')
             tmp_list.append( (int(para[0]), para[1], ads_nid_dict[i[0]]) )
     sorted_list = sorted(tmp_list, key=lambda d:d[0])
@@ -214,10 +215,13 @@ modify_dict = set()
 def merge_data():
     global ads_dict
     global ads_update_dict
+    global modify_dict
+    modify_dict.clear()
     #检查每一个公众号
     for item in ads_update_dict.items():
         modifed = False
         if item[0] not in ads_dict.keys():
+            print 'add =--- ' + item[0]
             modify_dict.add(item[0])
             modifed = True
         else:
@@ -235,6 +239,7 @@ def merge_data():
                     if not modifed:
                         s2.add(str(old_elem[0]) + old_elem[1])
                     if old_elem[0] > update_elem[0]:
+                        print '---old_elem[0] > update_elem[0]:' + item[0]
                         modify_dict.add(item[0])
                         modifed = True
                         break
@@ -245,6 +250,7 @@ def merge_data():
                 if len(s1 - s2) != 0:
                     modifed = True
                     modify_dict.add(item[0])
+                    print 'lens1 - s2----' + item[0]
     #替换原先的文件
     ads_dict = ads_update_dict
     save_ads_modify()
