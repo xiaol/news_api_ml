@@ -329,21 +329,18 @@ def modify_ads_results(modify_type, modify_data):
     paras = ads_dict[name.decode("utf-8")]
     if modify_type == 'delete':
         for item in paras:
-            para = ''.join(item[1].encode('utf-8').split())
-            print item[0]
-            print para
-            print ''.joint(p_text.split())
-            if item[0] == int(p_num) and para == ''.join(p_text.split()):
+            para = ''.join(item[1].split())
+            if item[0] == int(p_num) and para == ''.join(p_text.encode('utf-8').split()):
                 print 'delete'
-                paras.remove(item)
+                item[3] = 0
                 break
     elif modify_type == 'add':
-        print 'add'
-        add = []
-        add.append(int(p_num))
-        add.append(p_text.decode('utf-8'))
-        paras.append(add)
-        ads_dict[name.decode('utf-8')] = sorted(paras, key=lambda l: l[0])
+        for item in paras:
+            para = ''.join(item[1].split())
+            if item[0] == int(p_num) and para == ''.join(p_text.encode('utf-8').split()):
+                print 'add'
+                item[3] = 1
+                break
 
     return True, 'sucess'
 
