@@ -107,6 +107,8 @@ class ModifyNewsAdsResults(tornado.web.RequestHandler):
 class SaveAdsModify(tornado.web.RequestHandler):
     def get(self):
         AdsExtract.save_ads_modify()
+        #清空保存了修改微信号的set
+        AdsExtract.modify_dict.clear()
 
 class NewsAdsExtractOnnid(tornado.web.RequestHandler):
     def post(self):

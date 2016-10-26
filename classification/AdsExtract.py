@@ -356,6 +356,4 @@ def save_ads_modify():
     global ads_dict
     with open(ads_data_file, 'w') as f:
         f.write(json.dumps(ads_dict))
-    #清空modified_set
-    modify_dict.clear()
 
