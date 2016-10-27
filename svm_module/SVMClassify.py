@@ -45,19 +45,19 @@ def getModel():
     #from sklearn.metrics import accuracy_score
     #print accuracy_score(y_test, pred)
 
+idf_val = {}
 def getIdfOfTrain():
-    idf = {}
+    global idf_val
     if not os.path.exists(idf_file):
         logger.error('no idf.txt')
-        return idf
+        return
     else:
         f = open(idf_file, 'r')
         lines = f.readlines()
         for line in lines:
             line2 = re.split(' ', line)
-            idf[line2[0]] = string.atof(line2[1])
+            idf_val[line2[0]] = string.atof(line2[1])
         f.close()
-    return idf
 
 def writeSvmFile(text, file_path, idf_val):
     from classification.FeatureWeight import feature_dict
@@ -73,7 +73,7 @@ def writeSvmFile(text, file_path, idf_val):
         data = dict()
         for w in words:
             w_utf = w.encode('utf-8')
-            if feature_dict.get(w_utf) and w_utf not in checked:
+            if (w_utf in feature_dict.keys()) and (w_utf in idf_val.keys()) and (w_utf not in checked):
                 checked.append(w_utf)
                 feature_count = words.count(w)
                 currTf = float(feature_count)/len(words)
@@ -93,11 +93,13 @@ def writeSvmFile(text, file_path, idf_val):
 #预测单个文本
 #@tornado.gen.coroutine
 def svmPredictOneText(text):
+    global idf_val
     if text =='' or text.isspace():
         return {'res': False, 'category': ''}
     predict_file = open(svm_file, 'w')
     predict_file.close()
-    idf_val = getIdfOfTrain()
+    if len(idf_val) == 0:
+        getIdfOfTrain()
     writeSvmFile(text, svm_file, idf_val)
     X_pre, y_pre = load_svmlight_file(svm_file, n_features=n_feature)
     pred = clf.predict(X_pre)
@@ -105,12 +107,13 @@ def svmPredictOneText(text):
         return {'bSuccess': True, 'category': category_list[int(pred[0])]}
     else:
         return {'bSuccess': False, 'category': ''}
-
 #预测多个文本
 def svmPredictTexts(texts):
+    global idf_val
     predict_file = open(svm_file, 'w')
     predict_file.close()
-    idf_val = getIdfOfTrain()
+    if len(idf_val) == 0:
+        getIdfOfTrain()
     for text in texts:
         writeSvmFile(text, svm_file, idf_val)
     logger.info('write svm file to predict done!')
