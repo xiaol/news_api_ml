@@ -62,7 +62,7 @@ def writeSvmFile(text, file_path, idf_val):
     from classification.FeatureWeight import feature_dict
     if len(feature_dict) == 0:
         from classification.FeatureWeight import readFeature
-        from FeatureSelection import svm_feature_file
+        from classification.FeatureSelection import svm_feature_file
         feature_list, feature_dict = readFeature(svm_feature_file)
     try:
         svm_file = open(file_path, 'a')
