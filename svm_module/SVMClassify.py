@@ -38,6 +38,7 @@ def getModel():
     start_time = datetime.datetime.now()
     clf.fit(X_train, y_train)
     end_time = datetime.datetime.now()
+    print 'getModel finished!'
     logger.info('train done in {0}s'.format((end_time - start_time).total_seconds()))
     #X_test, y_test = load_svmlight_file('test.svm', n_features=X_train.shape[1])#没有指定n_features时出现X_test.shape[1] != X_train.shape[1]
     #pred = clf.predict(X_test)
