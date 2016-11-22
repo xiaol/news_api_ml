@@ -140,9 +140,9 @@ if __name__ == "__main__":
     print 'doc process'
     #DocPreProcess.docPreProcess()
     print 'feature select'
-    FeatureSelection.featureSelect()
+    #FeatureSelection.featureSelect()
     print 'feature weight'
-    FeatureWeight.featureWeight()
+    #FeatureWeight.featureWeight()
     print 'get model'
     SVMClassify.getModel()
     #SVMClassify.svmPredictOnSrcid(3874)

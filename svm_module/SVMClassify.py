@@ -22,24 +22,29 @@ from classification.DocPreProcess import category_name_id_dict
 from classification.DocPreProcess import logger
 from classification.FeatureWeight import train_svm_file
 from classification.FeatureWeight import idf_file
-import tornado
-import tornado.gen
 param_grid = {'C': [10, 100, 1000], 'gamma': [0.001, 0.0001]}
 clf = GridSearchCV(SVC(kernel='rbf'), param_grid)
 svm_file = './result/svm_predict.txt'
+model_file = './result/train_model.m'
 
+from sklearn.externals import joblib
 n_feature = 0
 def getModel():
     global clf
     global n_feature
-    logger.info('Begin to train...')
-    X_train, y_train = load_svmlight_file(train_svm_file)
-    n_feature = X_train.shape[1]
-    start_time = datetime.datetime.now()
-    clf.fit(X_train, y_train)
-    end_time = datetime.datetime.now()
-    print 'getModel finished!'
-    logger.info('train done in {0}s'.format((end_time - start_time).total_seconds()))
+    if os.path.exists(model_file):
+        clf = joblib.load(model_file)
+        logger.info('load model successfully!')
+    else:
+        logger.info('Begin to train...')
+        X_train, y_train = load_svmlight_file(train_svm_file)
+        n_feature = X_train.shape[1]
+        start_time = datetime.datetime.now()
+        clf.fit(X_train, y_train)
+        end_time = datetime.datetime.now()
+        joblib.dump(clf, model_file)
+        print 'getModel finished!'
+        logger.info('train done in {0}s'.format((end_time - start_time).total_seconds()))
     #X_test, y_test = load_svmlight_file('test.svm', n_features=X_train.shape[1])#没有指定n_features时出现X_test.shape[1] != X_train.shape[1]
     #pred = clf.predict(X_test)
     #from sklearn.metrics import accuracy_score
