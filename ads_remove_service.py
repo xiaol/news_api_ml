@@ -101,6 +101,12 @@ class RemoveAdsOnnid(tornado.web.RequestHandler):
         nid = self.get_argument('nid', None)
         redis_ads.produce_nid(nid)
 
+#去除广告进程执行的接口
+class RemoveAdsOnnidCore(tornado.web.RequestHandler):
+    def get(self):
+        nid = self.get_argument('nid', None)
+        redis_ads.remove_ads_onnid_core(nid)
+
 class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
@@ -112,6 +118,7 @@ class Application(tornado.web.Application):
             (r"/news_process/SaveAdsModify", SaveAdsModify),
             (r"/news_process/GetModifiedWechatNames", GetModifiedWechatNames),
             (r"/news_process/RemoveAdsOnnid", RemoveAdsOnnid),
+            (r"/news_process/RemoveAdsOnnidCore", RemoveAdsOnnidCore),
         ]
         settings = {
             "template_path": "wechat-show",

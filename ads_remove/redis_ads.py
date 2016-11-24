@@ -21,24 +21,28 @@ def remove_ads_onnid_core(nid):
         return
     pname, content_list = AdsExtract.get_para_on_nid(nid)
     #如果新闻不属于需要检查的源则返回
-    #print pname + ' ' + nid
+    print pname + ' ' + nid
     #print len(AdsExtract.ads_dict)
     #print dict(AdsExtract.ads_dict).keys()
     #print id(AdsExtract.ads_dict)
-    #if pname.decode('utf-8') not in dict(AdsExtract.ads_dict).keys():
-    #    print 'not checked'
-    #    return
-    #ret = AdsExtract.get_ads_paras(pname.decode('utf-8'), content_list)
-    #if len(ret) > 0:
-    #    print 'begin to remove ' + nid
-    #    AdsExtract.remove_ads(ret, nid)
+    if pname.decode('utf-8') not in dict(AdsExtract.ads_dict).keys():
+        print 'not checked'
+        return
+    ret = AdsExtract.get_ads_paras(pname.decode('utf-8'), content_list)
+    if len(ret) > 0:
+        print 'begin to remove ' + nid
+        AdsExtract.remove_ads(ret, nid)
 
 def consume_nid():
     global redis_inst
     import requests
     while True:
         nid = redis_inst.brpop(nid_queue)[1]
-        remove_ads_onnid_core(nid)
+        url = 'http://120.55.88.11:9999/RemoveAdsOnnidCore'
+        data = {}
+        data['nid'] = nid
+        response = requests.get(url, params=data)
+        #remove_ads_onnid_core(nid)
 
 def consume_process():
     proc = mp.Process(target=consume_nid)
