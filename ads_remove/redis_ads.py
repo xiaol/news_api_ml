@@ -44,8 +44,4 @@ def consume_nid():
         response = requests.get(url, params=data)
         #remove_ads_onnid_core(nid)
 
-def consume_process():
-    proc = mp.Process(target=consume_nid)
-    proc.start()
-
 

@@ -107,7 +107,19 @@ class RemoveAdsOnnidCore(tornado.web.RequestHandler):
         nid = self.get_argument('nid', None)
         redis_ads.remove_ads_onnid_core(nid)
 
-class Application(tornado.web.Application):
+###################################以下为Application ########################
+#新闻广告队列的生产服务, 对外提供
+class AdsProcessProductApp(tornado.web.Application):
+    def __init__(self):
+        handlers = [
+            (r"/news_process/RemoveAdsOnnid", RemoveAdsOnnid),
+        ]
+        settings = {
+        }
+        tornado.web.Application.__init__(self, handlers, **settings)
+
+#广告的手工干预接口,对外提供
+class ManualHandleApplication(tornado.web.Application):
     def __init__(self):
         handlers = [
             (r"/news_process/NewsAdsExtract", NewsAdsExtract),
@@ -117,25 +129,26 @@ class Application(tornado.web.Application):
             (r"/news_process/ModifyNewsAdsResults", ModifyNewsAdsResults),
             (r"/news_process/SaveAdsModify", SaveAdsModify),
             (r"/news_process/GetModifiedWechatNames", GetModifiedWechatNames),
-            (r"/news_process/RemoveAdsOnnid", RemoveAdsOnnid),
             (r"/news_process/RemoveAdsOnnidCore", RemoveAdsOnnidCore),
         ]
         settings = {
             "template_path": "wechat-show",
             "static_path": os.path.join(os.path.dirname(__file__), "wechat-show"),
         }
-
         tornado.web.Application.__init__(self, handlers, **settings)
 
 if __name__ == "__main__":
     port = sys.argv[1]
-    http_server = tornado.httpserver.HTTPServer(Application())
-    http_server.listen(port)
-
     #9996,9997用于向队列中生产; 9998用于消费;9999用于人工干预
-    #检测队列
-    if port == 9998:
+    if port == 9996 or port == 9997:
+        http_server = tornado.httpserver.HTTPServer(AdsProcessProductApp())
+        http_server.listen(port)
+    elif port == 9998:
         AdsExtract.read_data()
         redis_ads.consume_process()
+    elif port == 9999:
+        http_server = tornado.httpserver.HTTPServer(ManualHandleApplication())
+        http_server.listen(port)
+
     tornado.ioloop.IOLoop.instance().start()
 
