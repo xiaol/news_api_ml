@@ -116,8 +116,8 @@ t = ["网络大电影", "华人瞰世界", "美国咖", "汽车爱好者", "母�
 #t = ["网络大电影", "华人瞰世界", "美国咖", "汽车爱好者", "利维坦", "不二大叔", "新世相", "桃红梨白"]
 t = ["桃红梨白"]
 test_name = set(t)
-#def get_wechat_news(wechat_name_set = get_wechatnum_name()):
-def get_wechat_news(wechat_name_set = test_name):
+def get_wechat_news(wechat_name_set = get_wechatnum_name()):
+#def get_wechat_news(wechat_name_set = test_name):
     conn, cursor = get_postgredb()
     news_dict = dict()
     sql_get_wechat_news = "select nid, title, content from newslist_v2 where pname = \'{0}\' LIMIT 30"
@@ -374,7 +374,6 @@ def extract_ads(news_dict):
         read_update_data()
         merge_data()
     print '***********************extract finished!'
-    print ads_dict.keys()
     return
 
 ads_dict = {}
@@ -382,7 +381,6 @@ ads_dict = {}
 #读取广告数据. ads_dict.keys()类型是unicode
 def read_data():
     global ads_dict
-    print 'FFFFFFFFFFFFFFFFFFFFFFF'
     with open(ads_data_file, 'r') as f:
         r = f.read()
         if len(r) > 0:
@@ -452,11 +450,6 @@ def get_ads_paras(pname, content_list):
         return {}
     ads_paras = ads_dict[pname]
 
-    print id(ads_dict)
-    b = ads_dict[pname]
-    for i in b:
-        print i[3]
-
     i = 0
     to_remove = []
     while i < len(ads_paras):
@@ -470,7 +463,8 @@ def get_ads_paras(pname, content_list):
             if len(content_list) < abs(n):
                 i += 1
                 continue
-            content = content_list[n]
+            #content = content_list[n]
+            content = ''.join(content_list[n].split())
             if is_sentenses_same(content, para[1]):
                 to_remove.append(n)
                 if i + 1 >= len(ads_paras):
@@ -489,7 +483,6 @@ def get_ads_paras(pname, content_list):
             k = len(ads_paras) - 1
             while k >= i:
                 #如果被手动干预判定为非广告,则跳过
-                print '====' + ads_paras[k][1] + ' ' + str(ads_paras[k][3])
                 if int(ads_paras[k][3]) == 0:
                     k -= 1
                     continue
@@ -498,10 +491,7 @@ def get_ads_paras(pname, content_list):
                 if len(content_list) < abs(n):
                     k -= 1
                     continue
-                content = content_list[n]
-                print '-----'
-                print content
-                print para[1]
+                content = ''.join(content_list[n].split())
                 if is_sentenses_same(content, para[1]):
                     to_remove.append(n)
                     break
@@ -546,10 +536,6 @@ def modify_ads_results(modify_type, modify_data):
                 item[3] = 1
                 break
 
-    print id(ads_dict)
-    b = ads_dict[name]
-    for i in b:
-        print i[3]
     return True, 'sucess'
 
 def get_checked_name():
@@ -560,8 +546,6 @@ def get_checked_name():
 
 def save_ads_modify():
     global ads_dict
-    print 'save---------'
-    print ads_dict
     with open(ads_data_file, 'w') as f:
         f.write(json.dumps(ads_dict))
 

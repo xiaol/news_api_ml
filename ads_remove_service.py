@@ -42,9 +42,11 @@ class GetModifiedWechatNames(tornado.web.RequestHandler):
 #读取微信号名称列表
 class GetWechatNames(tornado.web.RequestHandler):
     def get(self):
+        print 'get names'
         page_num = json.loads(self.get_argument('page', None))
         page_size = json.loads(self.get_argument('pageSize', None))
         wechat_names_list = AdsExtract.get_checked_name()
+        print len(wechat_names_list)
         res = {}
         res['total_num'] = len(wechat_names_list)
         if len(wechat_names_list) >= (page_num - 1) * page_size:
@@ -144,9 +146,9 @@ if __name__ == "__main__":
         http_server = tornado.httpserver.HTTPServer(AdsProcessProductApp())
         http_server.listen(port)
     elif port == 9998:
-        AdsExtract.read_data()
         redis_ads.consume_nid()
     elif port == 9999:
+        AdsExtract.read_data()
         http_server = tornado.httpserver.HTTPServer(ManualHandleApplication())
         http_server.listen(port)
 
