@@ -138,14 +138,14 @@ class ManualHandleApplication(tornado.web.Application):
         tornado.web.Application.__init__(self, handlers, **settings)
 
 if __name__ == "__main__":
-    port = sys.argv[1]
+    port = int(sys.argv[1])
     #9996,9997用于向队列中生产; 9998用于消费;9999用于人工干预
     if port == 9996 or port == 9997:
         http_server = tornado.httpserver.HTTPServer(AdsProcessProductApp())
         http_server.listen(port)
     elif port == 9998:
         AdsExtract.read_data()
-        redis_ads.consume_process()
+        redis_ads.consume_nid()
     elif port == 9999:
         http_server = tornado.httpserver.HTTPServer(ManualHandleApplication())
         http_server.listen(port)
