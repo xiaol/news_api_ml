@@ -35,6 +35,13 @@ print pred
 print '%s' % str(sf[pred[86]]['words']).decode('string_escape')
 
 #predict
+from classification import DocPreProcess
+pred_file = open('pred.txt', 'r+')
+pred_text = DocPreProcess.strProcess(pred_file.read())
+for w in pred_text:
+    pred_file.write(w)
+pred_file.close()
+
 pred_docs = gl.SFrame.read_csv('pred.txt', header=False)
 pred_docs = gl.text_analytics.count_words(pred_docs['X1'])
 pred_docs = pred_docs.dict_trim_by_keys(gl.text_analytics.stopwords(), exclude=True)
