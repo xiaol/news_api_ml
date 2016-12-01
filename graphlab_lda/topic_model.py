@@ -8,14 +8,16 @@
 import graphlab as gl
 import os
 
-graphlab_file_dir_path = os.path.split(os.path.realpath(__file__))[0] #文件所在路径
+dir_path = os.path.split(os.path.realpath(__file__))[0]
+wikipedia_file = dir_path + '/wikipedia_w0'
+w0_file = dir_path + '/w0.csv'
 
-if os.path.exists('wikipedia_w0'):
-    docs = gl.SFrame('wikipedia_w0')
+if os.path.exists(wikipedia_file):
+    docs = gl.SFrame(wikipedia_file)
 else:
     #docs = gl.SFrame.read_csv('https://static.turi.com/datasets/wikipedia/raw/w0.csv', header=False)
-    docs = gl.SFrame.read_csv('w0.csv', header=False)
-    docs.save('wikipedia_w0')
+    docs = gl.SFrame.read_csv(w0_file, header=False)
+    docs.save(wikipedia_file)
 
 # Remove stopwords and convert to bag of words
 docs = gl.text_analytics.count_words(docs['X1'])
@@ -36,12 +38,19 @@ pred = model.predict(docs)
 print pred
 print '%s' % str(sf[pred[86]]['words']).decode('string_escape')
 
+from jieba import analyse
+def strProcess(str):
+    str2 = ''.join(str.split())
+    words = analyse.extract_tags(str2, 50)
+    return words
+
 #predict
-from classification import DocPreProcess
-pred_file = open('pred.txt', 'r+')
-pred_text = DocPreProcess.strProcess(pred_file.read())
+pred_file = open('pred.txt', 'r')
+pred_text = strProcess(pred_file.read())
+pred_file.close()
+pred_file = open('pred.txt', 'w')
 for w in pred_text:
-    pred_file.write(w)
+    pred_file.write(w.encode('utf-8') + ' ')
 pred_file.close()
 
 pred_docs = gl.SFrame.read_csv('pred.txt', header=False)
