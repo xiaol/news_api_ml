@@ -53,7 +53,7 @@ page.side_selected = function(){
 	var url = api.domain + api.data_info;
 	var request_data = {};
 	request_data.name = $(this).attr("data-name");
-	var url = "http://120.55.88.11/news_process/GetAdsOfOneWechat"
+	var url = "http://120.55.88.11:9999/news_process/GetAdsOfOneWechat"
 	base.data_conn(url, request_data, page.show_data_info,'get')
 }
 page.box_change = function(){
@@ -61,7 +61,7 @@ page.box_change = function(){
 	var v2 = $(this).prop('checked')
 	var para = $(this).attr('para')
 	console.log(para)
-	var url = "http://120.55.88.11/news_process/ModifyNewsAdsResults";
+	var url = "http://120.55.88.11:9999/news_process/ModifyNewsAdsResults";
 	var request_data = {};
 	if(v2){
 	    request_data['type'] = 'add'
@@ -85,7 +85,7 @@ page.get_data_list = function(isfirst,pageSize,page_num){
 	//base.data_conn('../api/data_list.json',{},page.show_data_list,'get')
 	page.isFirst = isfirst;
 	//var url = "../api/data_list.json",request_data = {};
-	var url = "http://120.55.88.11/news_process/GetModifiedWechatNames"
+	var url = "http://120.55.88.11:9999/news_process/GetModifiedWechatNames"
 	var request_data = {}
 	request_data.pageSize = pageSize;
 	request_data.page = page_num;
@@ -138,7 +138,7 @@ page.show_data_info = function(data){
 }
 // 提交修改
 page.submit_checked = function(){
-	var url = "http://120.55.88.11/news_process/SaveAdsModify"
+	var url = "http://120.55.88.11:9999/news_process/SaveAdsModify"
 	var request_data = {};
 	//request_data.names = 'pageNo';
 	base.data_conn(url,request_data,page.submit_back,'get')
