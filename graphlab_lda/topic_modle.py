@@ -8,6 +8,8 @@
 import graphlab as gl
 import os
 
+graphlab_file_dir_path = os.path.split(os.path.realpath(__file__))[0] #文件所在路径
+
 if os.path.exists('wikipedia_w0'):
     docs = gl.SFrame('wikipedia_w0')
 else:

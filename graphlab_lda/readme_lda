@@ -1,0 +1,24 @@
+1. TopicModel.get_topics(topic_ids=None,
+                         num_words=5,
+                         cdf_cutoff=1.0,
+                         output_type='topic_probalities)
+   返回给推荐系统时, num_words给定多少合适?
+2. graphlab.topic_model.create(dataset, num_topics=10,
+                               initial_topics=None,
+                               alpha=None, beta=0.1,
+                               num_iterations=10,
+                               num_bumin=5, associations=None,
+                               verbose=False, print_interval=10,
+                               validation_set=None, method='auto')
+   如何最好的指定num_topics
+
+
+1. 文本内容很少的频道,不做topic model。 例如美女、趣图
+   执行topic model 的频道有:
+    '科技', '外媒', '社会', '财经', '体育', '汽车', '国际', '时尚','探索', '科学',
+    '娱乐','养生', '育儿', '股票', '互联网', '美食', '健康', '影视',
+    '军事', '历史', '故事', '旅游', '美文', '萌宠', '游戏'
+   不训练topic model的频道: 趣图, 搞笑,美女
+
+2. 先使用频道收敛,在使用topic model的关键词
+3.语料要足够,且文本要长
