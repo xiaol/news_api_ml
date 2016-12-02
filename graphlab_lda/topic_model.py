@@ -8,9 +8,9 @@
 import graphlab as gl
 import os
 
-dir_path = os.path.split(os.path.realpath(__file__))[0]
-wikipedia_file = dir_path + '/wikipedia_w0'
-w0_file = dir_path + '/w0.csv'
+real_dir_path = os.path.split(os.path.realpath(__file__))[0]
+wikipedia_file = real_dir_path + '/wikipedia_w0'
+w0_file = real_dir_path + '/w0.csv'
 
 if os.path.exists(wikipedia_file):
     docs = gl.SFrame(wikipedia_file)
@@ -60,3 +60,19 @@ print pred_docs
 pred2 = model.predict(pred_docs)
 print pred2[0]
 print '%s' % str(sf[pred2[0]]['words']).decode('string_escape')
+
+
+data_sframe_dir = real_dir_path + '/data_sframe'
+g_channel_model_dict = {}
+def create_model(csv_file):
+    if not os.path.exists(data_sframe_dir):
+        os.mkdir(data_sframe_dir)
+
+    docs = gl.SFrame.read_csv(csv_file, header=False)
+    docs = gl.text_analytics.count_words(docs['X1'])
+    docs = docs.dict_trim_by_keys(gl.text_analytics.stopwords(), exclude=True)
+    model = gl.topic_model.create(docs, num_iterations=100, num_topics=50, verbose=True)
+    sf = model.get_topics(num_words=20, output_type='topic_words')
+
+
+

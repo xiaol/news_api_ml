@@ -5,6 +5,10 @@
 # @File    : lda_service.py
 # @Software: PyCharm Community Edition
 from graphlab_lda import topic_model_doc_process
+from graphlab_lda import topic_model
 
-topic_model_doc_process.coll_news_for_channles()
+#topic_model_doc_process.coll_news_for_channles()
+
+topic_model.create_model('graphlab/data/体育')
+
 
