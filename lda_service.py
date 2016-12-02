@@ -9,7 +9,7 @@ from graphlab_lda import topic_model
 
 #topic_model_doc_process.coll_news_for_channles()
 
-topic_model.create_model('graphlab_lda/data/体育')
+topic_model.create_model('体育')
 topic_model.lda_predict(6897344)
 
 

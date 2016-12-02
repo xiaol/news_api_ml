@@ -66,12 +66,13 @@ print '%s' % str(sf[pred2[0]]['words']).decode('string_escape')
 
 data_sframe_dir = real_dir_path + '/data_sframe'
 g_channel_model_dict = {}
+data_dir = real_dir_path + '/data/'
 def create_model(csv_file):
     global g_channel_model_dict
     if not os.path.exists(data_sframe_dir):
         os.mkdir(data_sframe_dir)
 
-    docs = gl.SFrame.read_csv(csv_file, header=False)
+    docs = gl.SFrame.read_csv(data_dir+csv_file, header=False)
     docs = gl.text_analytics.count_words(docs['X1'])
     docs = docs.dict_trim_by_keys(gl.text_analytics.stopwords(), exclude=True)
     model = gl.topic_model.create(docs, num_iterations=100, num_topics=50, verbose=True)
