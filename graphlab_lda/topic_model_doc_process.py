@@ -9,7 +9,7 @@ from util import doc_process
 
 nid_sql = 'select a.title, a.content, c.cname \
 from (select * from newslist_v2_back where nid=%s) a \
-innner join channellist_v2 c on a."chid"=c."id"'
+inner join channellist_v2 c on a."chid"=c."id"'
 def get_words_on_nid(nid):
     conn, cursor = doc_process.get_postgredb()
     cursor.execute(nid_sql, [nid])
