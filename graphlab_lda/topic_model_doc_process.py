@@ -16,6 +16,7 @@ real_dir_path = os.path.split(os.path.realpath(__file__))[0] #文件所在路径
 
 #准备新闻数据
 def collectNews(category, news_num, min_len=100):
+    print category
     conn, cursor = doc_process.get_postgredb()
     cursor.execute(channle_sql, [category, news_num])
     rows = cursor.fetchall()
@@ -49,8 +50,8 @@ channel_for_topic = ['科技', '外媒', '社会', '财经', '体育', '汽车',
 import multiprocessing as mp
 def coll_news_for_channles():
     for chanl in channel_for_topic:
-        coll_proc = mp.Process(collectNews, args=(chanl, 3000, 100))
-        coll_proc.join()
+        coll_proc = mp.Process(target=collectNews, args=(chanl, 3000, 100))
+        coll_proc.start()
 
 
 
