@@ -7,6 +7,7 @@
 # Download data if you haven't already
 import graphlab as gl
 import os
+import topic_model_doc_process
 
 real_dir_path = os.path.split(os.path.realpath(__file__))[0]
 '''
@@ -66,6 +67,7 @@ print '%s' % str(sf[pred2[0]]['words']).decode('string_escape')
 data_sframe_dir = real_dir_path + '/data_sframe'
 g_channel_model_dict = {}
 def create_model(csv_file):
+    global g_channel_model_dict
     if not os.path.exists(data_sframe_dir):
         os.mkdir(data_sframe_dir)
 
@@ -73,16 +75,47 @@ def create_model(csv_file):
     docs = gl.text_analytics.count_words(docs['X1'])
     docs = docs.dict_trim_by_keys(gl.text_analytics.stopwords(), exclude=True)
     model = gl.topic_model.create(docs, num_iterations=100, num_topics=50, verbose=True)
+    g_channel_model_dict[csv_file] = model
+    '''
     sf = model.get_topics(num_words=20, output_type='topic_words')
 
-    #predict
     pred_file = real_dir_path + '/pred.txt'
     pred_docs = gl.SFrame.read_csv(pred_file, header=False)
     pred_docs = gl.text_analytics.count_words(pred_docs['X1'])
     pred_docs = pred_docs.dict_trim_by_keys(gl.text_analytics.stopwords(), exclude=True)
+
+
+    #get highest probolity
+    pred2 = model.predict(dataset=pred_docs, output_type='probability')
+    max_t = 0
+    max_p = 0
+    for i in range(0, len(pred2[0])):
+        if pred2[0][i] >= max_p:
+            max_t = i
+            max_p = pred2[0][i]
+    print max_t
+    print '%s' % str(sf[max_t]['words']).decode('string_escape')
+    print '-----------------'
+
+    #predict one topic
     pred2 = model.predict(pred_docs)
     print pred2[0]
     print '%s' % str(sf[pred2[0]]['words']).decode('string_escape')
+    '''
+
+def lda_predict(nid):
+    global g_channel_model_dict
+    words_list, chanl_name = topic_model_doc_process.get_words_on_nid(nid)
+    docs = gl.SFrame(data=words_list)
+    docs = gl.text_analytics.count_words(docs['X1'])
+    docs = docs.dict_trim_by_keys(gl.text_analytics.stopwords(), exclude=True)
+    print len(g_channel_model_dict)
+    sf = g_channel_model_dict[chanl_name].get_topics(num_words=20, output_type='topic_words')
+
+    #预测得分最高的topic
+    pred = g_channel_model_dict[chanl_name].predict(docs)
+    print '%s' % str(sf[pred[0]]['words']).decode('string_escape')
+
 
 
 
