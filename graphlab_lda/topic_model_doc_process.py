@@ -17,15 +17,14 @@ def get_words_on_nid(nid):
     word_list = []
     chanl_name = ''
     for row in rows:
-        title = row[0]
-        print type(title)
+        title = row[0]  #str类型
         content_list = row[1]
         chanl_name = row[2]
         txt = ''
         for content in content_list:
             if 'txt' in content.keys():
                 txt += content['txt'].encode('utf-8')
-        total_txt = title.encode('utf-8') + txt
+        total_txt = title + txt
         word_list = doc_process.filter_html_stopwords_pos(total_txt, remove_num=True, remove_single_word=True)
     return word_list, chanl_name
 
