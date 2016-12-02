@@ -74,5 +74,14 @@ def create_model(csv_file):
     model = gl.topic_model.create(docs, num_iterations=100, num_topics=50, verbose=True)
     sf = model.get_topics(num_words=20, output_type='topic_words')
 
+    #predict
+    pred_file = real_dir_path + '/pred.txt'
+    pred_docs = gl.SFrame.read_csv(pred_file, header=False)
+    pred_docs = gl.text_analytics.count_words(pred_docs['X1'])
+    pred_docs = pred_docs.dict_trim_by_keys(gl.text_analytics.stopwords(), exclude=True)
+    pred2 = model.predict(pred_docs)
+    print pred2[0]
+    print '%s' % str(sf[pred2[0]]['words']).decode('string_escape')
+
 
 
