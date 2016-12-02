@@ -9,6 +9,7 @@ import graphlab as gl
 import os
 
 real_dir_path = os.path.split(os.path.realpath(__file__))[0]
+'''
 wikipedia_file = real_dir_path + '/wikipedia_w0'
 w0_file = real_dir_path + '/w0.csv'
 
@@ -60,7 +61,7 @@ print pred_docs
 pred2 = model.predict(pred_docs)
 print pred2[0]
 print '%s' % str(sf[pred2[0]]['words']).decode('string_escape')
-
+'''
 
 data_sframe_dir = real_dir_path + '/data_sframe'
 g_channel_model_dict = {}
