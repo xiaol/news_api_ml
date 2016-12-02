@@ -24,7 +24,8 @@ def get_words_on_nid(nid):
         for content in content_list:
             if 'txt' in content.keys():
                 txt += content['txt']
-        total_txt = title + txt
+                print type(content['txt'])
+        total_txt = title.encode('utf-8') + txt
         word_list = doc_process.filter_html_stopwords_pos(total_txt, remove_num=True, remove_single_word=True)
     return word_list, chanl_name
 
