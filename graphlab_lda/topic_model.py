@@ -107,9 +107,12 @@ def create_model(csv_file):
 def lda_predict(nid):
     global g_channel_model_dict
     words_list, chanl_name = topic_model_doc_process.get_words_on_nid(nid)
+    print chanl_name
+    print words_list
     docs = gl.SFrame(data=words_list)
     docs = gl.text_analytics.count_words(docs['X1'])
     docs = docs.dict_trim_by_keys(gl.text_analytics.stopwords(), exclude=True)
+    print docs
     print len(g_channel_model_dict)
     print chanl_name
     print type(chanl_name)
@@ -122,6 +125,7 @@ def lda_predict(nid):
 
     #预测得分最高的topic
     pred = g_channel_model_dict[chanl_name].predict(docs)
+    print pred
     print '%s' % str(sf[pred[0]]['words']).decode('string_escape')
 
 
