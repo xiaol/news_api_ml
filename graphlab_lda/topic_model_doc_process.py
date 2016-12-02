@@ -6,6 +6,29 @@
 # @Software: PyCharm Community Edition
 import os
 from util import doc_process
+
+nid_sql = 'select a.title, a.content, c.cname \
+from (select * from newslist_v2_back where nid=%s) a \
+innner join channellist_v2 c on a."chid"=c."id"'
+def get_words_on_nid(nid):
+    conn, cursor = doc_process.get_postgredb()
+    cursor.execute(nid_sql, [nid])
+    rows = cursor.fetchall()
+    word_list = []
+    chanl_name = ''
+    for row in rows:
+        title = row[0]
+        content_list = row[1]
+        chanl_name = row[2]
+        txt = ''
+        for content in content_list:
+            if 'txt' in content.keys():
+                txt += content['txt']
+        total_txt = title + txt
+        word_list = doc_process.filter_html_stopwords_pos(total_txt, remove_num=True, remove_single_word=True)
+    return word_list, chanl_name
+
+
 channle_sql ='SELECT a.title,a.content, a.nid, c.cname \
 FROM newslist_v2_back a \
 RIGHT OUTER JOIN (select * from channellist_v2 where "cname"=%s) c \
@@ -29,15 +52,12 @@ def collectNews(category, news_num, min_len=100):
         for content in content_list:
             if 'txt' in content.keys():
                 txt += content['txt']
-        txt_list = doc_process.filter_html_stopwords_pos(txt, remove_num=True, remove_single_word=True)
-        title_list = doc_process.filter_html_stopwords_pos(title, remove_num=True, remove_single_word=True)
-        if len(txt_list) + len(title_list) < min_len:
+        total_txt = title + txt
+        total_list = doc_process.filter_html_stopwords_pos(total_txt, remove_num=True, remove_single_word=True)
+        if len(total_list) < min_len:
             continue
         with open(real_dir_path+'/data/'+category, 'a') as f:
-            for w in title_list:
-                f.write(w.encode('utf-8') + ' ')
-            f.write(' ')
-            for w in txt_list:
+            for w in total_list:
                 f.write(w.encode('utf-8') + ' ')
             f.write('\n')
 
