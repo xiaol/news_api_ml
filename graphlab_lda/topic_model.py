@@ -67,7 +67,9 @@ print '%s' % str(sf[pred2[0]]['words']).decode('string_escape')
 '''
 
 data_sframe_dir = real_dir_path + '/data_sframe'
-g_channel_model_dict = {}
+
+from multiprocessing import Manager
+g_channel_model_dict = Manager().dict()
 data_dir = real_dir_path + '/data/'
 def create_model_proc(csv_file):
     global g_channel_model_dict
