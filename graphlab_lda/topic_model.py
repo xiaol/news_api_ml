@@ -47,17 +47,19 @@ def strProcess(str):
     return words
 
 #predict
-pred_file = open('pred.txt', 'r')
+pred_file_path = real_dir_path + '/pred.txt'
+pred_file = open(pred_file_path, 'r')
 pred_text = strProcess(pred_file.read())
 pred_file.close()
-pred_file = open('pred.txt', 'w')
+pred_file = open(pred_file_path, 'w')
 for w in pred_text:
     pred_file.write(w.encode('utf-8') + ' ')
 pred_file.close()
 
-pred_docs = gl.SFrame.read_csv('pred.txt', header=False)
+pred_docs = gl.SFrame.read_csv(pred_file_path, header=False)
 pred_docs = gl.text_analytics.count_words(pred_docs['X1'])
 pred_docs = pred_docs.dict_trim_by_keys(gl.text_analytics.stopwords(), exclude=True)
+print '=================='
 print pred_docs
 pred2 = model.predict(pred_docs)
 print pred2[0]
@@ -107,7 +109,11 @@ def create_model(csv_file):
 def lda_predict(nid):
     global g_channel_model_dict
     words_list, chanl_name = topic_model_doc_process.get_words_on_nid(nid)
-    docs = gl.SFrame(data=words_list)
+    s = ''
+    for i in words_list:
+        s += i + ' '
+    ws = gl.SArray([s,])
+    docs = gl.SFrame(data={'X1':ws})
     docs = gl.text_analytics.count_words(docs['X1'])
     docs = docs.dict_trim_by_keys(gl.text_analytics.stopwords(), exclude=True)
     print docs
