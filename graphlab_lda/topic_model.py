@@ -76,7 +76,8 @@ mylock = Lock()
 def coll_model(chanl_name, model):
     mylock.acquire()
     global g_channel_model_dict
-    g_channel_model_dict[chanl_name] = model
+    #g_channel_model_dict[chanl_name] = model
+    g_channel_model_dict[chanl_name] = chanl_name
     mylock.release()
 
 
@@ -154,12 +155,13 @@ def lda_predict(nid):
     print '--------------------------------'
     for i in g_models.keys():
         print i
-    sf = g_models[chanl_name].get_topics(num_words=20, output_type='topic_words')
+    m = g_models[chanl_name]
+    #sf = g_models[chanl_name].get_topics(num_words=20, output_type='topic_words')
 
     #预测得分最高的topic
-    pred = g_models[chanl_name].predict(docs)
-    print pred
-    print '%s' % str(sf[pred[0]]['words']).decode('string_escape')
+    #pred = g_models[chanl_name].predict(docs)
+    #print pred
+    #print '%s' % str(sf[pred[0]]['words']).decode('string_escape')
 
 
 
