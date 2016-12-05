@@ -70,6 +70,7 @@ data_sframe_dir = real_dir_path + '/data_sframe'
 
 from multiprocessing import Lock, Manager
 g_channel_model_dict = Manager().dict()
+g_models = {}
 mylock = Lock()
 
 def coll_model(chanl_name, model):
@@ -129,11 +130,16 @@ def create_models():
         procs.append(coll_proc)
     for i in procs:
         i.join()
+
+    #save data in python dict
+    global g_channel_model_dict, g_models
+    for k in g_channel_model_dict.keys():
+        g_models[k] = g_channel_model_dict[k]
     print 'create models finished!!'
 
 
 def lda_predict(nid):
-    global g_channel_model_dict
+    global g_models
     words_list, chanl_name = topic_model_doc_process.get_words_on_nid(nid)
     s = ''
     for i in words_list:
@@ -146,13 +152,12 @@ def lda_predict(nid):
 
     print chanl_name
     print '--------------------------------'
-    for i in g_channel_model_dict.keys():
+    for i in g_models.keys():
         print i
-    m = g_channel_model_dict[chanl_name]
-    sf = g_channel_model_dict[chanl_name].get_topics(num_words=20, output_type='topic_words')
+    sf = g_models[chanl_name].get_topics(num_words=20, output_type='topic_words')
 
     #预测得分最高的topic
-    pred = g_channel_model_dict[chanl_name].predict(docs)
+    pred = g_models[chanl_name].predict(docs)
     print pred
     print '%s' % str(sf[pred[0]]['words']).decode('string_escape')
 
