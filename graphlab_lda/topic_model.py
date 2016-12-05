@@ -80,33 +80,6 @@ def create_model_proc(csv_file):
     docs = docs.dict_trim_by_keys(gl.text_analytics.stopwords(), exclude=True)
     model = gl.topic_model.create(docs, num_iterations=100, num_topics=50, verbose=True)
     g_channel_model_dict[csv_file] = model
-    #coll_model(csv_file, model)
-    '''
-    sf = model.get_topics(num_words=20, output_type='topic_words')
-
-    pred_file = real_dir_path + '/pred.txt'
-    pred_docs = gl.SFrame.read_csv(pred_file, header=False)
-    pred_docs = gl.text_analytics.count_words(pred_docs['X1'])
-    pred_docs = pred_docs.dict_trim_by_keys(gl.text_analytics.stopwords(), exclude=True)
-
-
-    #get highest probolity
-    pred2 = model.predict(dataset=pred_docs, output_type='probability')
-    max_t = 0
-    max_p = 0
-    for i in range(0, len(pred2[0])):
-        if pred2[0][i] >= max_p:
-            max_t = i
-            max_p = pred2[0][i]
-    print max_t
-    print '%s' % str(sf[max_t]['words']).decode('string_escape')
-    print '-----------------'
-
-    #predict one topic
-    pred2 = model.predict(pred_docs)
-    print pred2[0]
-    print '%s' % str(sf[pred2[0]]['words']).decode('string_escape')
-    '''
 
 
 def create_models():
@@ -119,6 +92,8 @@ def create_models():
 def lda_predict(nid):
     global g_channel_model_dict
     words_list, chanl_name = topic_model_doc_process.get_words_on_nid(nid)
+    if chanl_name not in g_channel_model_dict.keys():
+        print 'Error: channel name is not in models'
     s = ''
     for i in words_list:
         s += i + ' '
@@ -126,18 +101,18 @@ def lda_predict(nid):
     docs = gl.SFrame(data={'X1':ws})
     docs = gl.text_analytics.count_words(docs['X1'])
     docs = docs.dict_trim_by_keys(gl.text_analytics.stopwords(), exclude=True)
-    print docs
-
-    print chanl_name
-    print '--------------------------------'
-    for i in g_channel_model_dict.keys():
-        print i
     sf = g_channel_model_dict[chanl_name].get_topics(num_words=20, output_type='topic_words')
 
     #预测得分最高的topic
     pred = g_channel_model_dict[chanl_name].predict(docs)
     print pred
     print '%s' % str(sf[pred[0]]['words']).decode('string_escape')
+
+    print '=================================='
+    pred2 = g_channel_model_dict[chanl_name].predict(docs, output_type='probability')
+    print 'len of pred2 is ' + str(len(pred2))
+    print type(pred2)
+
 
 
 
