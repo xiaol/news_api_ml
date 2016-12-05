@@ -69,7 +69,7 @@ print '%s' % str(sf[pred2[0]]['words']).decode('string_escape')
 data_sframe_dir = real_dir_path + '/data_sframe'
 g_channel_model_dict = {}
 data_dir = real_dir_path + '/data/'
-def create_model(csv_file):
+def create_model_proc(csv_file):
     global g_channel_model_dict
     if not os.path.exists(data_sframe_dir):
         os.mkdir(data_sframe_dir)
@@ -105,6 +105,20 @@ def create_model(csv_file):
     print pred2[0]
     print '%s' % str(sf[pred2[0]]['words']).decode('string_escape')
     '''
+
+
+def create_models():
+    from topic_model_doc_process import channel_for_topic
+    import multiprocessing as mp
+    procs = []
+    for chanl in channel_for_topic:
+        coll_proc = mp.Process(target=create_model_proc, args=(chanl,))
+        coll_proc.start()
+        procs.append(coll_proc)
+    for i in procs:
+        i.join()
+    print 'create models finished!!'
+
 
 def lda_predict(nid):
     global g_channel_model_dict
