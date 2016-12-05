@@ -68,11 +68,19 @@ print '%s' % str(sf[pred2[0]]['words']).decode('string_escape')
 
 data_sframe_dir = real_dir_path + '/data_sframe'
 
-from multiprocessing import Manager
+from multiprocessing import Lock, Manager
 g_channel_model_dict = Manager().dict()
+mylock = Lock()
+
+def coll_model(chanl_name, model):
+    mylock.acquire()
+    global g_channel_model_dict
+    g_channel_model_dict[chanl_name] = model
+    mylock.release()
+
+
 data_dir = real_dir_path + '/data/'
 def create_model_proc(csv_file):
-    global g_channel_model_dict
     if not os.path.exists(data_sframe_dir):
         os.mkdir(data_sframe_dir)
 
@@ -80,7 +88,8 @@ def create_model_proc(csv_file):
     docs = gl.text_analytics.count_words(docs['X1'])
     docs = docs.dict_trim_by_keys(gl.text_analytics.stopwords(), exclude=True)
     model = gl.topic_model.create(docs, num_iterations=100, num_topics=50, verbose=True)
-    g_channel_model_dict[csv_file] = model
+    #g_channel_model_dict[csv_file] = model
+    coll_model(csv_file, model)
     '''
     sf = model.get_topics(num_words=20, output_type='topic_words')
 
@@ -139,6 +148,7 @@ def lda_predict(nid):
     print '--------------------------------'
     for i in g_channel_model_dict.keys():
         print i
+    m = g_channel_model_dict[chanl_name]
     sf = g_channel_model_dict[chanl_name].get_topics(num_words=20, output_type='topic_words')
 
     #预测得分最高的topic
