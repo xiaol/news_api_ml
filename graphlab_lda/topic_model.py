@@ -68,18 +68,7 @@ print '%s' % str(sf[pred2[0]]['words']).decode('string_escape')
 
 data_sframe_dir = real_dir_path + '/data_sframe'
 
-from multiprocessing import Lock, Manager
-g_channel_model_dict = Manager().dict()
-g_models = {}
-mylock = Lock()
-
-def coll_model(chanl_name, model):
-    mylock.acquire()
-    global g_channel_model_dict
-    #g_channel_model_dict[chanl_name] = model
-    g_channel_model_dict[chanl_name] = chanl_name
-    mylock.release()
-
+g_channel_model_dict = {}
 
 data_dir = real_dir_path + '/data/'
 def create_model_proc(csv_file):
@@ -90,8 +79,8 @@ def create_model_proc(csv_file):
     docs = gl.text_analytics.count_words(docs['X1'])
     docs = docs.dict_trim_by_keys(gl.text_analytics.stopwords(), exclude=True)
     model = gl.topic_model.create(docs, num_iterations=100, num_topics=50, verbose=True)
-    #g_channel_model_dict[csv_file] = model
-    coll_model(csv_file, model)
+    g_channel_model_dict[csv_file] = model
+    #coll_model(csv_file, model)
     '''
     sf = model.get_topics(num_words=20, output_type='topic_words')
 
@@ -122,25 +111,13 @@ def create_model_proc(csv_file):
 
 def create_models():
     from topic_model_doc_process import channel_for_topic
-    import multiprocessing as mp
-    procs = []
     for chanl in channel_for_topic:
-        print 'process for ' + chanl
-        coll_proc = mp.Process(target=create_model_proc, args=(chanl,))
-        coll_proc.start()
-        procs.append(coll_proc)
-    for i in procs:
-        i.join()
-
-    #save data in python dict
-    global g_channel_model_dict, g_models
-    for k in g_channel_model_dict.keys():
-        g_models[k] = g_channel_model_dict[k]
+        create_model_proc(chanl)
     print 'create models finished!!'
 
 
 def lda_predict(nid):
-    global g_models
+    global g_channel_model_dict
     words_list, chanl_name = topic_model_doc_process.get_words_on_nid(nid)
     s = ''
     for i in words_list:
@@ -153,15 +130,14 @@ def lda_predict(nid):
 
     print chanl_name
     print '--------------------------------'
-    for i in g_models.keys():
+    for i in g_channel_model_dict.keys():
         print i
-    m = g_models[chanl_name]
-    #sf = g_models[chanl_name].get_topics(num_words=20, output_type='topic_words')
+    sf = g_channel_model_dict[chanl_name].get_topics(num_words=20, output_type='topic_words')
 
     #预测得分最高的topic
-    #pred = g_models[chanl_name].predict(docs)
-    #print pred
-    #print '%s' % str(sf[pred[0]]['words']).decode('string_escape')
+    pred = g_channel_model_dict[chanl_name].predict(docs)
+    print pred
+    print '%s' % str(sf[pred[0]]['words']).decode('string_escape')
 
 
 
