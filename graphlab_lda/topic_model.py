@@ -112,6 +112,7 @@ def create_models():
     import multiprocessing as mp
     procs = []
     for chanl in channel_for_topic:
+        print 'process for ' + chanl
         coll_proc = mp.Process(target=create_model_proc, args=(chanl,))
         coll_proc.start()
         procs.append(coll_proc)
