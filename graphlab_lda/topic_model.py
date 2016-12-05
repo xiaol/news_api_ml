@@ -133,6 +133,10 @@ def lda_predict(nid):
     docs = docs.dict_trim_by_keys(gl.text_analytics.stopwords(), exclude=True)
     print docs
 
+    print chanl_name
+    print '--------------------------------'
+    for i in g_channel_model_dict.keys():
+        print i
     sf = g_channel_model_dict[chanl_name].get_topics(num_words=20, output_type='topic_words')
 
     #预测得分最高的topic
