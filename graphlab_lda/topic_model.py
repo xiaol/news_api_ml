@@ -72,7 +72,7 @@ g_channel_model_dict = {}
 
 import datetime
 data_dir = real_dir_path + '/data/'
-model_dir = real_dir_path + 'models'
+model_dir = real_dir_path + '/models/'
 def create_model_proc(csv_file, model_save_dir=None):
     if not os.path.exists(data_sframe_dir):
         os.mkdir(data_sframe_dir)
@@ -88,9 +88,10 @@ def create_model_proc(csv_file, model_save_dir=None):
 
 
 def create_models():
+    global model_dir
     model_create_time = datetime.datetime.now()
     time_str = model_create_time.strftime('%Y-%m-%d %H:%M:%S')
-    model_path = real_dir_path + '/' + time_str
+    model_path = model_dir + time_str
     if not os.path.exists(model_path):
         os.mkdir(model_path)
 
@@ -106,7 +107,7 @@ def load_models(models_dir):
         g_channel_model_dict.clear()
     models_files = os.listdir(models_dir)
     for mf in models_files:
-        g_channel_model_dict[models_files] = gl.load_model(model_dir + '/' + mf)
+        g_channel_model_dict[models_files] = gl.load_model(model_dir + mf)
 
 def lda_predict(nid):
     global g_channel_model_dict
