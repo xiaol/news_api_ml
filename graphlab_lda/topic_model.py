@@ -89,8 +89,8 @@ def create_model_proc(csv_file, model_save_dir=None):
 
 def create_models():
     model_create_time = datetime.datetime.now()
-    model_create_time.strftime('%Y-%m-%d %H:%M:%S')
-    model_path = real_dir_path + '/' + model_create_time
+    time_str = model_create_time.strftime('%Y-%m-%d %H:%M:%S')
+    model_path = real_dir_path + '/' + time_str
     if not os.path.exists(model_path):
         os.mkdir(model_path)
 
