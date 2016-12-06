@@ -21,6 +21,14 @@ from graphlab_lda import topic_model
 #topic_model.create_models()
 #topic_model.lda_predict(6897344)
 
+class CollNews(tornado.web.RequestHandler):
+    def get(self):
+        num_per_chanl = self.get_argument('num')
+        topic_model_doc_process.coll_news_for_channles()
+
+
+
+
 class CreateModels(tornado.web.RequestHandler):
     def get(self):
         topic_model.create_models()
@@ -42,6 +50,7 @@ class LoadModels(tornado.web.RequestHandler):
 class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
+            ("/topic_model/coll_news", CollNews),
             ("/topic_model/create_models", CreateModels),
             ("/topic_model/predict_on_nid", PredictOnNid),
             ("/topic_model/load_models", LoadModels),
