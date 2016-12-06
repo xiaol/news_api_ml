@@ -110,11 +110,16 @@ def lda_predict(nid):
 
     print '=================================='
     pred2 = g_channel_model_dict[chanl_name].predict(docs, output_type='probability')
-    print 'len of pred2 is ' + str(pred2.size())
-    probility = pred2.sort()
+    num_dict = {}
+    num = 0
+    for i in pred2[0]:
+        num_dict[pred2[0][num]] = num
+        num += 1
+    probility = sorted(num_dict.items(), key=lambda d:d[0], reverse=True)
     i = 0
-    while i < 3 and i < probility.size():
-        print '%s' % str(sf[probility[i]]['words']).decode('string_escape')
+    while i < 3 and i <len(probility) and probility[i][0] > 0.1:
+        print '%s' % str(sf[probility[i][1]]['words']).decode('string_escape')
+        i += 1
 
 
 
