@@ -9,6 +9,7 @@ import sys
 
 import tornado
 from tornado import web
+from tornado import httpserver
 
 from graphlab_lda import topic_model_doc_process
 from graphlab_lda import topic_model
