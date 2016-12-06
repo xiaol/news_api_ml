@@ -46,6 +46,8 @@ class Application(tornado.web.Application):
             ("/topic_model/predict_on_nid", PredictOnNid),
             ("/topic_model/load_models", LoadModels),
         ]
+        settings = {}
+        tornado.web.Application.__init__(self, handlers, **settings)
 
 if __name__ == '__main__':
     pass
