@@ -50,7 +50,6 @@ class Application(tornado.web.Application):
         tornado.web.Application.__init__(self, handlers, **settings)
 
 if __name__ == '__main__':
-    pass
     port = sys.argv[1]
     http_server = tornado.httpserver.HTTPServer(Application())
     http_server.listen(port)
