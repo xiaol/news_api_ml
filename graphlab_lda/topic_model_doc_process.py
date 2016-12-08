@@ -8,7 +8,7 @@ import os
 from util import doc_process
 
 nid_sql = 'select a.title, a.content, c.cname \
-from (select * from newslist_v2_back where nid=%s) a \
+from (select * from newslist_v2 where nid=%s) a \
 inner join channellist_v2 c on a."chid"=c."id"'
 def get_words_on_nid(nid):
     conn, cursor = doc_process.get_postgredb()
@@ -30,7 +30,7 @@ def get_words_on_nid(nid):
 
 
 channle_sql ='SELECT a.title,a.content, a.nid, c.cname \
-FROM newslist_v2_back a \
+FROM newslist_v2 a \
 RIGHT OUTER JOIN (select * from channellist_v2 where "cname"=%s) c \
 ON \
 a."chid"=c."id" LIMIT %s'
@@ -51,7 +51,7 @@ def collectNews(category, news_num, min_len=100):
         txt = ''
         for content in content_list:
             if 'txt' in content.keys():
-                txt += content['txt']
+                txt += content['txt'].encode('utf-8')
         total_txt = title + txt
         total_list = doc_process.filter_html_stopwords_pos(total_txt, remove_num=True, remove_single_word=True)
         if len(total_list) < min_len:
@@ -67,11 +67,12 @@ def collectNews(category, news_num, min_len=100):
 channel_for_topic = ['科技', '外媒', '社会', '财经', '体育', '汽车', '国际', '时尚', '探索', '科学',
                      '娱乐', '养生', '育儿', '股票', '互联网', '美食', '健康', '影视', '军事', '历史',
                      '故事', '旅游', '美文', '萌宠', '游戏']
+channel_for_topic = ['科技', '社会', '财经', '体育', '汽车', '国际']
 def coll_news_for_channles():
     import multiprocessing as mp
     procs = []
     for chanl in channel_for_topic:
-        coll_proc = mp.Process(target=collectNews, args=(chanl, 3000, 100))
+        coll_proc = mp.Process(target=collectNews, args=(chanl, 100000, 100))
         coll_proc.start()
         procs.append(coll_proc)
     for i in procs:

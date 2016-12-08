@@ -71,26 +71,27 @@ data_sframe_dir = real_dir_path + '/data_sframe'
 g_channel_model_dict = {}
 
 import datetime
-data_dir = real_dir_path + '/data/'
+data_dir = real_dir_path + '/data_50000/'
 model_dir = real_dir_path + '/models/'
 def create_model_proc(csv_file, model_save_dir=None):
     if not os.path.exists(data_sframe_dir):
         os.mkdir(data_sframe_dir)
 
     docs = gl.SFrame.read_csv(data_dir+csv_file, header=False)
+    #docs = gl.SFrame.read_csv('keji', header=False)
     docs = gl.text_analytics.count_words(docs['X1'])
     docs = docs.dict_trim_by_keys(gl.text_analytics.stopwords(), exclude=True)
-    model = gl.topic_model.create(docs, num_iterations=100, num_topics=50, verbose=True)
+    model = gl.topic_model.create(docs, num_iterations=100, num_burnin=50, num_topics=10000)
     g_channel_model_dict[csv_file] = model
     #save model
-    if model_save_dir:
-        model.save(model_save_dir+'/'+csv_file)
+    #if model_save_dir:
+    #    model.save(model_save_dir+'/'+csv_file)
 
 
 def create_models():
     global model_dir
     model_create_time = datetime.datetime.now()
-    time_str = model_create_time.strftime('%Y-%m-%d %H:%M:%S')
+    time_str = model_create_time.strftime('%Y-%m-%d-%H-%M-%S')
     model_path = model_dir + time_str
     if not os.path.exists(model_path):
         os.mkdir(model_path)
@@ -114,6 +115,7 @@ def lda_predict(nid):
     words_list, chanl_name = topic_model_doc_process.get_words_on_nid(nid)
     if chanl_name not in g_channel_model_dict.keys():
         print 'Error: channel name is not in models'
+        return
     s = ''
     for i in words_list:
         s += i + ' '
@@ -141,6 +143,7 @@ def lda_predict(nid):
     i = 0
     res = []
     while i < 3 and i < len(probility) and probility[i][0] > 0.1:
+        print probility
         print '%s' % str(sf[probility[i][1]]['words']).decode('string_escape')
         res.append(sf[probility[i][1]]['words'])
         i += 1
