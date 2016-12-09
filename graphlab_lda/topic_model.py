@@ -20,7 +20,7 @@ data_dir = real_dir_path + '/data/'
 model_dir = real_dir_path + '/models/'
 
 
-save_model_sql = "insert into topic_models (model_v, ch_name, topic_id, topic_words) VALUES (%s, %s, %d, %s)"
+save_model_sql = "insert into topic_models (model_v, ch_name, topic_id, topic_words) VALUES ('%s', '%s', '%s', '%s')"
 def save_model_to_db(model, ch_name):
     model_create_time = datetime.datetime.now()
     #model 版本以时间字符串
@@ -30,7 +30,7 @@ def save_model_to_db(model, ch_name):
     conn, cursor = doc_process.get_postgredb()
     for i in xrange(0, len(sf)):
         keys_words_jsonb = json.dumps(sf[i])
-        cursor.execute(save_model_sql, [model_v, ch_name, i, keys_words_jsonb])
+        cursor.execute(save_model_sql, [model_v, ch_name, str(i), keys_words_jsonb])
 
 
 def create_model_proc(csv_file, model_save_dir=None):
