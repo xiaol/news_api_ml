@@ -5,22 +5,41 @@
 # @File    : topic_modle.py
 # @Software: PyCharm Community Edition
 # Download data if you haven't already
+import json
+
 import graphlab as gl
 import os
 import topic_model_doc_process
+from util import doc_process
 
 real_dir_path = os.path.split(os.path.realpath(__file__))[0]
 
 g_channel_model_dict = {}
 import datetime
-data_dir = real_dir_path + '/data_50000/'
+data_dir = real_dir_path + '/data/'
 model_dir = real_dir_path + '/models/'
+
+
+save_model_sql = "insert into topic_models (model_v, ch_name, topic_id, topic_words) VALUES (%s, %s, %d, %s)"
+def save_model_to_db(model, ch_name):
+    model_create_time = datetime.datetime.now()
+    #model 版本以时间字符串
+    model_v = model_create_time.strftime('%Y%m%d%H%M%S')
+    sf = model.get_topics(num_words=20, output_type='topic_words')
+
+    conn, cursor = doc_process.get_postgredb()
+    for i in xrange(0, len(sf)):
+        keys_words_jsonb = json.dumps(sf[i])
+        cursor.execute(save_model_sql, [model_v, ch_name, i, keys_words_jsonb])
+
+
 def create_model_proc(csv_file, model_save_dir=None):
     docs = gl.SFrame.read_csv(data_dir+csv_file, header=False)
     docs = gl.text_analytics.count_words(docs['X1'])
     docs = docs.dict_trim_by_keys(gl.text_analytics.stopwords(), exclude=True)
-    model = gl.topic_model.create(docs, num_iterations=100, num_burnin=50, num_topics=10000)
+    model = gl.topic_model.create(docs, num_iterations=10, num_burnin=50, num_topics=1000)
     g_channel_model_dict[csv_file] = model
+    save_model_to_db(model, csv_file)
     #save model
     #if model_save_dir:
     #    model.save(model_save_dir+'/'+csv_file)

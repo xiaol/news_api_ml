@@ -68,6 +68,7 @@ channel_for_topic = ['科技', '外媒', '社会', '财经', '体育', '汽车',
                      '娱乐', '养生', '育儿', '股票', '互联网', '美食', '健康', '影视', '军事', '历史',
                      '故事', '旅游', '美文', '萌宠', '游戏']
 channel_for_topic = ['科技', '社会', '财经', '体育', '汽车', '国际']
+channel_for_topic = ['体育']
 def coll_news_for_channles():
     import multiprocessing as mp
     procs = []
