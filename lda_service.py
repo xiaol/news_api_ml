@@ -41,6 +41,12 @@ class PredictOnNid(tornado.web.RequestHandler):
         self.write(json.dumps(res))
 
 
+class PredictOnNidAndSave(tornado.web.RequestHandler):
+    def get(self):
+        nid = int(self.get_argument('nid'))
+        topic_model.lda_predict_and_save(nid)
+
+
 class LoadModels(tornado.web.RequestHandler):
     def get(self):
         models_dir = self.get_argument('dir')
@@ -53,6 +59,7 @@ class Application(tornado.web.Application):
             ("/topic_model/coll_news", CollNews),
             ("/topic_model/create_models", CreateModels),
             ("/topic_model/predict_on_nid", PredictOnNid),
+            ("/topic_model/get_topic_on_nid", PredictOnNidAndSave),
             ("/topic_model/load_models", LoadModels),
         ]
         settings = {}

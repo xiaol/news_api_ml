@@ -19,9 +19,11 @@ import datetime
 data_dir = real_dir_path + '/data/'
 model_dir = real_dir_path + '/models/'
 
+model_v = ''
 
-save_model_sql = "insert into topic_models (model_v, ch_name, topic_id, topic_words) VALUES ('%s', '%s', '%s', '%s')"
+save_model_sql = "insert into topic_models (model_v, ch_name, topic_id, topic_words) VALUES (%s, %s, %s, %s)"
 def save_model_to_db(model, ch_name):
+    global model_v
     model_create_time = datetime.datetime.now()
     #model 版本以时间字符串
     model_v = model_create_time.strftime('%Y%m%d%H%M%S')
@@ -29,8 +31,13 @@ def save_model_to_db(model, ch_name):
 
     conn, cursor = doc_process.get_postgredb()
     for i in xrange(0, len(sf)):
-        keys_words_jsonb = json.dumps(sf[i])
-        cursor.execute(save_model_sql, [model_v, ch_name, str(i), keys_words_jsonb])
+        try:
+            keys_words_jsonb = json.dumps(sf[i]['words'])
+            cursor.execute(save_model_sql, [model_v, ch_name, str(i), keys_words_jsonb])
+            conn.commit()
+        except Exception:
+            print 'save model to db error'
+    conn.close()
 
 
 def create_model_proc(csv_file, model_save_dir=None):
@@ -67,7 +74,7 @@ def load_models(models_dir):
     for mf in models_files:
         g_channel_model_dict[models_files] = gl.load_model(model_dir + mf)
 
-def lda_predict(nid):
+def lda_predict_core(nid):
     global g_channel_model_dict
     words_list, chanl_name = topic_model_doc_process.get_words_on_nid(nid)
     if chanl_name not in g_channel_model_dict.keys():
@@ -80,8 +87,6 @@ def lda_predict(nid):
     docs = gl.SFrame(data={'X1':ws})
     docs = gl.text_analytics.count_words(docs['X1'])
     docs = docs.dict_trim_by_keys(gl.text_analytics.stopwords(), exclude=True)
-    sf = g_channel_model_dict[chanl_name].get_topics(num_words=20,
-                                                     output_type='topic_words')
 
     #预测得分最高的topic
     #pred = g_channel_model_dict[chanl_name].predict(docs)
@@ -91,20 +96,50 @@ def lda_predict(nid):
     print '=================================='
     pred2 = g_channel_model_dict[chanl_name].predict(docs,
                                                      output_type='probability')
+    return chanl_name, pred2
+
+
+def lda_predict(nid):
+    global g_channel_model_dict
+    chanl_name, pred = lda_predict_core(nid)
+    sf = g_channel_model_dict[chanl_name].get_topics(num_words=20,
+                                                     output_type='topic_words')
     num_dict = {}
     num = 0
-    for i in pred2[0]:
+    for i in pred[0]:
         num_dict[i] = num
         num += 1
     probility = sorted(num_dict.items(), key=lambda d: d[0], reverse=True)
     i = 0
-    res = []
+    res = {}
     while i < 3 and i < len(probility) and probility[i][0] > 0.1:
-        print probility
-        print '%s' % str(sf[probility[i][1]]['words']).decode('string_escape')
-        res.append(sf[probility[i][1]]['words'])
+        res.append({probility[i][0]:sf[probility[i][1]]['words']})
         i += 1
     return res
+
+
+news_topic_sql = "insert into news_topic (nid, model_v, ch_name, topic_id, probability) VALUES (%s,  %s, %s, %s, %s)"
+def lda_predict_and_save(nid):
+    global model_v
+    ch_name, pred = lda_predict_core(nid)
+
+    num_dict = {}
+    num = 0
+    for i in pred[0]:
+        num_dict[i] = num
+        num += 1
+    probility = sorted(num_dict.items(), key=lambda d: d[0], reverse=True)
+    i = 0
+    to_save = {}
+    while i < 3 and i < len(probility) and probility[i][0] > 0.1:
+        to_save[probility[i][1]] = probility[i][0]
+        i += 1
+
+    conn, cursor = doc_process.get_postgredb()
+    for item in to_save.items():
+        cursor.execute(news_topic_sql, [nid, model_v, ch_name, item[0], item[1]])
+    conn.commit()
+    conn.close()
 
 
 
