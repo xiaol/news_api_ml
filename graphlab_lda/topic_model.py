@@ -113,7 +113,7 @@ def lda_predict(nid):
     i = 0
     res = {}
     while i < 3 and i < len(probility) and probility[i][0] > 0.1:
-        res.append({probility[i][0]:sf[probility[i][1]]['words']})
+        res[probility[i][0]] = sf[probility[i][1]]['words']
         i += 1
     return res
 
