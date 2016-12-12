@@ -44,7 +44,7 @@ def create_model_proc(csv_file, model_save_dir=None):
     docs = gl.SFrame.read_csv(data_dir+csv_file, header=False)
     docs = gl.text_analytics.count_words(docs['X1'])
     docs = docs.dict_trim_by_keys(gl.text_analytics.stopwords(), exclude=True)
-    model = gl.topic_model.create(docs, num_iterations=10, num_burnin=50, num_topics=10000)
+    model = gl.topic_model.create(docs, num_iterations=10, num_burnin=50, num_topics=20000)
     g_channel_model_dict[csv_file] = model
     save_model_to_db(model, csv_file)
     #save model
