@@ -7,6 +7,7 @@
 import os
 import re
 import jieba
+import jieba.analyse
 
 ##过滤HTML中的标签
 # 将HTML中标签等信息去掉
