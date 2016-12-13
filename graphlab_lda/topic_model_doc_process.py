@@ -56,6 +56,9 @@ def collectNews(category, news_num, min_len=100):
         total_list = doc_process.filter_html_stopwords_pos(total_txt, remove_num=True, remove_single_word=True)
         if len(total_list) < min_len:
             continue
+        #根据tfidf进行二次筛选
+        total_list = doc_process.jieba_extract_keywords(' '.join(total_list), min(50, len(total_list)/5))
+
         with open(real_dir_path+'/data/'+category, 'a') as f:
             for w in total_list:
                 f.write(w.encode('utf-8') + ' ')
