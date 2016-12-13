@@ -13,6 +13,7 @@ import topic_model_doc_process
 from util import doc_process
 
 real_dir_path = os.path.split(os.path.realpath(__file__))[0]
+#gl.set_runtime_config('GRAPHLAB_DEFAULT_NUM_PYLAMBDA_WORKERS', 64)
 
 g_channel_model_dict = {}
 import datetime
@@ -44,7 +45,7 @@ def create_model_proc(csv_file, model_save_dir=None):
     docs = gl.SFrame.read_csv(data_dir+csv_file, header=False)
     docs = gl.text_analytics.count_words(docs['X1'])
     docs = docs.dict_trim_by_keys(gl.text_analytics.stopwords(), exclude=True)
-    model = gl.topic_model.create(docs, num_iterations=50, num_burnin=50, num_topics=5000)
+    model = gl.topic_model.create(docs, num_iterations=100, num_burnin=100, num_topics=10000)
     g_channel_model_dict[csv_file] = model
     save_model_to_db(model, csv_file)
     #save model

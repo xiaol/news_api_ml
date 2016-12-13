@@ -17,8 +17,9 @@ from FeatureSelection import svm_feature_file
 from FeatureSelection import textCutBasePath
 
 TestDocCount = DOC_NUM - TRAIN_DOC #作為test的文档数目
-train_svm_file = './result/train.svm'
-test_svm_file = './result/test.svm'
+real_dir_path = os.path.split(os.path.realpath(__file__))[0]
+train_svm_file =real_dir_path + '/../result/train.svm'
+test_svm_file = real_dir_path + '/../result/test.svm'
 idf_file = './result/idf.txt'
 
 #feature_dict是为了后面的快速查询, feature_list是为了提供给训练的接口

@@ -24,12 +24,15 @@ from classification.FeatureWeight import train_svm_file
 from classification.FeatureWeight import idf_file
 param_grid = {'C': [10, 100, 1000], 'gamma': [0.001, 0.0001]}
 clf = GridSearchCV(SVC(kernel='rbf'), param_grid)
-svm_file = './result/svm_predict.txt'
-model_file = './result/train_model.m'
+
+real_dir_path = os.path.split(os.path.realpath(__file__))[0]
+svm_file = real_dir_path + '/../result/svm_predict.txt'
+model_file =real_dir_path +  '/../result/svm.model'
 
 from sklearn.externals import joblib
 n_feature = 0
 def getModel():
+    print 'getModel() begin...'
     global clf
     global n_feature
     if os.path.exists(model_file):
