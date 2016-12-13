@@ -33,7 +33,7 @@ channle_sql ='SELECT a.title,a.content, a.nid, c.cname \
 FROM newslist_v2 a \
 RIGHT OUTER JOIN (select * from channellist_v2 where "cname"=%s) c \
 ON \
-a."chid"=c."id" LIMIT %s'
+a."chid"=c."id" ORDER BY nid DESC LIMIT %s'
 
 real_dir_path = os.path.split(os.path.realpath(__file__))[0] #文件所在路径
 
