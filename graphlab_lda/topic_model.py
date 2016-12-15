@@ -85,7 +85,7 @@ def get_newest_model_dir():
     for m in models:
         ms[m] = m.replace('-', '')
     ms_sort = sorted(ms.items(), key=lambda x:x[1])
-    return ms_sort.pop()[0]
+    return model_dir + '/' + ms_sort.pop()[0]
 
 
 def lda_predict_core(nid):
