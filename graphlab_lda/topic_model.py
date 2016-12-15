@@ -75,6 +75,7 @@ def load_models(models_dir):
     models_files = os.listdir(models_dir)
     for mf in models_files:
         print '    load ' + mf
+        print models_dir
         g_channel_model_dict[models_files] = gl.load_model(models_dir + '/'+ mf)
 
 
