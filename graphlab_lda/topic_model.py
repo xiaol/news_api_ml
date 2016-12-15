@@ -49,8 +49,8 @@ def create_model_proc(csv_file, model_save_dir=None):
     g_channel_model_dict[csv_file] = model
     save_model_to_db(model, csv_file)
     #save model
-    #if model_save_dir:
-    #    model.save(model_save_dir+'/'+csv_file)
+    if model_save_dir:
+        model.save(model_save_dir+'/'+csv_file)
 
 
 def create_models():
@@ -68,15 +68,31 @@ def create_models():
 
 
 def load_models(models_dir):
+    print 'load_models()'
     global g_channel_model_dict, model_dir
     if len(g_channel_model_dict) != 0:
         g_channel_model_dict.clear()
     models_files = os.listdir(models_dir)
     for mf in models_files:
+        print '    load ' + mf
         g_channel_model_dict[models_files] = gl.load_model(model_dir + mf)
+
+
+def get_newest_model_dir():
+    models_dir = real_dir_path + '/graphlab_lda/models'
+    models = os.listdir(models_dir)
+    ms = []
+    for m in models:
+        ms.append(m.replace('-', ''))
+    ms_sort = sorted(ms, key=lambda x:x)
+    return ms_sort.pop()
+
 
 def lda_predict_core(nid):
     global g_channel_model_dict
+    if len(g_channel_model_dict) == 0:
+        load_models(get_newest_model_dir())
+
     words_list, chanl_name = topic_model_doc_process.get_words_on_nid(nid)
     if chanl_name not in g_channel_model_dict.keys():
         print 'Error: channel name is not in models'
