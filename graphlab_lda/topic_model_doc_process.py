@@ -72,11 +72,11 @@ channel_for_topic = ['科技', '外媒', '社会', '财经', '体育', '汽车',
                      '故事', '旅游', '美文', '萌宠', '游戏']
 channel_for_topic = ['科技', '社会', '财经', '体育', '汽车', '国际']
 channel_for_topic = ['体育']
-def coll_news_for_channles():
+def coll_news_for_channles(news_num):
     import multiprocessing as mp
     procs = []
     for chanl in channel_for_topic:
-        coll_proc = mp.Process(target=collectNews, args=(chanl, 100000, 100))
+        coll_proc = mp.Process(target=collectNews, args=(chanl, news_num, 100))
         coll_proc.start()
         procs.append(coll_proc)
     for i in procs:

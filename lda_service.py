@@ -23,8 +23,8 @@ from graphlab_lda import topic_model
 
 class CollNews(tornado.web.RequestHandler):
     def get(self):
-        num_per_chanl = self.get_argument('num')
-        topic_model_doc_process.coll_news_for_channles()
+        num_per_chanl = int(self.get_argument('num'))
+        topic_model_doc_process.coll_news_for_channles(num_per_chanl)
 
 
 
