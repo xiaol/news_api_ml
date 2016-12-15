@@ -81,11 +81,11 @@ def load_models(models_dir):
 def get_newest_model_dir():
     models_dir = real_dir_path + '/models'
     models = os.listdir(models_dir)
-    ms = []
+    ms = {}
     for m in models:
-        ms.append(m.replace('-', ''))
-    ms_sort = sorted(ms, key=lambda x:x)
-    return ms_sort.pop()
+        ms[m] = m.replace('-', '')
+    ms_sort = sorted(ms.items(), key=lambda x:x[1])
+    return ms_sort.pop()[0]
 
 
 def lda_predict_core(nid):
