@@ -79,7 +79,7 @@ def load_models(models_dir):
 
 
 def get_newest_model_dir():
-    models_dir = real_dir_path + '/graphlab_lda/models'
+    models_dir = real_dir_path + '/models'
     models = os.listdir(models_dir)
     ms = []
     for m in models:
