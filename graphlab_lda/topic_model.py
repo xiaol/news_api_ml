@@ -76,7 +76,7 @@ def load_models(models_dir):
     for mf in models_files:
         print '    load ' + mf
         print models_dir
-        g_channel_model_dict[models_files] = gl.load_model(models_dir + '/'+ mf)
+        g_channel_model_dict[mf] = gl.load_model(models_dir + '/'+ mf)
 
 
 def get_newest_model_dir():
@@ -87,7 +87,7 @@ def get_newest_model_dir():
     for m in models:
         ms[m] = m.replace('-', '')
     ms_sort = sorted(ms.items(), key=lambda x:x[1])
-    return model_dir + '/' + ms_sort.pop()[0]
+    return model_dir + ms_sort.pop()[0]
 
 
 def lda_predict_core(nid):
