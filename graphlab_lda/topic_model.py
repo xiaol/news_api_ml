@@ -69,13 +69,13 @@ def create_models():
 
 def load_models(models_dir):
     print 'load_models()'
-    global g_channel_model_dict, model_dir
+    global g_channel_model_dict
     if len(g_channel_model_dict) != 0:
         g_channel_model_dict.clear()
     models_files = os.listdir(models_dir)
     for mf in models_files:
         print '    load ' + mf
-        g_channel_model_dict[models_files] = gl.load_model(model_dir + mf +'/objects.bin')
+        g_channel_model_dict[models_files] = gl.load_model(models_dir + '/'+ mf)
 
 
 def get_newest_model_dir():
