@@ -171,7 +171,7 @@ def lda_predict_and_save(nid):
 
 from psycopg2.extras import Json
 user_topic_sql = 'select * from usertopics where uid = %s and model_v = %s and ch_name=%s'
-user_topic_insert_sql = "insert into usertopics (uid, model_v, ch_name, topics) VALUES ({0}, {1}, {2}, {3})"
+user_topic_insert_sql = "insert into usertopics (uid, model_v, ch_name, topics) VALUES ('{0}', '{1}', '{2}', {3})"
 #收集用户topic
 #nids_info: 包含nid号及nid被点击时间
 def coll_user_topics(uid, nids_info):
