@@ -69,7 +69,9 @@ def create_models():
 
 def load_models(models_dir):
     print 'load_models()'
-    global g_channel_model_dict
+    global g_channel_model_dict, model_v
+    import os
+    model_v = os.path.split(models_dir)[1]
     if len(g_channel_model_dict) != 0:
         g_channel_model_dict.clear()
     models_files = os.listdir(models_dir)
