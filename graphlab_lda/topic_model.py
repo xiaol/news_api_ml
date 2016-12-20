@@ -140,6 +140,8 @@ def lda_predict(nid):
 news_topic_sql = "insert into news_topic (nid, model_v, ch_name, topic_id, probability) VALUES (%s,  %s, %s, %s, %s)"
 def lda_predict_and_save(nid):
     global model_v
+    print type(nid)
+    print nid
     ch_name, pred = lda_predict_core(nid)
     if len(pred) == 0:
         return
