@@ -101,7 +101,7 @@ def lda_predict_core(nid):
         print k
     if chanl_name not in g_channel_model_dict.keys():
         print 'Error: channel name is not in models' + '---- ' + chanl_name
-        return
+        return '', []
     s = ''
     for i in words_list:
         s += i + ' '
