@@ -11,7 +11,7 @@ nid_queue = 'nid_queue_for_lda'
 
 def produce_nid(nid):
     global redis_inst
-    print 'produce ' + nid + ' for lda'
+    print 'produce ' + str(nid) + ' for lda'
     redis_inst.lpush(nid_queue, nid)
 
 
