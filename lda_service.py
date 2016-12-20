@@ -67,6 +67,11 @@ class ProuceNewsTopicManual(tornado.web.RequestHandler):
         topic_model.produce_news_topic_manual(num)
 
 
+#根据用户的点击预测其感兴趣的话题,入库
+class CollectUserTopic(tornado.web.RequestHandler):
+    def get(self):
+        topic_model.get_user_topics()
+
 class ProduceApplication(tornado.web.Application):
     def __init__(self):
         handlers = [
@@ -86,6 +91,7 @@ class Application(tornado.web.Application):
             ("/topic_model/get_topic_on_nid", PredictOnNidAndSave),
             ("/topic_model/load_models", LoadModels),
             ("/topic_model/produce_news_topic_manual", ProuceNewsTopicManual),
+            ("/topic_model/get_user_topic", CollectUserTopic),
         ]
         settings = {}
         tornado.web.Application.__init__(self, handlers, **settings)

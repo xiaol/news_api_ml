@@ -223,7 +223,7 @@ def coll_user_topics(uid, nids_info):
             cursor.execute(user_topic_insert_sql.format(nid, model_v, ch_name, json.dumps(user_topics)))
 
 
-user_click_sql = "select uid, nid, max(ctime) ctime from newsrecommendclick  where CURRENT_DATE - INTEGER '10' <= DATE(ctime) group by uid,nid"
+user_click_sql = "select uid, nid, max(ctime) ctime from newsrecommendclick  where CURRENT_DATE - INTEGER '1' <= DATE(ctime) group by uid,nid limit 5"
 def get_user_topics():
     conn, cursor = doc_process.get_postgredb()
     cursor.execute(user_click_sql)
