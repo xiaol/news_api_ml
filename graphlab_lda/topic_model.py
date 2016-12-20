@@ -256,6 +256,7 @@ def produce_news_topic_manual(num):
     cursor.execute(channle_sql, [channels, num])
     rows = cursor.fetchall()
     import redis_lda
+    print len(rows)
     for r in rows:
         redis_lda.produce_nid(r[0])
 
