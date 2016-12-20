@@ -181,6 +181,7 @@ def coll_user_topics(uid, nids_info):
     for nid_info in nids_info:
         nid = nid_info[0]
         valid_time = nid_info[1] + timedelta(days=30) #有效时间定为30天
+        time_str = valid_time.strftime('%Y-%m-%d %H:%M:%S')
         ch_name, pred = lda_predict_core(nid)
         if len(pred) == 0:
             continue
@@ -206,7 +207,7 @@ def coll_user_topics(uid, nids_info):
         if new_user: #插入新数据
             user_topics = {}
             for item in to_save.items():
-                user_topics[item[0]] = (item[1], valid_time)
+                user_topics[item[0]] = (item[1], time_str)
             cursor.execute(user_topic_insert_sql.format(nid, model_v, ch_name, Json(user_topics)))
         else: #update user-topics
             user_topics = {}
@@ -216,10 +217,10 @@ def coll_user_topics(uid, nids_info):
             for item in to_save.items():
                 if item[0] in user_topics.keys():
                     user_topics[item[0]][0] += item[1]
-                    user_topics[item[0]][1] = valid_time
+                    user_topics[item[0]][1] = time_str
                 else:
                     user_topics[item[0]][0] = item[1]
-                    user_topics[item[0]][1] = valid_time
+                    user_topics[item[0]][1] = time_str
             cursor.execute(user_topic_insert_sql.format(nid, model_v, ch_name, Json(user_topics)))
 
 
