@@ -254,7 +254,7 @@ def produce_news_topic_manual(num):
     conn, cursor = doc_process.get_postgredb()
     channels = ', '.join("\'" + ch+"\'" for ch in topic_model_doc_process.channel_for_topic)
     cursor.execute(channle_sql, [channels, num])
-    rows = cursor.fatchall()
+    rows = cursor.fetchall()
     import redis_lda
     for r in rows:
         redis_lda.produce_nid(r[0])
