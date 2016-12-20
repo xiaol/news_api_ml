@@ -98,10 +98,10 @@ class Application(tornado.web.Application):
 
 if __name__ == '__main__':
     port = int(sys.argv[1])
-    if port == 9988:  #新闻入库后将nid加入到队列中,对外提供的接口
+    if port == 9987:  #新闻入库后将nid加入到队列中,对外提供的接口
         http_server = tornado.httpserver.HTTPServer(ProduceApplication())
         http_server.listen(port)
-    elif port == 9989:
+    elif port == 9989 or port == 9988:
         http_server = tornado.httpserver.HTTPServer(Application())
         http_server.listen(port)
     elif port == 9990:

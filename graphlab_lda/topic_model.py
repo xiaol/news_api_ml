@@ -222,7 +222,7 @@ def coll_user_topics(uid, nids_info):
         conn.close()
 
 
-user_click_sql = "select uid, nid, max(ctime) ctime from newsrecommendclick  where CURRENT_DATE - INTEGER '1' <= DATE(ctime) group by uid,nid limit 5"
+user_click_sql = "select uid, nid, max(ctime) ctime from newsrecommendclick  where CURRENT_DATE - INTEGER '10' <= DATE(ctime) group by uid,nid"
 def get_user_topics():
     conn, cursor = doc_process.get_postgredb()
     cursor.execute(user_click_sql)
@@ -248,13 +248,9 @@ a.chid=c.id ORDER BY nid DESC LIMIT {1}'
 def produce_news_topic_manual(num):
     conn, cursor = doc_process.get_postgredb()
     channels = ', '.join("\'" + ch+"\'" for ch in topic_model_doc_process.channel_for_topic)
-    print channels
-    #cursor.execute(channle_sql, [channels, num])
-    print channle_sql.format(channels, num)
     cursor.execute(channle_sql.format(channels, num))
     rows = cursor.fetchall()
     import redis_lda
-    print len(rows)
     for r in rows:
         redis_lda.produce_nid(r[0])
 
