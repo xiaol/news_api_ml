@@ -167,9 +167,9 @@ def lda_predict_and_save(nid):
     conn.commit()
     conn.close()
 
-
+from psycopg2.extras import Json
 user_topic_sql = 'select * from usertopics where uid = %s and model_v = %s and ch_name=%s'
-user_topic_insert_sql = 'insert into usertopics (uid, model_v, ch_name, topics) VALUES ({0}, {1}, {2}, {3})'
+user_topic_insert_sql = "insert into usertopics (uid, model_v, ch_name, topics) VALUES ({0}, {1}, {2}, {3})"
 #收集用户topic
 #nids_info: 包含nid号及nid被点击时间
 def coll_user_topics(uid, nids_info):
@@ -207,7 +207,7 @@ def coll_user_topics(uid, nids_info):
             user_topics = {}
             for item in to_save.items():
                 user_topics[item[0]] = (item[1], valid_time)
-            cursor.execute(user_topic_insert_sql.format(nid, model_v, ch_name, json.dumps(user_topics)))
+            cursor.execute(user_topic_insert_sql.format(nid, model_v, ch_name, Json(user_topics)))
         else: #update user-topics
             user_topics = {}
             for r in rows:
@@ -220,7 +220,7 @@ def coll_user_topics(uid, nids_info):
                 else:
                     user_topics[item[0]][0] = item[1]
                     user_topics[item[0]][1] = valid_time
-            cursor.execute(user_topic_insert_sql.format(nid, model_v, ch_name, json.dumps(user_topics)))
+            cursor.execute(user_topic_insert_sql.format(nid, model_v, ch_name, Json(user_topics)))
 
 
 user_click_sql = "select uid, nid, max(ctime) ctime from newsrecommendclick  where CURRENT_DATE - INTEGER '1' <= DATE(ctime) group by uid,nid limit 5"
