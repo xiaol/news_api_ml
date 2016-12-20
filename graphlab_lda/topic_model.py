@@ -98,11 +98,8 @@ def lda_predict_core(nid):
         load_models(get_newest_model_dir())
 
     words_list, chanl_name = topic_model_doc_process.get_words_on_nid(nid)
-    for k in g_channel_model_dict.keys():
-        print type(k)
-        print k
     if chanl_name not in g_channel_model_dict.keys():
-        print 'Error: channel name is not in models' + '---- ' + chanl_name
+        print 'Error: channel name is not in models' + '---- ' + chanl_name + " " + str(nid)
         return '', []
     s = ''
     for i in words_list:
@@ -145,8 +142,6 @@ def lda_predict(nid):
 news_topic_sql = "insert into news_topic (nid, model_v, ch_name, topic_id, probability) VALUES (%s,  %s, %s, %s, %s)"
 def lda_predict_and_save(nid):
     global model_v
-    print type(nid)
-    print nid
     ch_name, pred = lda_predict_core(nid)
     if len(pred) == 0:
         return
@@ -175,7 +170,6 @@ user_topic_insert_sql = "insert into usertopics (uid, model_v, ch_name, topics) 
 #收集用户topic
 #nids_info: 包含nid号及nid被点击时间
 def coll_user_topics(uid, nids_info):
-    import datetime
     from datetime import timedelta
     global g_channel_model_dict, model_v
     conn, cursor = doc_process.get_postgredb()
@@ -224,6 +218,8 @@ def coll_user_topics(uid, nids_info):
                     user_topics[item[0]][0] = item[1]
                     user_topics[item[0]][1] = time_str
             cursor.execute(user_topic_insert_sql.format(nid, model_v, ch_name, Json(user_topics)))
+        conn.commit()
+        conn.close()
 
 
 user_click_sql = "select uid, nid, max(ctime) ctime from newsrecommendclick  where CURRENT_DATE - INTEGER '1' <= DATE(ctime) group by uid,nid limit 5"
