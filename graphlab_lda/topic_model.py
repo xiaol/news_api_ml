@@ -253,6 +253,7 @@ a.chid=c.id ORDER BY nid DESC LIMIT %s'
 def produce_news_topic_manual(num):
     conn, cursor = doc_process.get_postgredb()
     channels = ', '.join("\'" + ch+"\'" for ch in topic_model_doc_process.channel_for_topic)
+    print channels
     cursor.execute(channle_sql, [channels, num])
     rows = cursor.fetchall()
     import redis_lda
