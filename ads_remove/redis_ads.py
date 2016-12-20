@@ -5,7 +5,6 @@
 # @File    : redis.py
 # @Software: PyCharm Community Edition
 
-import multiprocessing as mp
 from redis import Redis
 redis_inst = Redis(host='localhost', port=6379)
 nid_queue = 'nid_queue'
@@ -22,8 +21,6 @@ def remove_ads_onnid_core(nid):
     pname, content_list = AdsExtract.get_para_on_nid(nid)
     #如果新闻不属于需要检查的源则返回
     print len(AdsExtract.ads_dict)
-    #print dict(AdsExtract.ads_dict).keys()
-    #print id(AdsExtract.ads_dict)
     if pname.decode('utf-8') not in dict(AdsExtract.ads_dict).keys():
         print 'not checked'
         return
@@ -37,12 +34,9 @@ def consume_nid():
     import requests
     while True:
         nid = redis_inst.brpop(nid_queue)[1]
-        #url = 'http://10.117.195.196:9999/RemoveAdsOnnidCore'
-        #url = 'http://120.55.88.11:9999/RemoveAdsOnnidCore'
         url = 'http://127.0.0.1:9999/news_process/RemoveAdsOnnidCore'
         data = {}
         data['nid'] = nid
         response = requests.get(url, params=data)
-        #remove_ads_onnid_core(nid)
 
 

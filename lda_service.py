@@ -40,6 +40,13 @@ class PredictOnNid(tornado.web.RequestHandler):
         res = topic_model.lda_predict(nid)
         self.write(json.dumps(res))
 
+#对外提供的接口。新闻入库后就执行
+class PredictNewsTopic(tornado.web.RequestHandler):
+    def get(self):
+        nid = int(self.get_argument('nid'))
+        from graphlab_lda import redis_lda
+        redis_lda.produce_nid(nid)
+
 
 class PredictOnNidAndSave(tornado.web.RequestHandler):
     def get(self):
@@ -53,6 +60,23 @@ class LoadModels(tornado.web.RequestHandler):
         topic_model.load_models(models_dir)
 
 
+#手动添加一些新闻进行预测。用于topic model启动时使用
+class ProuceNewsTopicManual(tornado.web.RequestHandler):
+    def get(self):
+        num = self.get_argument('num')
+        topic_model.produce_news_topic_manual(num)
+
+
+class ProduceApplication(tornado.web.Application):
+    def __init__(self):
+        handlers = [
+            ("/topic_model/predict_news_topic", PredictNewsTopic),
+        ]
+        settings = {}
+        tornado.web.Application.__init__(self, handlers, **settings)
+
+
+#用于手工的一些接口
 class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
@@ -61,12 +85,21 @@ class Application(tornado.web.Application):
             ("/topic_model/predict_on_nid", PredictOnNid),
             ("/topic_model/get_topic_on_nid", PredictOnNidAndSave),
             ("/topic_model/load_models", LoadModels),
+            ("/topic_model/produce_news_topic_manual", ProuceNewsTopicManual),
         ]
         settings = {}
         tornado.web.Application.__init__(self, handlers, **settings)
 
 if __name__ == '__main__':
-    port = sys.argv[1]
-    http_server = tornado.httpserver.HTTPServer(Application())
-    http_server.listen(port)
+    port = int(sys.argv[1])
+    if port == 9988:  #新闻入库后将nid加入到队列中,对外提供的接口
+        http_server = tornado.httpserver.HTTPServer(ProduceApplication())
+        http_server.listen(port)
+    elif port == 9989:
+        http_server = tornado.httpserver.HTTPServer(Application())
+        http_server.listen(port)
+    elif port == 9990:
+        from graphlab_lda import redis_lda
+        redis_lda.consume_nid()  #消费队列数据
+
     tornado.ioloop.IOLoop.instance().start()

@@ -141,6 +141,8 @@ news_topic_sql = "insert into news_topic (nid, model_v, ch_name, topic_id, proba
 def lda_predict_and_save(nid):
     global model_v
     ch_name, pred = lda_predict_core(nid)
+    if len(pred) == 0:
+        return
 
     num_dict = {}
     num = 0
@@ -159,6 +161,104 @@ def lda_predict_and_save(nid):
         cursor.execute(news_topic_sql, [nid, model_v, ch_name, item[0], item[1]])
     conn.commit()
     conn.close()
+
+
+user_topic_sql = 'select * from usertopics where uid = %s and model_v = %s and ch_name=%s'
+#user_topics = 'select * from userstopics where uid = %s  and model_v = %s and ch_name=%s'
+user_topic_insert_sql = 'insert into usertopics (uid, model_v, ch_name, topics) VALUES (%s, %s, %s, %s)'
+#收集用户topic
+#nids_info: 包含nid号及nid被点击时间
+def coll_user_topics(uid, nids_info):
+    global g_channel_model_dict, model_v
+    conn, cursor = doc_process.get_postgredb()
+
+    for nid_info in nids_info:
+        nid = nid_info[0]
+        nid_time = nid_info[1]
+        ch_name, pred = lda_predict_core(nid)
+
+        cursor.execute(user_topic_sql, [uid, model_v, ch_name])
+        rows = cursor.fetchall()
+        new_user = False
+        if len(rows) == 0:
+            new_user = True
+
+        if len(pred) == 0:
+            continue
+        num_dict = {}
+        num = 0
+        for i in pred[0]:
+            num_dict[i] = num
+            num += 1
+        probility = sorted(num_dict.items(), key=lambda d: d[0], reverse=True)
+        i = 0
+        to_save = {}
+        while i < 3 and i < len(probility) and probility[i][0] > 0.1:
+            to_save[probility[i][1]] = probility[i][0]
+            i += 1
+
+        if new_user: #插入新数据
+            user_topics = {}
+            for item in to_save.items():
+                user_topics[item[0]] = (item[1], nid_time)
+            cursor.execute(user_topic_insert_sql, [nid, model_v, ch_name, json.dumps(user_topics)])
+        else: #update user-topics
+            user_topics = {}
+            for r in rows:
+                user_topics = r[3]  #已有的topics字典
+                break
+            for item in to_save.items():
+                if item[0] in user_topics.keys():
+                    user_topics[item[0]][0] += item[1]
+                    user_topics[item[0]][1] = nid_time
+            cursor.execute(user_topic_insert_sql, [nid, model_v, ch_name, json.dumps(user_topics)])
+
+        for item in to_save.items():
+            cursor.execute(news_topic_sql, [nid, model_v, ch_name, item[0], item[1]])
+
+
+
+user_sql = "select uid, nid, ctime from newsrecommendclick where CURRENT_DATE - INTEGER '1' <= DATE(ctime)"
+def get_user_topics():
+    conn, cursor = doc_process.get_postgredb()
+    cursor.execute(user_sql)
+    rows = cursor.fetchall()
+    user_news_dict = {}
+    for r in rows:
+        uid = r[0]
+        if uid in user_news_dict.keys():
+            user_news_dict[uid].append((r[1], r[2]))
+        else:
+            user_news_dict[uid] = set()
+            user_news_dict[uid].add((r[1], r[2]))
+    for item in user_news_dict.items():
+        coll_user_topics(item[0], item[1])
+
+
+
+
+
+
+
+
+
+#取十万条新闻加入队列做预测,并保存至数据库
+channle_sql ='SELECT a.nid FROM newslist_v2 a \
+RIGHT OUTER JOIN (select * from channellist_v2 where cname in (%s)) c \
+ON \
+a.chid=c.id ORDER BY nid DESC LIMIT %s'
+
+
+#search_sql = 'select nid from newslist_v2 ordered by nid  DESC limit "%d" '
+def produce_news_topic_manual(num):
+    conn, cursor = doc_process.get_postgredb()
+    channels = ', '.join("\'" + ch+"\'" for ch in topic_model_doc_process.channel_for_topic)
+    cursor.execute(channle_sql, [channels, num])
+    rows = cursor.fatchall()
+    import redis_lda
+    for r in rows:
+        redis_lda.produce_nid(r[0])
+
 
 
 
