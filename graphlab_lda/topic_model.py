@@ -96,8 +96,11 @@ def lda_predict_core(nid):
         load_models(get_newest_model_dir())
 
     words_list, chanl_name = topic_model_doc_process.get_words_on_nid(nid)
+    for k in g_channel_model_dict.keys():
+        print type(k)
+        print k
     if chanl_name not in g_channel_model_dict.keys():
-        print 'Error: channel name is not in models'
+        print 'Error: channel name is not in models' + '---- ' + chanl_name
         return
     s = ''
     for i in words_list:
