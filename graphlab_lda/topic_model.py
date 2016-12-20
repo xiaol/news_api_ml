@@ -169,30 +169,31 @@ def lda_predict_and_save(nid):
 
 
 user_topic_sql = 'select * from usertopics where uid = %s and model_v = %s and ch_name=%s'
-#user_topics = 'select * from userstopics where uid = %s  and model_v = %s and ch_name=%s'
-user_topic_insert_sql = 'insert into usertopics (uid, model_v, ch_name, topics) VALUES (%s, %s, %s, %s)'
+user_topic_insert_sql = 'insert into usertopics (uid, model_v, ch_name, topics) VALUES ({0}, {1}, {2}, {3})'
 #收集用户topic
 #nids_info: 包含nid号及nid被点击时间
 def coll_user_topics(uid, nids_info):
+    import datetime
+    from datetime import timedelta
     global g_channel_model_dict, model_v
     conn, cursor = doc_process.get_postgredb()
 
     for nid_info in nids_info:
         nid = nid_info[0]
-        nid_time = nid_info[1]
+        valid_time = nid_info[1] + timedelta(days=30) #有效时间定为30天
         ch_name, pred = lda_predict_core(nid)
+        if len(pred) == 0:
+            continue
 
         cursor.execute(user_topic_sql, [uid, model_v, ch_name])
         rows = cursor.fetchall()
         new_user = False
-        if len(rows) == 0:
+        if len(rows) == 0: #此版本的model下没有记录该用户的点击行为
             new_user = True
 
-        if len(pred) == 0:
-            continue
         num_dict = {}
-        num = 0
-        for i in pred[0]:
+        num = 0 #标记topic的index
+        for i in pred[0]:  #pred[0]是property值
             num_dict[i] = num
             num += 1
         probility = sorted(num_dict.items(), key=lambda d: d[0], reverse=True)
@@ -205,8 +206,8 @@ def coll_user_topics(uid, nids_info):
         if new_user: #插入新数据
             user_topics = {}
             for item in to_save.items():
-                user_topics[item[0]] = (item[1], nid_time)
-            cursor.execute(user_topic_insert_sql, [nid, model_v, ch_name, json.dumps(user_topics)])
+                user_topics[item[0]] = (item[1], valid_time)
+            cursor.execute(user_topic_insert_sql.format(nid, model_v, ch_name, json.dumps(user_topics)))
         else: #update user-topics
             user_topics = {}
             for r in rows:
@@ -215,12 +216,11 @@ def coll_user_topics(uid, nids_info):
             for item in to_save.items():
                 if item[0] in user_topics.keys():
                     user_topics[item[0]][0] += item[1]
-                    user_topics[item[0]][1] = nid_time
-            cursor.execute(user_topic_insert_sql, [nid, model_v, ch_name, json.dumps(user_topics)])
-
-        for item in to_save.items():
-            cursor.execute(news_topic_sql, [nid, model_v, ch_name, item[0], item[1]])
-
+                    user_topics[item[0]][1] = valid_time
+                else:
+                    user_topics[item[0]][0] = item[1]
+                    user_topics[item[0]][1] = valid_time
+            cursor.execute(user_topic_insert_sql.format(nid, model_v, ch_name, json.dumps(user_topics)))
 
 
 user_sql = "select uid, nid, ctime from newsrecommendclick where CURRENT_DATE - INTEGER '1' <= DATE(ctime)"
@@ -240,20 +240,11 @@ def get_user_topics():
         coll_user_topics(item[0], item[1])
 
 
-
-
-
-
-
-
-
 #取十万条新闻加入队列做预测,并保存至数据库
 channle_sql ='SELECT a.nid FROM newslist_v2 a \
 RIGHT OUTER JOIN (select * from channellist_v2 where cname in ({0})) c \
 ON \
 a.chid=c.id ORDER BY nid DESC LIMIT {1}'
-
-
 #search_sql = 'select nid from newslist_v2 ordered by nid  DESC limit "%d" '
 def produce_news_topic_manual(num):
     conn, cursor = doc_process.get_postgredb()
