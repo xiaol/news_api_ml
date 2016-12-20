@@ -244,9 +244,9 @@ def get_user_topics():
 
 #取十万条新闻加入队列做预测,并保存至数据库
 channle_sql ='SELECT a.nid FROM newslist_v2 a \
-RIGHT OUTER JOIN (select * from channellist_v2 where cname in (%s)) c \
+RIGHT OUTER JOIN (select * from channellist_v2 where cname in ({0})) c \
 ON \
-a.chid=c.id ORDER BY nid DESC LIMIT %s'
+a.chid=c.id ORDER BY nid DESC LIMIT {1}'
 
 
 #search_sql = 'select nid from newslist_v2 ordered by nid  DESC limit "%d" '
@@ -254,7 +254,9 @@ def produce_news_topic_manual(num):
     conn, cursor = doc_process.get_postgredb()
     channels = ', '.join("\'" + ch+"\'" for ch in topic_model_doc_process.channel_for_topic)
     print channels
-    cursor.execute(channle_sql, [channels, num])
+    #cursor.execute(channle_sql, [channels, num])
+    print channle_sql.format(channels, num)
+    cursor.execute(channle_sql.format(channels, num))
     rows = cursor.fetchall()
     import redis_lda
     print len(rows)
