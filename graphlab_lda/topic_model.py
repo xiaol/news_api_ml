@@ -167,7 +167,7 @@ def lda_predict_and_save(nid):
 
 user_topic_sql = 'select * from usertopics where uid = %s and model_v = %s and ch_name=%s and topic_id = %s'
 user_topic_insert_sql = "insert into usertopics (uid, model_v, ch_name, topic_id, probility, create_time, fail_time) " \
-                        "VALUES ('{0}', '{1}', '{2}', {3}, {4}, {5}, {6})"
+                        "VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}')"
 #预测用户话题主逻辑
 def predict_user_topic_core(uid, nid, ctime):
     from datetime import timedelta
