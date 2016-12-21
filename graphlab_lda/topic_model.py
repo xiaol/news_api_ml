@@ -220,7 +220,7 @@ def coll_user_topics(uid, nids_info):
         predict_user_topic_core(uid, nid_info[0], nid_info[1])
 
 
-user_click_sql = "select uid, nid, max(ctime) ctime from newsrecommendclick  where CURRENT_DATE - INTEGER '10' <= DATE(ctime) group by uid,nid"
+user_click_sql = "select uid, nid, max(ctime) ctime from newsrecommendclick  where CURRENT_DATE - INTEGER '3' <= DATE(ctime) group by uid,nid"
 def get_user_topics():
     conn, cursor = doc_process.get_postgredb()
     cursor.execute(user_click_sql)
