@@ -180,7 +180,12 @@ def remove_ads(ads_dict, nid):
                 if valid_elem == ads_txt:
                     break
 
-    if len(contents) == 0:
+    if len(contents) == 0: #全文都是广告
+        update_sql = "update newslist_v2 set state = 1 where nid = {1}"
+        sql = update_sql.format(json.dumps(contents).encode('utf-8'), nid)
+        cursor.execute(sql)
+        conn.commit()
+        conn.close()
         return
     print 'remove ads of ' + nid
     logger.info("remove ads of " + nid)
