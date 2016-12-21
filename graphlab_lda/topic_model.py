@@ -199,7 +199,7 @@ def predict_user_topic_core(uid, nid, ctime):
         for item in to_save.items():
             topic_id = item[0]
             probability = item[1]
-            cursor.execute(user_topic_insert_sql.format(nid, model_v, ch_name, topic_id, probability, time_str, fail_time))
+            cursor.execute(user_topic_insert_sql.format(uid, model_v, ch_name, topic_id, probability, time_str, fail_time))
     else: #update user-topics
         for item in to_save.items():
             org_probability = 0
@@ -207,7 +207,7 @@ def predict_user_topic_core(uid, nid, ctime):
             for r in rows:   #取出已经存在的一栏信息
                 org_probability = r[3]
             new_probabiliby = org_probability + item[1]
-            cursor.execute(user_topic_insert_sql.format(nid, model_v, ch_name, topic_id, new_probabiliby, time_str, fail_time))
+            cursor.execute(user_topic_insert_sql.format(uid, model_v, ch_name, topic_id, new_probabiliby, time_str, fail_time))
     conn.commit()
     conn.close()
 
