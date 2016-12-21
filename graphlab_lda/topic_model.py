@@ -164,62 +164,60 @@ def lda_predict_and_save(nid):
     conn.commit()
     conn.close()
 
-from psycopg2.extras import Json
-user_topic_sql = 'select * from usertopics where uid = %s and model_v = %s and ch_name=%s'
-user_topic_insert_sql = "insert into usertopics (uid, model_v, ch_name, topics) VALUES ('{0}', '{1}', '{2}', {3})"
+
+user_topic_sql = 'select * from usertopics where uid = %s and model_v = %s and ch_name=%s and topic_id = %s'
+user_topic_insert_sql = "insert into usertopics (uid, model_v, ch_name, topic_id, probility, create_time, fail_time) " \
+                        "VALUES ('{0}', '{1}', '{2}', {3}, {4}, {5}, {6})"
+#预测用户话题主逻辑
+def predict_user_topic_core(uid, nid, ctime):
+    from datetime import timedelta
+    global g_channel_model_dict, model_v
+    ch_name, pred = lda_predict_core(nid)  #预测topic分布
+    if len(pred) == 0:
+        return
+    num_dict = {}
+    num = 0 #标记topic的index
+    for i in pred[0]:  #pred[0]是property值
+        num_dict[i] = num
+        num += 1
+    probility = sorted(num_dict.items(), key=lambda d: d[0], reverse=True)
+    i = 0
+    to_save = {}
+    while i < 3 and i < len(probility) and probility[i][0] > 0.1:
+        to_save[probility[i][1]] = probility[i][0]
+        i += 1
+    conn, cursor = doc_process.get_postgredb()
+    cursor.execute(user_topic_sql, [uid, model_v, ch_name, nid])
+    rows = cursor.fetchall()
+    new_user_topic = False
+    if len(rows) == 0: #此版本的model下没有记录该用户的点击行为
+        new_user_topic = True
+    time_str = ctime.strftime('%Y-%m-%d %H:%M:%S')
+    valid_time = ctime + timedelta(days=30) #有效时间定为30天
+    fail_time = valid_time.strftime('%Y-%m-%d %H:%M:%S')
+    if new_user_topic: #插入新数据
+        for item in to_save.items():
+            topic_id = item[0]
+            probability = item[1]
+            cursor.execute(user_topic_insert_sql.format(nid, model_v, ch_name, topic_id, probability, time_str, fail_time))
+    else: #update user-topics
+        for item in to_save.items():
+            org_probability = 0
+            topic_id = item[0]
+            for r in rows:   #取出已经存在的一栏信息
+                org_probability = r[3]
+            new_probabiliby = org_probability + item[1]
+            cursor.execute(user_topic_insert_sql.format(nid, model_v, ch_name, topic_id, new_probabiliby, time_str, fail_time))
+    conn.commit()
+    conn.close()
+
+
+#from psycopg2.extras import Json
 #收集用户topic
 #nids_info: 包含nid号及nid被点击时间
 def coll_user_topics(uid, nids_info):
-    from datetime import timedelta
-    global g_channel_model_dict, model_v
-    conn, cursor = doc_process.get_postgredb()
-
     for nid_info in nids_info:
-        nid = nid_info[0]
-        valid_time = nid_info[1] + timedelta(days=30) #有效时间定为30天
-        time_str = valid_time.strftime('%Y-%m-%d %H:%M:%S')
-        ch_name, pred = lda_predict_core(nid)
-        if len(pred) == 0:
-            continue
-
-        cursor.execute(user_topic_sql, [uid, model_v, ch_name])
-        rows = cursor.fetchall()
-        new_user = False
-        if len(rows) == 0: #此版本的model下没有记录该用户的点击行为
-            new_user = True
-
-        num_dict = {}
-        num = 0 #标记topic的index
-        for i in pred[0]:  #pred[0]是property值
-            num_dict[i] = num
-            num += 1
-        probility = sorted(num_dict.items(), key=lambda d: d[0], reverse=True)
-        i = 0
-        to_save = {}
-        while i < 3 and i < len(probility) and probility[i][0] > 0.1:
-            to_save[probility[i][1]] = probility[i][0]
-            i += 1
-
-        if new_user: #插入新数据
-            user_topics = {}
-            for item in to_save.items():
-                user_topics[item[0]] = (item[1], time_str)
-            cursor.execute(user_topic_insert_sql.format(nid, model_v, ch_name, Json(user_topics)))
-        else: #update user-topics
-            user_topics = {}
-            for r in rows:
-                user_topics = r[3]  #已有的topics字典
-                break
-            for item in to_save.items():
-                if item[0] in user_topics.keys():
-                    user_topics[item[0]][0] += item[1]
-                    user_topics[item[0]][1] = time_str
-                else:
-                    user_topics[item[0]][0] = item[1]
-                    user_topics[item[0]][1] = time_str
-            cursor.execute(user_topic_insert_sql.format(nid, model_v, ch_name, Json(user_topics)))
-        conn.commit()
-        conn.close()
+        predict_user_topic_core(uid, nid_info[0], nid_info[1])
 
 
 user_click_sql = "select uid, nid, max(ctime) ctime from newsrecommendclick  where CURRENT_DATE - INTEGER '10' <= DATE(ctime) group by uid,nid"
