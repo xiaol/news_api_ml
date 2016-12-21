@@ -170,6 +170,8 @@ user_topic_delete_sql = "delete from usertopics where uid = '{0}' and model_v = 
                         "topic_id='{3}'"
 user_topic_insert_sql = "insert into usertopics (uid, model_v, ch_name, topic_id, probability, create_time, fail_time) " \
                         "VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}')"
+user_topic_update_sql = "update usertopics ut set ut.probability='{0}', ut.create_time='{1}', ut.fail_time='{2}'" \
+                        "where uid='{3}' and model_v='{4}' and ch_name='{5}' and topic_id='{6}'"
 #预测用户话题主逻辑
 def predict_user_topic_core(uid, nid, ctime):
     from datetime import timedelta
@@ -188,30 +190,24 @@ def predict_user_topic_core(uid, nid, ctime):
     while i < 3 and i < len(probility) and probility[i][0] > 0.1:
         to_save[probility[i][1]] = probility[i][0]
         i += 1
-    conn, cursor = doc_process.get_postgredb()
-    cursor.execute(user_topic_sql, [uid, model_v, ch_name, nid])
-    rows = cursor.fetchall()
-    new_user_topic = False
-    if len(rows) == 0: #此版本的model下没有记录该用户的点击行为
-        new_user_topic = True
     time_str = ctime.strftime('%Y-%m-%d %H:%M:%S')
     valid_time = ctime + timedelta(days=30) #有效时间定为30天
     fail_time = valid_time.strftime('%Y-%m-%d %H:%M:%S')
-    if new_user_topic: #插入新数据
-        for item in to_save.items():
-            topic_id = item[0]
+    #if new_user_topic: #插入新数据
+    conn, cursor = doc_process.get_postgredb()
+    for item in to_save.items():
+        topic_id = item[0]
+        cursor.execute(user_topic_sql, [uid, model_v, ch_name, topic_id])
+        rows = cursor.fetchall()
+        if len(rows) == 0: #此版本的model下没有记录该用户的点击行为
             probability = item[1]
             cursor.execute(user_topic_insert_sql.format(uid, model_v, ch_name, topic_id, probability, time_str, fail_time))
-    else: #update user-topics
-        for item in to_save.items():
-            org_probability = 0
-            topic_id = item[0]
+        else:
             for r in rows:   #取出已经存在的一栏信息
                 org_probability = r[3]
             new_probabiliby = org_probability + item[1]
-            print 'probability change from ' + str(org_probability) + 'to ' + str(new_probabiliby)
-            cursor.execute(user_topic_delete_sql.format(uid, model_v, ch_name, topic_id))
-            cursor.execute(user_topic_insert_sql.format(uid, model_v, ch_name, topic_id, new_probabiliby, time_str, fail_time))
+            #cursor.execute(user_topic_delete_sql.format(uid, model_v, ch_name, topic_id))
+            cursor.execute(user_topic_update_sql.format(new_probabiliby, time_str, fail_time, uid, model_v, ch_name, topic_id))
     conn.commit()
     conn.close()
 
