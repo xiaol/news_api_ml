@@ -229,7 +229,7 @@ def get_user_topics():
     for r in rows:
         uid = r[0]
         if uid in user_news_dict.keys():
-            user_news_dict[uid].append((r[1], r[2]))
+            user_news_dict[uid].add((r[1], r[2]))
         else:
             user_news_dict[uid] = set()
             user_news_dict[uid].add((r[1], r[2]))
