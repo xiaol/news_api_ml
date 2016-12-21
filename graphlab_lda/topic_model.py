@@ -166,6 +166,8 @@ def lda_predict_and_save(nid):
 
 
 user_topic_sql = 'select * from usertopics where uid = %s and model_v = %s and ch_name=%s and topic_id = %s'
+user_topic_delete_sql = "delete from usertopics where uid = '{0}' and model_v = '{1}' and ch_name='{2}' and" \
+                        "topic_id='{3}'"
 user_topic_insert_sql = "insert into usertopics (uid, model_v, ch_name, topic_id, probability, create_time, fail_time) " \
                         "VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}')"
 #预测用户话题主逻辑
@@ -207,6 +209,8 @@ def predict_user_topic_core(uid, nid, ctime):
             for r in rows:   #取出已经存在的一栏信息
                 org_probability = r[3]
             new_probabiliby = org_probability + item[1]
+            print 'probability change from ' + str(org_probability) + 'to ' + str(new_probabiliby)
+            cursor.execute(user_topic_delete_sql.format(uid, model_v, ch_name, topic_id))
             cursor.execute(user_topic_insert_sql.format(uid, model_v, ch_name, topic_id, new_probabiliby, time_str, fail_time))
     conn.commit()
     conn.close()
