@@ -15,18 +15,11 @@ from tornado import ioloop
 from graphlab_lda import topic_model_doc_process
 from graphlab_lda import topic_model
 
-#topic_model_doc_process.coll_news_for_channles()
-
-#topic_model.create_model('体育')
-#topic_model.create_models()
-#topic_model.lda_predict(6897344)
 
 class CollNews(tornado.web.RequestHandler):
     def get(self):
         num_per_chanl = int(self.get_argument('num'))
         topic_model_doc_process.coll_news_for_channles(num_per_chanl)
-
-
 
 
 class CreateModels(tornado.web.RequestHandler):
@@ -46,6 +39,25 @@ class PredictNewsTopic(tornado.web.RequestHandler):
         nid = int(self.get_argument('nid'))
         from graphlab_lda import redis_lda
         redis_lda.produce_nid(nid)
+
+class PredictOneClick(tornado.web.RequestHandler):
+    def get(self):
+        uid = int(self.get_argument('uid'))
+        nid = int(self.get_argument('nid'))
+        ctime = self.get_argument('ctime')
+        topic_model.predict_user_topic_core(uid, nid, ctime)
+
+
+#对外提供的接口。对用户点击行为进行预测
+class PredictUserTopic(tornado.web.RequestHandler):
+    def post(self):
+        clicks = json.loads(self.get_body_argument('clicks'))
+        #uid = int(self.get_argument('uid'))
+        #nid = int(self.get_argument('nid'))
+        #ctime = self.get_argument('ctime')
+        from graphlab_lda import redis_lda
+        for click in clicks:
+            redis_lda.produce_user_click(click[0], click[1], click[2])
 
 
 class PredictOnNidAndSave(tornado.web.RequestHandler):
@@ -72,14 +84,23 @@ class CollectUserTopic(tornado.web.RequestHandler):
     def get(self):
         topic_model.get_user_topics()
 
-class ProduceApplication(tornado.web.Application):
+class ProduceNewsApplication(tornado.web.Application):
     def __init__(self):
         handlers = [
             ("/topic_model/predict_news_topic", PredictNewsTopic),
+            ("/topic_model/predict_clicks", PredictUserTopic),
         ]
         settings = {}
         tornado.web.Application.__init__(self, handlers, **settings)
 
+
+class ProduceUserProfileApplication(tornado.web.Application):
+    def __init__(self):
+        handlers = [
+            ("/topic_model/predict_one_click", PredictOneClick),
+        ]
+        settings = {}
+        tornado.web.Application.__init__(self, handlers, **settings)
 
 #用于手工的一些接口
 class Application(tornado.web.Application):
@@ -99,13 +120,18 @@ class Application(tornado.web.Application):
 if __name__ == '__main__':
     port = int(sys.argv[1])
     if port == 9987:  #新闻入库后将nid加入到队列中,对外提供的接口
-        http_server = tornado.httpserver.HTTPServer(ProduceApplication())
+        http_server = tornado.httpserver.HTTPServer(ProduceNewsApplication())
         http_server.listen(port)
     elif port == 9989 or port == 9988:
         http_server = tornado.httpserver.HTTPServer(Application())
         http_server.listen(port)
     elif port == 9990:
         from graphlab_lda import redis_lda
-        redis_lda.consume_nid()  #消费队列数据
-
+        redis_lda.consume_nid()  #消费新闻队列数据
+    elif port == 9986:  #用户新的点击行为增加用户profile
+        http_server = tornado.httpserver.HTTPServer(ProduceUserProfileApplication())
+        http_server.listen(port)
+    elif port == 9985: #消费用户点击行为
+        from graphlab_lda import redis_lda
+        redis_lda.consume_user_click()
     tornado.ioloop.IOLoop.instance().start()
