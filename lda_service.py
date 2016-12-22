@@ -68,8 +68,11 @@ class PredictUserTopic(tornado.web.RequestHandler):
 
 class PredictOnNidAndSave(tornado.web.RequestHandler):
     def get(self):
-        nid = int(self.get_argument('nid'))
-        topic_model.lda_predict_and_save(nid)
+        try:
+            nid = int(self.get_argument('nid'))
+            topic_model.lda_predict_and_save(nid)
+        except:
+            traceback.print_exc()
 
 
 class LoadModels(tornado.web.RequestHandler):
