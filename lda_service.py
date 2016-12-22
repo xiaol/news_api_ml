@@ -127,7 +127,7 @@ class Application(tornado.web.Application):
             ("/topic_model/coll_news", CollNews),
             ("/topic_model/create_models", CreateModels),
             ("/topic_model/predict_on_nid", PredictOnNid),
-            ("/topic_model/get_topic_on_nid", PredictOnNidAndSave), #消费新闻
+            #("/topic_model/get_topic_on_nid", PredictOnNidAndSave), #消费新闻
             ("/topic_model/load_models", LoadModels),
             ("/topic_model/produce_news_topic_manual", ProuceNewsTopicManual),
             ("/topic_model/get_user_topic", CollectUserTopic),
@@ -145,15 +145,12 @@ if __name__ == '__main__':
         http_server.listen(port)
     elif port == 9990:#消费新闻队列数据
         from graphlab_lda import redis_lda
+        topic_model.load_newest_models()
         redis_lda.consume_nid()
     elif port == 9984: #用户点击事件入队列
         http_server = tornado.httpserver.HTTPServer(ProduceClickEventApplication())
         http_server.listen(port)
-    elif port == 9986:  #用户点击事件的消费逻辑进程
-        topic_model.load_newest_models()
-        http_server = tornado.httpserver.HTTPServer(ConsumeClickEventApplication())
-        http_server.listen(port)
-    elif port == 9985: #消费用户点击行为队列。
+    elif port == 9985: #消费用户点击逻辑进程。
         from graphlab_lda import redis_lda
         topic_model.load_newest_models()
         redis_lda.consume_user_click()

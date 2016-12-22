@@ -20,11 +20,12 @@ def consume_nid():
     import requests
     while True:
         nid = redis_inst.brpop(nid_queue)[1]
-        url = 'http://127.0.0.1:9989/topic_model/get_topic_on_nid'
-        data = {}
-        data['nid'] = nid
-        print 'consume id =' + str(nid)
-        response = requests.get(url, params=data)
+        topic_model.lda_predict_and_save(nid)
+        #url = 'http://127.0.0.1:9989/topic_model/get_topic_on_nid'
+        #data = {}
+        #data['nid'] = nid
+        #print 'consume id =' + str(nid)
+        #response = requests.get(url, params=data)
 
 import json
 user_click_queue = 'user_click_queue'
