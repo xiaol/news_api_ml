@@ -31,6 +31,9 @@ user_click_queue = 'user_click_queue'
 def produce_user_click(uid, nid, ctime):
     global redis_inst
     print 'produce user ' + str(uid) + ' ' + str(nid)
+    d = json.dumps([uid, nid, ctime])
+    print type(d)
+    print d
     redis_inst.lpush(user_click_queue, json.dumps([uid, nid, ctime]))
 
 
