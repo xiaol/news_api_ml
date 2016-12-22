@@ -40,7 +40,11 @@ def consume_user_click():
     global redis_inst
     import requests
     while True:
-        data = json.loads(redis_inst.brpop(user_click_queue)[1])
+        d = redis_inst.blpop(user_click_queue)
+        print d
+        print type(d[1])
+        print d[1]
+        data = json.loads(d[1])
         print type(data)
         print data
         uid = data[1][0]
