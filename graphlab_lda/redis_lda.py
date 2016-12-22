@@ -26,11 +26,12 @@ def consume_nid():
         print 'consume id =' + str(nid)
         response = requests.get(url, params=data)
 
+import json
 user_click_queue = 'user_click_queue'
 def produce_user_click(uid, nid, ctime):
     global redis_inst
     print 'produce user ' + str(uid) + ' ' + str(nid)
-    redis_inst.lpush(user_click_queue, (uid, nid, ctime))
+    redis_inst.lpush(user_click_queue, json.dumps(uid, nid, ctime))
 
 
 from graphlab_lda import topic_model
@@ -39,7 +40,7 @@ def consume_user_click():
     global redis_inst
     import requests
     while True:
-        data = redis_inst.brpop(user_click_queue)
+        data = json.loads(redis_inst.brpop(user_click_queue)[1])
         print type(data)
         print data
         uid = data[1][0]
