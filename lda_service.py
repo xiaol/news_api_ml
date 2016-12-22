@@ -147,6 +147,7 @@ if __name__ == '__main__':
         http_server.listen(port)
     elif port == 9985: #消费用户点击行为队列。
         from graphlab_lda import redis_lda
+        topic_model.load_newest_models()
         redis_lda.consume_user_click()
     tornado.ioloop.IOLoop.instance().start()
 
