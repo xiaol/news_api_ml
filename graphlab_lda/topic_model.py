@@ -204,7 +204,7 @@ def predict_user_topic_core(uid, nid, ctime):
             cursor.execute(user_topic_insert_sql.format(uid, model_v, ch_name, topic_id, probability, time_str, fail_time))
         else:
             for r in rows:   #取出已经存在的一栏信息
-                org_probability = r[3]
+                org_probability = r[4]
             new_probabiliby = org_probability + item[1]
             #cursor.execute(user_topic_delete_sql.format(uid, model_v, ch_name, topic_id))
             cursor.execute(user_topic_update_sql.format(new_probabiliby, time_str, fail_time, uid, model_v, ch_name, topic_id))
