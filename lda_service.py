@@ -11,6 +11,7 @@ import tornado
 from tornado import web
 from tornado import httpserver
 from tornado import ioloop
+import traceback
 
 from graphlab_lda import topic_model_doc_process
 from graphlab_lda import topic_model
@@ -43,10 +44,14 @@ class PredictNewsTopic(tornado.web.RequestHandler):
 #预测单次点击事件
 class PredictOneClick(tornado.web.RequestHandler):
     def get(self):
-        uid = int(self.get_argument('uid'))
-        nid = int(self.get_argument('nid'))
-        ctime = self.get_argument('ctime')
-        topic_model.predict_user_topic_core(uid, nid, ctime)
+        try:
+            uid = int(self.get_argument('uid'))
+            nid = int(self.get_argument('nid'))
+            ctime = self.get_argument('ctime')
+            topic_model.predict_user_topic_core(uid, nid, ctime)
+        except :
+            traceback.print_exc()
+
 
 
 #对外提供的接口。对用户点击行为进行预测. 数据写入队列
