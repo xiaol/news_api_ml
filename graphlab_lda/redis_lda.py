@@ -42,9 +42,9 @@ def consume_user_click():
         data = redis_inst.brpop(user_click_queue)
         print type(data)
         print data
-        uid = redis_inst.brpop(user_click_queue)[1][0]
-        nid = redis_inst.brpop(user_click_queue)[1][1]
-        ctime = redis_inst.brpop(user_click_queue)[1][2]
+        uid = data[1][0]
+        nid = data[1][1]
+        ctime = data[1][2]
         topic_model.predict_user_topic_core(uid, nid, ctime)
         print 'finished--------'
         #url = 'http://127.0.0.1:9986/topic_model/predict_one_click'
