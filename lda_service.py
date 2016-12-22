@@ -40,6 +40,7 @@ class PredictNewsTopic(tornado.web.RequestHandler):
         from graphlab_lda import redis_lda
         redis_lda.produce_nid(nid)
 
+#预测单次点击事件
 class PredictOneClick(tornado.web.RequestHandler):
     def get(self):
         uid = int(self.get_argument('uid'))
@@ -48,7 +49,7 @@ class PredictOneClick(tornado.web.RequestHandler):
         topic_model.predict_user_topic_core(uid, nid, ctime)
 
 
-#对外提供的接口。对用户点击行为进行预测
+#对外提供的接口。对用户点击行为进行预测. 数据写入队列
 class PredictUserTopic(tornado.web.RequestHandler):
     def post(self):
         clicks = json.loads(self.get_body_argument('clicks'))
@@ -87,17 +88,26 @@ class CollectUserTopic(tornado.web.RequestHandler):
 class ProduceNewsApplication(tornado.web.Application):
     def __init__(self):
         handlers = [
-            ("/topic_model/predict_news_topic", PredictNewsTopic),
-            ("/topic_model/predict_clicks", PredictUserTopic),
+            ("/topic_model/predict_news_topic", PredictNewsTopic), #放入新闻队列
         ]
         settings = {}
         tornado.web.Application.__init__(self, handlers, **settings)
 
 
-class ProduceUserProfileApplication(tornado.web.Application):
+class ProduceClickEventApplication(tornado.web.Application):
     def __init__(self):
         handlers = [
-            ("/topic_model/predict_one_click", PredictOneClick),
+            ("/topic_model/predict_clicks", PredictUserTopic),#可以将批量点击放入队列
+        ]
+        settings = {}
+        tornado.web.Application.__init__(self, handlers, **settings)
+
+
+
+class ConsumeClickEventApplication(tornado.web.Application):
+    def __init__(self):
+        handlers = [
+            ("/topic_model/predict_one_click", PredictOneClick), #处理单次点击
         ]
         settings = {}
         tornado.web.Application.__init__(self, handlers, **settings)
@@ -109,7 +119,7 @@ class Application(tornado.web.Application):
             ("/topic_model/coll_news", CollNews),
             ("/topic_model/create_models", CreateModels),
             ("/topic_model/predict_on_nid", PredictOnNid),
-            ("/topic_model/get_topic_on_nid", PredictOnNidAndSave),
+            ("/topic_model/get_topic_on_nid", PredictOnNidAndSave), #消费新闻
             ("/topic_model/load_models", LoadModels),
             ("/topic_model/produce_news_topic_manual", ProuceNewsTopicManual),
             ("/topic_model/get_user_topic", CollectUserTopic),
@@ -122,16 +132,25 @@ if __name__ == '__main__':
     if port == 9987:  #新闻入库后将nid加入到队列中,对外提供的接口
         http_server = tornado.httpserver.HTTPServer(ProduceNewsApplication())
         http_server.listen(port)
-    elif port == 9989 or port == 9988:
+    elif port == 9989 or port == 9988: #包含手工的一些接口和新闻的消费逻辑
         http_server = tornado.httpserver.HTTPServer(Application())
         http_server.listen(port)
-    elif port == 9990:
+    elif port == 9990:#消费新闻队列数据
         from graphlab_lda import redis_lda
-        redis_lda.consume_nid()  #消费新闻队列数据
-    elif port == 9986:  #用户新的点击行为增加用户profile
-        http_server = tornado.httpserver.HTTPServer(ProduceUserProfileApplication())
+        redis_lda.consume_nid()
+    elif port == 9984: #用户点击事件入队列
+        http_server = tornado.httpserver.HTTPServer(ProduceClickEventApplication())
         http_server.listen(port)
-    elif port == 9985: #消费用户点击行为
+    elif port == 9986:  #用户点击事件的消费逻辑进程
+        topic_model.load_newest_models()
+        http_server = tornado.httpserver.HTTPServer(ConsumeClickEventApplication())
+        http_server.listen(port)
+    elif port == 9985: #消费用户点击行为队列。
         from graphlab_lda import redis_lda
         redis_lda.consume_user_click()
     tornado.ioloop.IOLoop.instance().start()
+
+
+
+
+

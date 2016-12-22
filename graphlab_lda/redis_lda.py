@@ -32,6 +32,7 @@ def produce_user_click(uid, nid, ctime):
     redis_inst.lpush(user_click_queue, (uid, nid, ctime))
 
 
+from graphlab_lda import topic_model
 #消费用户点击行为
 def consume_user_click():
     global redis_inst
@@ -43,11 +44,12 @@ def consume_user_click():
         uid = redis_inst.brpop(user_click_queue)[1][0]
         nid = redis_inst.brpop(user_click_queue)[1][1]
         ctime = redis_inst.brpop(user_click_queue)[1][2]
-        url = 'http://127.0.0.1:9986/topic_model/predict_one_click'
-        data = {}
-        data['uid'] = uid
-        data['nid'] = nid
-        data['ctime'] = ctime
-        print 'consume click =' + str(uid) + str(nid)
-        response = requests.get(url, params=data)
+        topic_model.predict_user_topic_core(uid, nid, ctime)
+        #url = 'http://127.0.0.1:9986/topic_model/predict_one_click'
+        #data = {}
+        #data['uid'] = uid
+        #data['nid'] = nid
+        #data['ctime'] = ctime
+        #print 'consume click =' + str(uid) + str(nid)
+        #response = requests.get(url, params=data)
 

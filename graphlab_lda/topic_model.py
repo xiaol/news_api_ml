@@ -67,6 +67,17 @@ def create_models():
     print 'create models finished!!'
 
 
+def get_newest_model_dir():
+    global model_dir
+    models_dir = real_dir_path + '/models'
+    models = os.listdir(models_dir)
+    ms = {}
+    for m in models:
+        ms[m] = m.replace('-', '')
+    ms_sort = sorted(ms.items(), key=lambda x:x[1])
+    return model_dir + ms_sort.pop()[0]
+
+
 def load_models(models_dir):
     print 'load_models()'
     global g_channel_model_dict, model_v
@@ -81,21 +92,14 @@ def load_models(models_dir):
         g_channel_model_dict[mf] = gl.load_model(models_dir + '/'+ mf)
 
 
-def get_newest_model_dir():
-    global model_dir
-    models_dir = real_dir_path + '/models'
-    models = os.listdir(models_dir)
-    ms = {}
-    for m in models:
-        ms[m] = m.replace('-', '')
-    ms_sort = sorted(ms.items(), key=lambda x:x[1])
-    return model_dir + ms_sort.pop()[0]
+def load_newest_models():
+    load_models(get_newest_model_dir())
 
 
 def lda_predict_core(nid):
     global g_channel_model_dict
     if len(g_channel_model_dict) == 0:
-        load_models(get_newest_model_dir())
+        load_newest_models()
 
     words_list, chanl_name = topic_model_doc_process.get_words_on_nid(nid)
     if chanl_name not in g_channel_model_dict.keys():
@@ -166,14 +170,12 @@ def lda_predict_and_save(nid):
 
 
 user_topic_sql = 'select * from usertopics where uid = %s and model_v = %s and ch_name=%s and topic_id = %s'
-user_topic_delete_sql = "delete from usertopics where uid = '{0}' and model_v = '{1}' and ch_name='{2}' and" \
-                        "topic_id='{3}'"
 user_topic_insert_sql = "insert into usertopics (uid, model_v, ch_name, topic_id, probability, create_time, fail_time) " \
                         "VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}')"
 user_topic_update_sql = "update usertopics set probability='{0}', create_time='{1}', fail_time='{2}'" \
                         "where uid='{3}' and model_v='{4}' and ch_name='{5}' and topic_id='{6}'"
 #预测用户话题主逻辑
-def predict_user_topic_core(uid, nid, ctime):
+def predict_user_topic_core(uid, nid, time_str):
     from datetime import timedelta
     global g_channel_model_dict, model_v
     ch_name, pred = lda_predict_core(nid)  #预测topic分布
@@ -190,10 +192,10 @@ def predict_user_topic_core(uid, nid, ctime):
     while i < 3 and i < len(probility) and probility[i][0] > 0.1:
         to_save[probility[i][1]] = probility[i][0]
         i += 1
-    time_str = ctime.strftime('%Y-%m-%d %H:%M:%S')
+    #time_str = ctime.strftime('%Y-%m-%d %H:%M:%S')
+    ctime = datetime.datetime.strptime(time_str, '%Y-%m-%d %H:%M:%S')
     valid_time = ctime + timedelta(days=30) #有效时间定为30天
     fail_time = valid_time.strftime('%Y-%m-%d %H:%M:%S')
-    #if new_user_topic: #插入新数据
     conn, cursor = doc_process.get_postgredb()
     for item in to_save.items():
         topic_id = item[0]
@@ -206,7 +208,6 @@ def predict_user_topic_core(uid, nid, ctime):
             for r in rows:   #取出已经存在的一栏信息
                 org_probability = r[4]
             new_probabiliby = org_probability + item[1]
-            #cursor.execute(user_topic_delete_sql.format(uid, model_v, ch_name, topic_id))
             cursor.execute(user_topic_update_sql.format(new_probabiliby, time_str, fail_time, uid, model_v, ch_name, topic_id))
     conn.commit()
     conn.close()
@@ -234,7 +235,7 @@ def get_user_topics():
             user_news_dict[uid] = set()
             user_news_dict[uid].add((r[1], r[2]))
     for item in user_news_dict.items():
-        coll_user_topics(item[0], item[1])
+        coll_user_topics(item[0], item[1].strftime('%Y-%m-%d %H:%M:%S'))
 
 
 #取十万条新闻加入队列做预测,并保存至数据库
