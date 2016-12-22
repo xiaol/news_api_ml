@@ -43,16 +43,10 @@ def consume_user_click():
     global redis_inst
     import requests
     while True:
-        d = redis_inst.blpop(user_click_queue)
-        print d
-        print type(d[1])
-        print d[1]
-        data = json.loads(d[1])
-        print type(data)
-        print data
-        uid = data[1][0]
-        nid = data[1][1]
-        ctime = data[1][2]
+        data = json.loads(redis_inst.blpop(user_click_queue)[1])
+        uid = data[0]
+        nid = data[1]
+        ctime = data[2]
         topic_model.predict_user_topic_core(uid, nid, ctime)
         print 'finished--------'
         #url = 'http://127.0.0.1:9986/topic_model/predict_one_click'
