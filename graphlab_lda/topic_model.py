@@ -170,7 +170,7 @@ user_topic_delete_sql = "delete from usertopics where uid = '{0}' and model_v = 
                         "topic_id='{3}'"
 user_topic_insert_sql = "insert into usertopics (uid, model_v, ch_name, topic_id, probability, create_time, fail_time) " \
                         "VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}')"
-user_topic_update_sql = "update usertopics ut set ut.probability='{0}', ut.create_time='{1}', ut.fail_time='{2}'" \
+user_topic_update_sql = "update usertopics set probability='{0}', create_time='{1}', fail_time='{2}'" \
                         "where uid='{3}' and model_v='{4}' and ch_name='{5}' and topic_id='{6}'"
 #预测用户话题主逻辑
 def predict_user_topic_core(uid, nid, ctime):
