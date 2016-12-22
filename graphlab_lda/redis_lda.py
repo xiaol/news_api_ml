@@ -29,6 +29,7 @@ def consume_nid():
 user_click_queue = 'user_click_queue'
 def produce_user_click(uid, nid, ctime):
     global redis_inst
+    print 'produce user ' + str(uid) + ' ' + str(nid)
     redis_inst.lpush(user_click_queue, (uid, nid, ctime))
 
 
@@ -45,6 +46,7 @@ def consume_user_click():
         nid = redis_inst.brpop(user_click_queue)[1][1]
         ctime = redis_inst.brpop(user_click_queue)[1][2]
         topic_model.predict_user_topic_core(uid, nid, ctime)
+        print 'finished--------'
         #url = 'http://127.0.0.1:9986/topic_model/predict_one_click'
         #data = {}
         #data['uid'] = uid

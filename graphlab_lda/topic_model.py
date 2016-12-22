@@ -178,6 +178,7 @@ user_topic_update_sql = "update usertopics set probability='{0}', create_time='{
 def predict_user_topic_core(uid, nid, time_str):
     from datetime import timedelta
     global g_channel_model_dict, model_v
+    print 'model_v ==== ' + model_v
     ch_name, pred = lda_predict_core(nid)  #预测topic分布
     if len(pred) == 0:
         return
