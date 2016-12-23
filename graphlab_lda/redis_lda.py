@@ -48,7 +48,8 @@ import json
 user_click_queue = 'user_click_queue'
 def produce_user_click(uid, nid, ctime):
     global redis_inst, logger_produce
-    logger_produce.info('produce user ' + str(uid) + ' ' + str(nid))
+    #logger_produce.info('produce user ' + str(uid) + ' ' + str(nid))
+    print 'produce user ' + str(uid) + ' ' + str(nid)
     redis_inst.lpush(user_click_queue, json.dumps([uid, nid, ctime]))
 
 
@@ -59,13 +60,14 @@ def consume_user_click():
     while True:
         try:
             data = json.loads(redis_inst.brpop(user_click_queue)[1])
+            print redis_inst.llen(user_click_queue)
             uid = data[0]
             nid = data[1]
             ctime = data[2]
             print 'consum ' + str(uid) + ' ' + str(nid) + ' ' + 'begin'
             #logger_consume.info('consum ' + str(uid) + ' ' + str(nid) + ' ' + 'begin')
             topic_model.predict_user_topic_core(uid, nid, ctime)
-            print 'consum ' + str(uid) + ' ' + str(nid) + ' ' + 'begin'
+            print 'consum ' + str(uid) + ' ' + str(nid) + ' ' + 'end'
             #logger_consume.info('consum ' + str(uid) + ' ' + str(nid) + ' ' + 'finished--------')
         except :
             traceback.print_exc()
