@@ -27,7 +27,7 @@ class StayAliveApp(tornado.web.Application):
 
 
 if __name__ == '__main__':
-    port = int(sys.argv[1])
+    port = int(sys.argv[1]) #默认9000
     http_server = tornado.httpserver.HTTPServer(StayAliveApp())
     http_server.listen(port)
     tornado.ioloop.IOLoop.instance().start()
