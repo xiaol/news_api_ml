@@ -138,22 +138,22 @@ class Application(tornado.web.Application):
 
 if __name__ == '__main__':
     port = int(sys.argv[1])
-    if port == 9987:  #新闻入库后将nid加入到队列中,对外提供的接口
+    if port == 9986:  #新闻入库后将nid加入到队列中,对外提供的接口
         http_server = tornado.httpserver.HTTPServer(ProduceNewsApplication())
         http_server.listen(port)
-    elif port == 9989 or port == 9988: #包含手工的一些接口和新闻的消费逻辑
+    elif port == 9987: #包含手工的一些接口和新闻的消费逻辑
         http_server = tornado.httpserver.HTTPServer(Application())
         http_server.listen(port)
-    elif port == 9990:#消费新闻队列数据
+    elif port == 9988:#消费新闻队列数据
         from graphlab_lda import redis_lda
         topic_model.load_newest_models()
         redis_lda.consume_nid()
-    elif port == 9984: #用户点击事件入队列
+    elif port == 9989: #用户点击事件入队列
         from graphlab_lda.timed_task import get_clicks_5s
         ioloop.PeriodicCallback(get_clicks_5s, 300000).start() #定时从点击表中取
         http_server = tornado.httpserver.HTTPServer(ProduceClickEventApplication())
         http_server.listen(port) #同时提供手工处理端口
-    elif port == 9985: #消费用户点击逻辑进程。
+    elif port == 9990: #消费用户点击逻辑进程。
         from graphlab_lda import redis_lda
         topic_model.load_newest_models()
         redis_lda.consume_user_click()
