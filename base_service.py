@@ -8,6 +8,7 @@ import sys
 import tornado
 import tornado.ioloop
 import tornado.web
+import tornado.httpserver
 from base_service import produce_consume_nid
 
 class PushNewsIntoQueue(tornado.web.RequestHandler):
