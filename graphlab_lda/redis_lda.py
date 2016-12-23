@@ -51,6 +51,7 @@ def produce_user_click(uid, nid, ctime):
     #logger_produce.info('produce user ' + str(uid) + ' ' + str(nid))
     print 'produce user ' + str(uid) + ' ' + str(nid)
     redis_inst.lpush(user_click_queue, json.dumps([uid, nid, ctime]))
+    print redis_inst.llen(user_click_queue)
 
 
 from graphlab_lda import topic_model
