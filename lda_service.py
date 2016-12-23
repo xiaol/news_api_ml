@@ -136,6 +136,8 @@ class Application(tornado.web.Application):
         settings = {}
         tornado.web.Application.__init__(self, handlers, **settings)
 
+
+
 if __name__ == '__main__':
     port = int(sys.argv[1])
     if port == 9986:  #新闻入库后将nid加入到队列中,对外提供的接口
