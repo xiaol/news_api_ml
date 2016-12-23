@@ -118,8 +118,6 @@ def lda_predict_core(nid):
     #pred = g_channel_model_dict[chanl_name].predict(docs)
     #print pred
     #print '%s' % str(sf[pred[0]]['words']).decode('string_escape')
-
-    print '=================================='
     pred2 = g_channel_model_dict[chanl_name].predict(docs,
                                                      output_type='probability')
     return chanl_name, pred2

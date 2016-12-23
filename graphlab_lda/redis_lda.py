@@ -50,7 +50,7 @@ def consume_user_click():
             nid = data[1]
             ctime = data[2]
             topic_model.predict_user_topic_core(uid, nid, ctime)
-            print 'finished--------'
+            print 'consum ' + str(uid) + ' ' + str(nid) + ' ' + 'finished--------'
     except :
         traceback.print_exc()
 
