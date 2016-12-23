@@ -7,6 +7,7 @@
 from redis import Redis
 import traceback
 redis_inst = Redis(host='localhost', port=6379)
+redis_inst2 = Redis(host='localhost', port=6379)
 nid_queue = 'nid_queue_for_lda'
 
 import logging
@@ -47,24 +48,27 @@ def consume_nid():
 import json
 user_click_queue = 'user_click_queue'
 def produce_user_click(uid, nid, ctime):
-    global redis_inst, logger_produce
+    global redis_inst2, logger_produce
     logger_produce.info('produce user ' + str(uid) + ' ' + str(nid))
-    redis_inst.lpush(user_click_queue, json.dumps([uid, nid, ctime]))
+    redis_inst2.lpush(user_click_queue, json.dumps([uid, nid, ctime]))
 
 
 from graphlab_lda import topic_model
 #消费用户点击行为
 def consume_user_click():
-    global redis_inst, logger_consume
-    try:
-        while True:
-            data = json.loads(redis_inst.brpop(user_click_queue)[1])
+    global redis_inst2, logger_consume
+    while True:
+        try:
+            data = json.loads(redis_inst2.brpop(user_click_queue)[1])
             uid = data[0]
             nid = data[1]
             ctime = data[2]
-            logger_consume.info('consum ' + str(uid) + ' ' + str(nid) + ' ' + 'begin')
+            print 'consum ' + str(uid) + ' ' + str(nid) + ' ' + 'begin'
+            #logger_consume.info('consum ' + str(uid) + ' ' + str(nid) + ' ' + 'begin')
             topic_model.predict_user_topic_core(uid, nid, ctime)
-            logger_consume.info('consum ' + str(uid) + ' ' + str(nid) + ' ' + 'finished--------')
-    except :
-        traceback.print_exc()
+            print 'consum ' + str(uid) + ' ' + str(nid) + ' ' + 'begin'
+            #logger_consume.info('consum ' + str(uid) + ' ' + str(nid) + ' ' + 'finished--------')
+        except :
+            traceback.print_exc()
+            continue
 
