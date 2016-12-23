@@ -179,7 +179,6 @@ def predict_user_topic_core(uid, nid, time_str):
     global g_channel_model_dict, model_v
     ch_name, pred = lda_predict_core(nid)  #预测topic分布
     if len(pred) == 0:
-        print '******len(pred) = 0'
         return
     num_dict = {}
     num = 0 #标记topic的index
@@ -199,7 +198,6 @@ def predict_user_topic_core(uid, nid, time_str):
     except:
         traceback.print_exc()
         return
-    print 'yyyyyyyyyyyyyyyyy'
     conn, cursor = doc_process.get_postgredb()
     for item in to_save.items():
         topic_id = item[0]

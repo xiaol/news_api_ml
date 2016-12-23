@@ -22,7 +22,7 @@ def get_clicks_5s():
     rows = cursor.fetchall()
     for r in rows:
         ctime_str = r[2].strftime('%Y-%m-%d %H:%M:%S')
-        print str(r[0]) + ' ' + str(r[1]) + ' '+ ctime_str
+        #print str(r[0]) + ' ' + str(r[1]) + ' '+ ctime_str
         produce_user_click(r[0], r[1], ctime_str)
     cursor.close()
     conn.close()

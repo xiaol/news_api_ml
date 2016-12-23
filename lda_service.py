@@ -137,6 +137,15 @@ class Application(tornado.web.Application):
         tornado.web.Application.__init__(self, handlers, **settings)
 
 
+#空白应用。 可以起到占用端口,防止某个服务被反复启动
+class EmptyApp(tornado.web.Application):
+    def __init__(self):
+        handlers = [
+
+        ]
+        settings = {}
+        tornado.web.Application.__init__(self, handlers, **settings)
+
 
 if __name__ == '__main__':
     port = int(sys.argv[1])
@@ -148,6 +157,8 @@ if __name__ == '__main__':
         http_server.listen(port)
     elif port == 9988:#消费新闻队列数据
         from graphlab_lda import redis_lda
+        http_server = tornado.httpserver.HTTPServer(EmptyApp())
+        http_server.listen(port) #同时提供手工处理端口
         topic_model.load_newest_models()
         redis_lda.consume_nid()
     elif port == 9989: #用户点击事件入队列
@@ -157,9 +168,9 @@ if __name__ == '__main__':
         http_server.listen(port) #同时提供手工处理端口
     elif port == 9990: #消费用户点击逻辑进程。
         from graphlab_lda import redis_lda
-        print '9990  load model being...'
+        http_server = tornado.httpserver.HTTPServer(EmptyApp())
+        http_server.listen(port) #同时提供手工处理端口
         topic_model.load_newest_models()
-        print '9990  load model finished!!'
         redis_lda.consume_user_click()
     tornado.ioloop.IOLoop.instance().start()
 
