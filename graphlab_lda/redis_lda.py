@@ -10,13 +10,21 @@ redis_inst = Redis(host='localhost', port=6379)
 nid_queue = 'nid_queue_for_lda'
 
 import logging
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger_produce = logging.getLogger(__name__)
+logger_produce.setLevel(logging.INFO)
 handler = logging.FileHandler('log/lda_log.txt')
 handler.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
-logger.addHandler(handler)
+logger_produce.addHandler(handler)
+
+logger_consume = logging.getLogger(__name__)
+logger_consume.setLevel(logging.INFO)
+handler = logging.FileHandler('log/lda_consume_log.txt')
+handler.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+logger_consume.addHandler(handler)
 
 def produce_nid(nid):
     global redis_inst
@@ -39,24 +47,24 @@ def consume_nid():
 import json
 user_click_queue = 'user_click_queue'
 def produce_user_click(uid, nid, ctime):
-    global redis_inst
-    logger.info('produce user ' + str(uid) + ' ' + str(nid))
+    global redis_inst, logger_produce
+    logger_produce.info('produce user ' + str(uid) + ' ' + str(nid))
     redis_inst.lpush(user_click_queue, json.dumps([uid, nid, ctime]))
 
 
 from graphlab_lda import topic_model
 #消费用户点击行为
 def consume_user_click():
-    global redis_inst
+    global redis_inst, logger_consume
     try:
         while True:
             data = json.loads(redis_inst.brpop(user_click_queue)[1])
             uid = data[0]
             nid = data[1]
             ctime = data[2]
-            logger.info('consum ' + str(uid) + ' ' + str(nid) + ' ' + 'begin')
+            logger_consume.info('consum ' + str(uid) + ' ' + str(nid) + ' ' + 'begin')
             topic_model.predict_user_topic_core(uid, nid, ctime)
-            logger.info('consum ' + str(uid) + ' ' + str(nid) + ' ' + 'finished--------')
+            logger_consume.info('consum ' + str(uid) + ' ' + str(nid) + ' ' + 'finished--------')
     except :
         traceback.print_exc()
 
