@@ -50,7 +50,7 @@ def consume_user_click():
     global redis_inst
     try:
         while True:
-            data = json.loads(redis_inst.blpop(user_click_queue)[1])
+            data = json.loads(redis_inst.brpop(user_click_queue)[1])
             uid = data[0]
             nid = data[1]
             ctime = data[2]
