@@ -156,6 +156,7 @@ if __name__ == '__main__':
     elif port == 9990: #消费用户点击逻辑进程。
         from graphlab_lda import redis_lda
         topic_model.load_newest_models()
+        print '9990  load model finished!!'
         redis_lda.consume_user_click()
     tornado.ioloop.IOLoop.instance().start()
 
