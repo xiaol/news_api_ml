@@ -30,3 +30,4 @@ if __name__ == '__main__':
     port = int(sys.argv[1])
     http_server = tornado.httpserver.HTTPServer(StayAliveApp())
     http_server.listen(port)
+    tornado.ioloop.IOLoop.instance().start()
