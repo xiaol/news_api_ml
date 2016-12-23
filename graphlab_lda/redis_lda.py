@@ -5,6 +5,7 @@
 # @File    : redis_lda.py
 # @Software: PyCharm Community Edition
 from redis import Redis
+import traceback
 redis_inst = Redis(host='localhost', port=6379)
 nid_queue = 'nid_queue_for_lda'
 
@@ -42,19 +43,14 @@ from graphlab_lda import topic_model
 #消费用户点击行为
 def consume_user_click():
     global redis_inst
-    import requests
-    while True:
-        data = json.loads(redis_inst.blpop(user_click_queue)[1])
-        uid = data[0]
-        nid = data[1]
-        ctime = data[2]
-        topic_model.predict_user_topic_core(uid, nid, ctime)
-        print 'finished--------'
-        #url = 'http://127.0.0.1:9986/topic_model/predict_one_click'
-        #data = {}
-        #data['uid'] = uid
-        #data['nid'] = nid
-        #data['ctime'] = ctime
-        #print 'consume click =' + str(uid) + str(nid)
-        #response = requests.get(url, params=data)
+    try:
+        while True:
+            data = json.loads(redis_inst.blpop(user_click_queue)[1])
+            uid = data[0]
+            nid = data[1]
+            ctime = data[2]
+            topic_model.predict_user_topic_core(uid, nid, ctime)
+            print 'finished--------'
+    except :
+        traceback.print_exc()
 

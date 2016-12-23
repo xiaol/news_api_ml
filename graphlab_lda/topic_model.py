@@ -11,6 +11,7 @@ import graphlab as gl
 import os
 import topic_model_doc_process
 from util import doc_process
+import traceback
 
 real_dir_path = os.path.split(os.path.realpath(__file__))[0]
 #gl.set_runtime_config('GRAPHLAB_DEFAULT_NUM_PYLAMBDA_WORKERS', 64)
@@ -178,7 +179,6 @@ user_topic_update_sql = "update usertopics set probability='{0}', create_time='{
 def predict_user_topic_core(uid, nid, time_str):
     from datetime import timedelta
     global g_channel_model_dict, model_v
-    print 'model_v ==== ' + model_v
     ch_name, pred = lda_predict_core(nid)  #预测topic分布
     if len(pred) == 0:
         return
@@ -193,10 +193,13 @@ def predict_user_topic_core(uid, nid, time_str):
     while i < 3 and i < len(probility) and probility[i][0] > 0.1:
         to_save[probility[i][1]] = probility[i][0]
         i += 1
-    #time_str = ctime.strftime('%Y-%m-%d %H:%M:%S')
-    ctime = datetime.datetime.strptime(time_str, '%Y-%m-%d %H:%M:%S')
-    valid_time = ctime + timedelta(days=30) #有效时间定为30天
-    fail_time = valid_time.strftime('%Y-%m-%d %H:%M:%S')
+    try:
+        ctime = datetime.datetime.strptime(time_str, '%Y-%m-%d %H:%M:%S')
+        valid_time = ctime + timedelta(days=30) #有效时间定为30天
+        fail_time = valid_time.strftime('%Y-%m-%d %H:%M:%S')
+    except:
+        traceback.print_exc()
+        return
     conn, cursor = doc_process.get_postgredb()
     for item in to_save.items():
         topic_id = item[0]
