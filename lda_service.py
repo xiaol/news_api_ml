@@ -155,6 +155,7 @@ if __name__ == '__main__':
         http_server.listen(port) #同时提供手工处理端口
     elif port == 9990: #消费用户点击逻辑进程。
         from graphlab_lda import redis_lda
+        print '9990  load model being...'
         topic_model.load_newest_models()
         print '9990  load model finished!!'
         redis_lda.consume_user_click()
