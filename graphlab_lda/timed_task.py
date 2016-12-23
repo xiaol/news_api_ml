@@ -12,7 +12,7 @@ from topic_model_doc_process import channel_for_topic
 conn, cursor = get_postgredb()
 
 #click_sql = "select uid, nid, ctime from newsrecommendclick where ctime > now() - INTERVAL '5 minute'"
-click_sql = "select nl.nid from newsrecommendclick c \
+click_sql = "select c.uid, c.nid, c.ctime from newsrecommendclick c \
 inner join newslist_v2 nl  on c.nid=nl.nid \
 INNER JOIN channellist_v2 cl on nl.chid = cl.id \
 where cname in ({0}) and c.ctime > now() - INTERVAL '5 minute'"
