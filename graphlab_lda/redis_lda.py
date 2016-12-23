@@ -9,6 +9,14 @@ import traceback
 redis_inst = Redis(host='localhost', port=6379)
 nid_queue = 'nid_queue_for_lda'
 
+import logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+handler = logging.FileHandler('log/lda_log.txt')
+handler.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 def produce_nid(nid):
     global redis_inst
@@ -32,10 +40,7 @@ import json
 user_click_queue = 'user_click_queue'
 def produce_user_click(uid, nid, ctime):
     global redis_inst
-    print 'produce user ' + str(uid) + ' ' + str(nid)
-    d = json.dumps([uid, nid, ctime])
-    print type(d)
-    print d
+    logger.info('produce user ' + str(uid) + ' ' + str(nid))
     redis_inst.lpush(user_click_queue, json.dumps([uid, nid, ctime]))
 
 
@@ -49,8 +54,9 @@ def consume_user_click():
             uid = data[0]
             nid = data[1]
             ctime = data[2]
+            logger.info('consum ' + str(uid) + ' ' + str(nid) + ' ' + 'begin')
             topic_model.predict_user_topic_core(uid, nid, ctime)
-            print 'consum ' + str(uid) + ' ' + str(nid) + ' ' + 'finished--------'
+            logger.info('consum ' + str(uid) + ' ' + str(nid) + ' ' + 'finished--------')
     except :
         traceback.print_exc()
 
