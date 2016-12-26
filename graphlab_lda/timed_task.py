@@ -17,7 +17,7 @@ where cname in ({0}) and c.ctime > now() - INTERVAL '5 minute' \
 and \
 (c.uid, c.nid) not in ( \
 select c2.uid, c2.nid from newsrecommendclick c2 \
-where c2.ctime < now() - interval '5 minute' and c2.ctime > now() - INTERVAL '3 day'"
+where c2.ctime < now() - interval '5 minute' and c2.ctime > now() - INTERVAL '3 day') "
 
 channels = ', '.join("\'" + ch+"\'" for ch in channel_for_topic)
 def get_clicks_5s():
