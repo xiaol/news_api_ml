@@ -140,7 +140,8 @@ def lda_predict_core(nid):
     #print '%s' % str(sf[pred[0]]['words']).decode('string_escape')
     t = datetime.datetime.now()
     pred2 = g_channel_model_dict[chanl_name].predict(docs,
-                                                     output_type='probability')
+                                                     output_type='probability',
+                                                     num_burnin=30)
     t2 = datetime.datetime.now()
     print 'predict time:'
     print (t2 - t).seconds
