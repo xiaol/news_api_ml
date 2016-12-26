@@ -328,6 +328,8 @@ def predict_topic_nids(nid_list):
             if nid[0] == chname:
                 chname_news_dict[chname].append(nid) #获取该频道的nid列表
 
+        if len(chname_news_dict[chname]) == 0:
+            continue
         doc_list = []
         for nid in chname_news_dict[chname]:
             doc_list.append(nid_info[nid][1])
