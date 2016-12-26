@@ -9,45 +9,34 @@ import traceback
 redis_inst = Redis(host='localhost', port=6379)
 nid_queue = 'nid_queue_for_lda'
 
-import logging
-logger_produce = logging.getLogger(__name__)
-logger_produce.setLevel(logging.INFO)
-handler = logging.FileHandler('log/lda_log.txt')
-handler.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-handler.setFormatter(formatter)
-logger_produce.addHandler(handler)
-
-logger_consume = logging.getLogger(__name__)
-logger_consume.setLevel(logging.INFO)
-handler = logging.FileHandler('log/lda_consume_log.txt')
-handler.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-handler.setFormatter(formatter)
-logger_consume.addHandler(handler)
-
 def produce_nid(nid):
     global redis_inst
     print 'produce ' + str(nid) + ' for lda'
     redis_inst.lpush(nid_queue, nid)
 
 
-def consume_nid():
+def consume_nid(num):
     global redis_inst
-    import requests
+    n = 0
+    nid_list = []
     while True:
         nid = redis_inst.brpop(nid_queue)[1]
-        topic_model.lda_predict_and_save(nid)
-        #url = 'http://127.0.0.1:9989/topic_model/get_topic_on_nid'
-        #data = {}
-        #data['nid'] = nid
-        #print 'consume id =' + str(nid)
-        #response = requests.get(url, params=data)
+        if num:
+            nid_list.append(nid)
+            n += 1
+            if n >=num:
+                #topic_model.lda_predict_and_save(nid_list)
+                topic_model.predict_topic_nids(nid_list)
+                n = 0
+                del nid_list
+        else:
+            topic_model.predict_topic_nids([nid, ])
+
 
 import json
 user_click_queue = 'user_click_queue'
 def produce_user_click(uid, nid, ctime):
-    global redis_inst, logger_produce
+    global redis_inst
     print 'produce user ' + str(uid) + ' ' + str(nid) + ' ' + ctime
     redis_inst.lpush(user_click_queue, json.dumps([uid, nid, ctime]))
 
@@ -55,7 +44,7 @@ def produce_user_click(uid, nid, ctime):
 from graphlab_lda import topic_model
 #消费用户点击行为
 def consume_user_click():
-    global redis_inst, logger_consume
+    global redis_inst
     while True:
         try:
             data = json.loads(redis_inst.brpop(user_click_queue)[1])
@@ -67,4 +56,28 @@ def consume_user_click():
         except :
             traceback.print_exc()
             continue
+
+
+
+import topic_model_v2
+def consume_user_clicks(num):
+    global redis_inst
+    n = 0
+    click_list = []
+    while True:
+        try:
+            #data[0]--uid, data[1]--nid, data[2]--ctime
+            data = json.loads(redis_inst.brpop(user_click_queue)[1])
+            if num:
+                n += 1
+                click_list.append((data[0], data[1], data[2]))
+                if n >= num:
+                    topic_model_v2.predict_user_topic_core(click_list)
+                    n = 0
+                    del click_list[:]
+
+        except :
+            traceback.print_exc()
+            continue
+
 

@@ -295,6 +295,74 @@ def produce_news_topic_manual(num):
 
 
 
+def predict_topic_nids(nid_list):
+    global g_channel_model_dict, model_v
+    from topic_model_doc_process import channel_for_topic
+
+    nid_info = {}
+    for nid in nid_list:
+        conn, cursor = doc_process.get_postgredb()
+        cursor.execute(nid_sql, [nid])
+        row = cursor.fetchone()
+        title = row[0]
+        content_list = row[1]
+        chanl_name = row[2]
+        if chanl_name not in channel_for_topic:
+            continue
+        txt = ''
+        for content in content_list:
+            if 'txt' in content.keys():
+                txt += content['txt'].encode('utf-8')
+        total_txt = title + txt
+        word_list = doc_process.filter_html_stopwords_pos(total_txt, remove_num=True, remove_single_word=True)
+        nid_info[nid].append((chanl_name, ' '.join(word_list)))
+        cursor.close()
+        conn.close()
+    chname_news_dict = {}
+    nid_pred_dict = {}
+    for chname in channel_for_topic:
+        if chname not in g_channel_model_dict.keys():
+            continue
+        chname_news_dict[chname] = []
+        for nid in nid_info:
+            if nid[0] == chname:
+                chname_news_dict[chname].append(nid) #获取该频道的nid列表
+
+        doc_list = []
+        for nid in chname_news_dict[chname]:
+            doc_list.append(nid_info[nid][1])
+        ws = gl.SArray(doc_list)
+        docs = gl.SFrame(data={'X1':ws})
+        docs = gl.text_analytics.count_words(docs['X1'])
+        docs = docs.dict_trim_by_keys(gl.text_analytics.stopwords(), exclude=True)
+        t0 = datetime.datetime.now()
+        pred = g_channel_model_dict[chanl_name].predict(docs,
+                                                        output_type='probability',
+                                                        num_burnin=30)
+        t1 = datetime.datetime.now()
+        print 'predict ' + str(len(nid_list)) + 'takes ' + str((t1 - t0).seconds)
+        for m in xrange(0, pred.size()):
+            num_dict = {}
+            num = 0
+            for i in pred[m]:
+                if i <= 0.1: #概率<0.1忽略
+                    num += 1
+                    continue
+                num_dict[i] = num
+                num += 1
+            probility = sorted(num_dict.items(), key=lambda d: d[0], reverse=True)
+            to_save = {}
+            while len(to_save) < 3 and i < len(probility):
+                to_save[probility[i][1]] = probility[i][0]
+            nid_pred_dict[chname_news_dict[chname][m]] = to_save
+
+        conn, cursor = doc_process.get_postgredb()
+        for item in nid_pred_dict.items():
+            nid = item[0]
+            for pred in item[1].items():
+                cursor.execute(news_topic_sql, [nid, model_v, chname, pred[0], pred[1]])
+
+
 
 
 
