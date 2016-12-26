@@ -343,7 +343,7 @@ def predict_topic_nids(nid_list):
         docs = gl.text_analytics.count_words(docs['X1'])
         docs = docs.dict_trim_by_keys(gl.text_analytics.stopwords(), exclude=True)
         t0 = datetime.datetime.now()
-        pred = g_channel_model_dict[chanl_name].predict(docs,
+        pred = g_channel_model_dict[chname].predict(docs,
                                                         output_type='probability',
                                                         num_burnin=30)
         t1 = datetime.datetime.now()
