@@ -48,7 +48,7 @@ import json
 user_click_queue = 'user_click_queue'
 def produce_user_click(uid, nid, ctime):
     global redis_inst, logger_produce
-    print 'produce user ' + str(uid) + ' ' + str(nid)
+    print 'produce user ' + str(uid) + ' ' + str(nid) + ' ' + ctime
     redis_inst.lpush(user_click_queue, json.dumps([uid, nid, ctime]))
 
 

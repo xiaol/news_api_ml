@@ -174,8 +174,8 @@ user_topic_insert_sql = "insert into usertopics (uid, model_v, ch_name, topic_id
 user_topic_update_sql = "update usertopics set probability='{0}', create_time='{1}', fail_time='{2}'" \
                         "where uid='{3}' and model_v='{4}' and ch_name='{5}' and topic_id='{6}'"
 #预测用户话题主逻辑
+from datetime import timedelta
 def predict_user_topic_core(uid, nid, time_str):
-    from datetime import timedelta
     global g_channel_model_dict, model_v
     ch_name, pred = lda_predict_core(nid)  #预测topic分布
     if len(pred) == 0:

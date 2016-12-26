@@ -13,7 +13,11 @@ from topic_model_doc_process import channel_for_topic
 click_sql = "select c.uid, c.nid, c.ctime from newsrecommendclick c \
 inner join newslist_v2 nl  on c.nid=nl.nid \
 INNER JOIN channellist_v2 cl on nl.chid = cl.id \
-where cname in ({0}) and c.ctime > now() - INTERVAL '5 minute'"
+where cname in ({0}) and c.ctime > now() - INTERVAL '5 minute' \
+and \
+(c.uid, c.nid) not in ( \
+select c2.uid, c2.nid from newsrecommendclick c2 \
+where c2.ctime < now() - interval '5 minute' and c2.ctime > now() - INTERVAL '3 day'"
 
 channels = ', '.join("\'" + ch+"\'" for ch in channel_for_topic)
 def get_clicks_5s():
