@@ -28,7 +28,7 @@ def consume_nid(num):
                 #topic_model.lda_predict_and_save(nid_list)
                 topic_model.predict_topic_nids(nid_list)
                 n = 0
-                del nid_list
+                del nid_list[:]
         else:
             topic_model.predict_topic_nids([nid, ])
 
