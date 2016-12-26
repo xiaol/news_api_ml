@@ -316,7 +316,7 @@ def predict_topic_nids(nid_list):
                 txt += content['txt'].encode('utf-8')
         total_txt = title + txt
         word_list = doc_process.filter_html_stopwords_pos(total_txt, remove_num=True, remove_single_word=True)
-        nid_info[nid] = (chanl_name, ' '.join(word_list))
+        nid_info[nid] = [chanl_name, ' '.join(word_list)]
         cursor.close()
         conn.close()
     chname_news_dict = {}
@@ -327,16 +327,17 @@ def predict_topic_nids(nid_list):
             print chname + 'is not in model'
             continue
         chname_news_dict[chname] = []
-        for nid in nid_info:
-            if nid[0] == chname:
-                chname_news_dict[chname].append(nid) #获取该频道的nid列表
+        for n in nid_info.items():
+            id = n[0]
+            if n[1][0] == chname:
+                chname_news_dict[chname].append(id) #获取该频道的nid列表
 
         if len(chname_news_dict[chname]) == 0:
             print 'num of ' + chname + 'is 0'
             continue
         doc_list = []
-        for nid in chname_news_dict[chname]:
-            doc_list.append(nid_info[nid][1])
+        for n in chname_news_dict[chname]:
+            doc_list.append(nid_info[n][1])
         ws = gl.SArray(doc_list)
         docs = gl.SFrame(data={'X1':ws})
         docs = gl.text_analytics.count_words(docs['X1'])
@@ -364,9 +365,9 @@ def predict_topic_nids(nid_list):
 
         conn, cursor = doc_process.get_postgredb()
         for item in nid_pred_dict.items():
-            nid = item[0]
+            n = item[0]
             for pred in item[1].items():
-                cursor.execute(news_topic_sql, [nid, model_v, chname, pred[0], pred[1]])
+                cursor.execute(news_topic_sql, [n, model_v, chname, pred[0], pred[1]])
 
 
 
