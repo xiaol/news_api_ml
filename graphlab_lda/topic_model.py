@@ -300,6 +300,7 @@ def predict_topic_nids(nid_list):
     from topic_model_doc_process import channel_for_topic
 
     nid_info = {}
+    print nid_list
     for nid in nid_list:
         conn, cursor = doc_process.get_postgredb()
         cursor.execute(nid_sql, [nid])
@@ -321,7 +322,9 @@ def predict_topic_nids(nid_list):
     chname_news_dict = {}
     nid_pred_dict = {}
     for chname in channel_for_topic:
+        print 'predict  ' + chname
         if chname not in g_channel_model_dict.keys():
+            print chname + 'is not in model'
             continue
         chname_news_dict[chname] = []
         for nid in nid_info:
@@ -329,6 +332,7 @@ def predict_topic_nids(nid_list):
                 chname_news_dict[chname].append(nid) #获取该频道的nid列表
 
         if len(chname_news_dict[chname]) == 0:
+            print 'num of ' + chname + 'is 0'
             continue
         doc_list = []
         for nid in chname_news_dict[chname]:
