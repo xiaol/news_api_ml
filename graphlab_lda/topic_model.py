@@ -359,8 +359,10 @@ def predict_topic_nids(nid_list):
                 num += 1
             probility = sorted(num_dict.items(), key=lambda d: d[0], reverse=True)
             to_save = {}
-            while len(to_save) < 3 and i < len(probility):
-                to_save[probility[i][1]] = probility[i][0]
+            k = 0
+            while k < 3 and k < len(probility):
+                to_save[probility[k][1]] = probility[k][0]
+                k += 1
             nid_pred_dict[chname_news_dict[chname][m]] = to_save
 
         conn, cursor = doc_process.get_postgredb()
