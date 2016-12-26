@@ -315,7 +315,7 @@ def predict_topic_nids(nid_list):
                 txt += content['txt'].encode('utf-8')
         total_txt = title + txt
         word_list = doc_process.filter_html_stopwords_pos(total_txt, remove_num=True, remove_single_word=True)
-        nid_info[nid].append((chanl_name, ' '.join(word_list)))
+        nid_info[nid] = (chanl_name, ' '.join(word_list))
         cursor.close()
         conn.close()
     chname_news_dict = {}
