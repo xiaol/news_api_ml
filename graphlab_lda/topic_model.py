@@ -97,14 +97,34 @@ def load_newest_models():
     load_models(get_newest_model_dir())
 
 
+nid_sql = 'select a.title, a.content, c.cname \
+from (select * from newslist_v2 where nid=%s) a \
+inner join channellist_v2 c on a."chid"=c."id"'
+def get_words_on_nid(nid, ch_names):
+    conn, cursor = doc_process.get_postgredb()
+    cursor.execute(nid_sql, [nid])
+    row = cursor.fetchone()
+    title = row[0]  #str类型
+    content_list = row[1]
+    chanl_name = row[2]
+    if chanl_name not in ch_names:
+        return [], ''
+    txt = ''
+    for content in content_list:
+        if 'txt' in content.keys():
+            txt += content['txt'].encode('utf-8')
+    total_txt = title + txt
+    word_list = doc_process.filter_html_stopwords_pos(total_txt, remove_num=True, remove_single_word=True)
+    return word_list, chanl_name
+
 def lda_predict_core(nid):
     global g_channel_model_dict
     if len(g_channel_model_dict) == 0:
         load_newest_models()
 
-    words_list, chanl_name = topic_model_doc_process.get_words_on_nid(nid)
+    words_list, chanl_name = get_words_on_nid(nid, topic_model_doc_process.channel_for_topic)
     if chanl_name not in g_channel_model_dict.keys():
-        print 'Error: channel name is not in models' + '---- ' + chanl_name + " " + str(nid)
+        #print 'Error: channel name is not in models' + '---- ' + chanl_name + " " + str(nid)
         return '', []
     s = ''
     for i in words_list:
@@ -118,8 +138,13 @@ def lda_predict_core(nid):
     #pred = g_channel_model_dict[chanl_name].predict(docs)
     #print pred
     #print '%s' % str(sf[pred[0]]['words']).decode('string_escape')
+    t = datetime.datetime.now()
     pred2 = g_channel_model_dict[chanl_name].predict(docs,
                                                      output_type='probability')
+    t2 = datetime.datetime.now()
+    print 'predict time:'
+    print (t2 - t).seconds
+
     return chanl_name, pred2
 
 
@@ -177,18 +202,26 @@ user_topic_update_sql = "update usertopics set probability='{0}', create_time='{
 from datetime import timedelta
 def predict_user_topic_core(uid, nid, time_str):
     global g_channel_model_dict, model_v
+    print 'time ------------------'
+    t = datetime.datetime.now()
     ch_name, pred = lda_predict_core(nid)  #预测topic分布
+    t1 = datetime.datetime.now()
+    print (t1 - t).seconds
+
     if len(pred) == 0:
         return
     num_dict = {}
     num = 0 #标记topic的index
     for i in pred[0]:  #pred[0]是property值
+        if i < 0.15:  #概率<0.1, 不考虑
+            num += 1
+            continue
         num_dict[i] = num
         num += 1
     probility = sorted(num_dict.items(), key=lambda d: d[0], reverse=True)
     i = 0
     to_save = {}
-    while i < 3 and i < len(probility) and probility[i][0] > 0.1:
+    while i < 3 and i < len(probility):
         to_save[probility[i][1]] = probility[i][0]
         i += 1
     try:
@@ -198,9 +231,9 @@ def predict_user_topic_core(uid, nid, time_str):
     except:
         traceback.print_exc()
         return
-    conn, cursor = doc_process.get_postgredb()
     for item in to_save.items():
         topic_id = item[0]
+        conn, cursor = doc_process.get_postgredb()
         cursor.execute(user_topic_sql, [uid, model_v, ch_name, topic_id])
         rows = cursor.fetchall()
         if len(rows) == 0: #此版本的model下没有记录该用户的点击行为
@@ -211,8 +244,12 @@ def predict_user_topic_core(uid, nid, time_str):
                 org_probability = r[4]
             new_probabiliby = org_probability + item[1]
             cursor.execute(user_topic_update_sql.format(new_probabiliby, time_str, fail_time, uid, model_v, ch_name, topic_id))
-    conn.commit()
-    conn.close()
+        conn.commit()
+        conn.close()
+
+    t2 = datetime.datetime.now()
+    print '^^^^^^^^^'
+    print (t2 - t).seconds
 
 
 #from psycopg2.extras import Json
