@@ -59,25 +59,25 @@ def consume_user_click():
 
 
 
-import topic_model_v2
-def consume_user_clicks(num):
-    global redis_inst
-    n = 0
-    click_list = []
-    while True:
-        try:
-            #data[0]--uid, data[1]--nid, data[2]--ctime
-            data = json.loads(redis_inst.brpop(user_click_queue)[1])
-            if num:
-                n += 1
-                click_list.append((data[0], data[1], data[2]))
-                if n >= num:
-                    topic_model_v2.predict_user_topic_core(click_list)
-                    n = 0
-                    del click_list[:]
-
-        except :
-            traceback.print_exc()
+#import topic_model_v2
+#def consume_user_clicks(num):
+#    global redis_inst
+#    n = 0
+#    click_list = []
+#    while True:
+#        try:
+#            #data[0]--uid, data[1]--nid, data[2]--ctime
+#            data = json.loads(redis_inst.brpop(user_click_queue)[1])
+#            if num:
+#                n += 1
+#                click_list.append((data[0], data[1], data[2]))
+#                if n >= num:
+#                    topic_model_v2.predict_user_topic_core(click_list)
+#                    n = 0
+#                    del click_list[:]
+#
+#        except :
+#            traceback.print_exc()
             continue
 
 
