@@ -347,7 +347,7 @@ def predict_topic_nids(nid_list):
                                                         output_type='probability',
                                                         num_burnin=30)
         t1 = datetime.datetime.now()
-        print 'predict ' + str(len(nid_list)) + 'takes ' + str((t1 - t0).seconds)
+        print '    predict ' + str(len(doc_list)) + ' takes ' + str((t1 - t0).seconds)
         for m in xrange(0, pred.size()):
             num_dict = {}
             num = 0
@@ -370,6 +370,9 @@ def predict_topic_nids(nid_list):
             n = item[0]
             for pred in item[1].items():
                 cursor.execute(news_topic_sql, [n, model_v, chname, pred[0], pred[1]])
+        conn.commit()
+        cursor.close()
+        conn.close()
 
 
 
