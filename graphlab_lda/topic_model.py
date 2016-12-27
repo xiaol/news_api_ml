@@ -93,6 +93,7 @@ def load_models(models_dir):
         g_channel_model_dict[mf] = gl.load_model(models_dir + '/'+ mf)
 
 
+model_v = os.path.split(get_newest_model_dir())[1]
 def load_newest_models():
     load_models(get_newest_model_dir())
 
@@ -375,6 +376,7 @@ def predict_topic_nids(nid_list):
         conn.close()
 
 
+
 ch_sql = "select cname from channellist_v2 cv inner join newslist_v2 nv on cv.id=nv.chid where nv.nid={0}"
 nt_sql = "select ch_name, topic_id, probability from news_topic where nid = {0} and model_v = '{1}' "
 ut_sql = "select probability from usertopics where uid = {0} and model_v = '{1}' and ch_name = '{2}' and topic_id ='{3}' "
@@ -408,9 +410,6 @@ def predict_click(click_info):
         conn2.close()
     cursor.close()
     conn.close()
-
-
-
 
 
 
