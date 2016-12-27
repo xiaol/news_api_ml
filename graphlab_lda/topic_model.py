@@ -386,7 +386,7 @@ def predict_click(click_info):
     uid = click_info[0]
     nid = click_info[1]
     ctime = click_info[2]
-    time_str = datetime.datetime.strftime(ctime, '%Y-%m-%d %H:%M:%S')
+    time_str = ctime.strftime('%Y-%m-%d %H:%M:%S')
     valid_time = ctime + timedelta(days=30) #有效时间定为30天
     fail_time = valid_time.strftime('%Y-%m-%d %H:%M:%S')
     conn, cursor = doc_process.get_postgredb()
