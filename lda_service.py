@@ -162,8 +162,8 @@ if __name__ == '__main__':
         topic_model.load_newest_models()
         redis_lda.consume_nid(200)
     elif port == 9989: #用户点击事件入队列
-        from graphlab_lda.timed_task import get_clicks_5s
-        ioloop.PeriodicCallback(get_clicks_5s, 300000).start() #定时从点击表中取
+        from graphlab_lda.timed_task import get_clicks_5m
+        ioloop.PeriodicCallback(get_clicks_5m, 300000).start() #定时从点击表中取
         http_server = tornado.httpserver.HTTPServer(ProduceClickEventApplication())
         http_server.listen(port) #同时提供手工处理端口
     elif port == 9990: #消费用户点击逻辑进程。

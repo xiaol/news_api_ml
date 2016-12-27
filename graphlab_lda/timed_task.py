@@ -20,7 +20,7 @@ select c2.uid, c2.nid from newsrecommendclick c2 \
 where c2.ctime < now() - interval '5 minute' and c2.ctime > now() - INTERVAL '3 day') "
 
 channels = ', '.join("\'" + ch+"\'" for ch in channel_for_topic)
-def get_clicks_5s():
+def get_clicks_5m():
     conn, cursor = get_postgredb()
     cursor.execute(click_sql.format(channels))
     rows = cursor.fetchall()
