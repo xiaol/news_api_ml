@@ -320,8 +320,8 @@ def predict_topic_nids(nid_list):
         cursor.close()
         conn.close()
     chname_news_dict = {}
-    nid_pred_dict = {}
     for chname in channel_for_topic:
+        nid_pred_dict = {}
         print 'predict  ' + chname
         if chname not in g_channel_model_dict.keys():
             print chname + 'is not in model'
@@ -333,7 +333,7 @@ def predict_topic_nids(nid_list):
                 chname_news_dict[chname].append(id) #获取该频道的nid列表
 
         if len(chname_news_dict[chname]) == 0:
-            print 'num of ' + chname + 'is 0'
+            print '    num of ' + chname + 'is 0'
             continue
         doc_list = []
         for n in chname_news_dict[chname]:
@@ -375,6 +375,9 @@ def predict_topic_nids(nid_list):
         conn.close()
 
 
+#预测用户点击行为
+def predict_clicks(click_list):
+    pass
 
 
 
