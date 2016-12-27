@@ -15,20 +15,24 @@ def produce_nid(nid):
     redis_inst.lpush(nid_queue, nid)
 
 
+import datetime
 def consume_nid(num):
     global redis_inst
     n = 0
     nid_list = []
+    t0 = datetime.datetime.now()
     while True:
         nid = redis_inst.brpop(nid_queue)[1]
         if num:
             nid_list.append(nid)
             n += 1
-            if n >=num:
+            t1 = datetime.datetime.now()
+            if n >=num or (t1 - t0).total_seconds() > 300:
                 #topic_model.lda_predict_and_save(nid_list)
                 topic_model.predict_topic_nids(nid_list)
                 n = 0
                 del nid_list[:]
+                t0 = datetime.datetime.now()
         else:
             topic_model.predict_topic_nids([nid, ])
 
