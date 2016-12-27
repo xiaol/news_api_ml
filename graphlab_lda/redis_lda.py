@@ -27,7 +27,7 @@ def consume_nid(num):
             nid_list.append(nid)
             n += 1
             t1 = datetime.datetime.now()
-            if n >=num or (t1 - t0).total_seconds() > 300:
+            if n >=num or (t1 - t0).total_seconds() > 30:
                 #topic_model.lda_predict_and_save(nid_list)
                 topic_model.predict_topic_nids(nid_list)
                 n = 0
@@ -56,7 +56,8 @@ def consume_user_click():
             nid = data[1]
             ctime = data[2]
             print 'consum ' + str(uid) + ' ' + str(nid) + ' ' + 'begin'
-            topic_model.predict_user_topic_core(uid, nid, ctime)
+            #topic_model.predict_user_topic_core(uid, nid, ctime)
+            topic_model.predict_click((uid, nid, ctime))
         except :
             traceback.print_exc()
             continue
