@@ -390,7 +390,7 @@ def predict_click(click_info):
     valid_time = ctime + timedelta(days=30) #有效时间定为30天
     fail_time = valid_time.strftime('%Y-%m-%d %H:%M:%S')
     conn, cursor = doc_process.get_postgredb()
-    cursor.execute(nt_sql.format(nid)) #获取nid可能的话题
+    cursor.execute(nt_sql.format(nid, model_v)) #获取nid可能的话题
     rows = cursor.fetchall()
     for r in rows:
         ch_name = r[0]
@@ -399,7 +399,7 @@ def predict_click(click_info):
         conn2, cursor2 = doc_process.get_postgredb()
         cursor2.execute(ut_sql.format(uid, model_v, ch_name, topic_id))
         rows2 = cursor2.fetchone()
-        if rows2 != 0: #该用户已经关注过该topic_id, 更新probability即可
+        if rows2: #该用户已经关注过该topic_id, 更新probability即可
             new_prop = probability + rows2[0]
             cursor2.execute(ut_update_sql.format(new_prop, time_str, fail_time, uid, model_v, ch_name, topic_id))
         else:
