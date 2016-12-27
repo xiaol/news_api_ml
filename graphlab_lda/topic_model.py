@@ -405,7 +405,7 @@ def predict_click(click_info):
             new_prop = probability + rows2[0]
             cursor2.execute(ut_update_sql.format(new_prop, time_str, fail_time, uid, model_v, ch_name, topic_id))
         else:
-            cursor2.execute(user_topic_insert_sql, uid, model_v, ch_name, topic_id, probability, time_str, fail_time)
+            cursor2.execute(user_topic_insert_sql.format(uid, model_v, ch_name, topic_id, probability, time_str, fail_time))
         conn2.commit()
         conn2.close()
     cursor.close()
