@@ -37,6 +37,10 @@ def getModel():
     global clf
     global n_feature
     if os.path.exists(model_file):
+        #获取特征数量
+        X_train, y_train = load_svmlight_file(train_svm_file)
+        n_feature = X_train.shape[1]
+
         clf = joblib.load(model_file)
         logger.info('load model successfully!')
     else:
@@ -121,7 +125,6 @@ def svmPredictOneText(text):
         getIdfOfTrain()
     writeSvmFile(text, svm_file, idf_val)
     X_pre, y_pre = load_svmlight_file(svm_file, n_features=n_feature)
-    #X_pre, y_pre = load_svmlight_file(svm_file)
     pred = clf.predict(X_pre)
     if pred and int(pred[0]):
         return {'bSuccess': True, 'category': category_list[int(pred[0])]}
@@ -137,8 +140,7 @@ def svmPredictTexts(texts):
     for text in texts:
         writeSvmFile(text, svm_file, idf_val)
     logger.info('write svm file to predict done!')
-    #X_pre, y_pre = load_svmlight_file(svm_file, n_features=n_feature)
-    X_pre, y_pre = load_svmlight_file(svm_file)
+    X_pre, y_pre = load_svmlight_file(svm_file, n_features=n_feature)
     pred = clf.predict(X_pre)
     return pred
 
