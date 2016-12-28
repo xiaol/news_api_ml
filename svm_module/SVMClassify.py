@@ -84,18 +84,8 @@ def writeSvmFile(text, file_path, idf_val):
         svm_file.write(str(-1) + ' ')
         checked = []
         data = dict()
-        print 'len(words) = ' + str(len(words))
-        print 'len(feature_dict) = ' + str(len(feature_dict))
-        print 'len(idf_val) = ' + str(len(idf_val))
-        kk = 0
         for w in words:
             w_utf = w.encode('utf-8')
-            if kk == 0:
-                kk += 1
-                print 'w_utf =' + w_utf
-                for key in feature_dict.keys():
-                    print key
-                    break
             if (w_utf in feature_dict.keys()) and (w_utf in idf_val.keys()) and (w_utf not in checked):
                 checked.append(w_utf)
                 feature_count = words.count(w)
