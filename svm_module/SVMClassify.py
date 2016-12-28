@@ -120,8 +120,8 @@ def svmPredictOneText(text):
     if len(idf_val) == 0:
         getIdfOfTrain()
     writeSvmFile(text, svm_file, idf_val)
-    #X_pre, y_pre = load_svmlight_file(svm_file, n_features=n_feature)
-    X_pre, y_pre = load_svmlight_file(svm_file)
+    X_pre, y_pre = load_svmlight_file(svm_file, n_features=n_feature)
+    #X_pre, y_pre = load_svmlight_file(svm_file)
     pred = clf.predict(X_pre)
     if pred and int(pred[0]):
         return {'bSuccess': True, 'category': category_list[int(pred[0])]}
@@ -137,7 +137,8 @@ def svmPredictTexts(texts):
     for text in texts:
         writeSvmFile(text, svm_file, idf_val)
     logger.info('write svm file to predict done!')
-    X_pre, y_pre = load_svmlight_file(svm_file, n_features=n_feature)
+    #X_pre, y_pre = load_svmlight_file(svm_file, n_features=n_feature)
+    X_pre, y_pre = load_svmlight_file(svm_file)
     pred = clf.predict(X_pre)
     return pred
 
