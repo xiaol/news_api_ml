@@ -143,8 +143,8 @@ if __name__ == "__main__":
     #FeatureSelection.featureSelect()
     print 'feature weight'
     #FeatureWeight.featureWeight()
-    print 'get model'
     SVMClassify.getModel()
+    print 'get model finishes!'
     #SVMClassify.svmPredictOnSrcid(3874)
 
     port = sys.argv[1]
