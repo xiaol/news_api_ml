@@ -30,6 +30,11 @@ real_dir_path = os.path.split(os.path.realpath(__file__))[0]
 svm_file = real_dir_path + '/../result/svm_predict.txt'
 model_file =real_dir_path +  '/../result/svm.model'
 
+#多进程时需要多个写出文件
+def set_news_predict_svm_file(port):
+    global svm_file
+    svm_file = real_dir_path + '/../result/svm_predict_' + str(port) + '.txt'
+
 from sklearn.externals import joblib
 n_feature = 0
 def getModel():

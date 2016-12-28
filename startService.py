@@ -142,12 +142,13 @@ if __name__ == "__main__":
     print 'feature select'
     #FeatureSelection.featureSelect()
     print 'feature weight'
+    port = sys.argv[1]
+    SVMClassify.set_news_predict_svm_file(port)
     #FeatureWeight.featureWeight()
     SVMClassify.getModel()
     print 'get model finishes!'
     #SVMClassify.svmPredictOnSrcid(3874)
 
-    port = sys.argv[1]
     http_server = tornado.httpserver.HTTPServer(Application())
     http_server.listen(port)
     tornado.ioloop.IOLoop.instance().start()
