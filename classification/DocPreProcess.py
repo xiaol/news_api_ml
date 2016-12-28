@@ -389,6 +389,36 @@ def docPreProcess():
     preProcessNews()
     logger.info('docPreProcess done!')
 
+
+sql_nid = 'select nid, title, content from newslist_v2 where nid in ({0})'
+def getTextOfNewsNids(nids):
+    if not nids:
+        return
+    conn, cursor = get_postgredb()
+    nids_str = ''
+    nids_str += nids[0]
+    for i in xrange (1, len(nids)):
+        nids_str += ',' + nids[i]
+    cursor.execute(sql_nid.format(nids_str.encode('utf-8')))
+    rows = cursor.fetchall()
+    texts_list = []
+    n = 0
+    for row in rows:
+        nids[n] = row[0]
+        n += 1
+        text = ''
+        title = row[1]
+        content_list = row[2]
+        content = ''
+        for elems in content_list:
+            if 'txt' in elems.keys():
+                content += elems['txt'] + ' '
+        text += title + ' '
+        text += content.encode('utf8')
+        texts_list.append(text)
+    conn.close()
+    return texts_list
+
 if __name__ == '__main__':
     os.chdir('../')
     start_id = 3500000

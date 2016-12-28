@@ -17,6 +17,7 @@ from sklearn.grid_search import GridSearchCV
 #from sklearn.model_selection import GridSearchCV
 from sklearn.svm import SVC
 from classification.DocPreProcess import strProcess
+from classification.DocPreProcess import getTextOfNewsNids
 from classification.DocPreProcess import category_list
 from classification.DocPreProcess import category_name_id_dict
 from classification.DocPreProcess import logger
@@ -178,8 +179,9 @@ def svmPredictNews(nids, texts, _id = 0, category='all'):
 
 
 #返回格式不同
-def svmPredictNews2(nids, texts):
+def svmPredictNews2(nids):
     logger.info('svmPredictOnSrcid begin...')
+    texts = getTextOfNewsNids(nids)
     pred = svmPredictTexts(texts)
     nid_cate_list = []
     for i in range(len(texts)):

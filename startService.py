@@ -42,11 +42,11 @@ class NewsClassifyOnNids(tornado.web.RequestHandler):
     #@tornado.gen.coroutine
     def post(self):
         nids = self.get_body_arguments('nids')
-        texts = self.get_body_arguments('texts')
+        #texts = self.get_body_arguments('texts')
         #text = DocPreProcess.getTextOfNewsNid(nid)
         #res = yield SVMClassify.svmPredictOneText(text)
         #res = SVMClassify.svmPredictOneText(texts)
-        ret = SVMClassify.svmPredictNews2(nids, texts)
+        ret = SVMClassify.svmPredictNews2(nids)
         self.write(json.dumps(ret))
 
 class NewsClassifyOnSrcid(tornado.web.RequestHandler):
