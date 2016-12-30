@@ -73,6 +73,10 @@ channel_for_topic = ['科技', '外媒', '社会', '财经', '体育', '汽车',
 channel_for_topic = ['科技', '社会', '财经', '体育', '汽车', '国际']
 channel_for_topic = ['体育']
 channel_for_topic = ['体育', '社会', '科技', '国际', '娱乐']
+channel_for_topic_dict = {'6':'体育', '2':'社会', '4':'科技', '9':'国际', '3':'娱乐'}
+#需要进行额外判断新闻topic的频道,这些频道最终使用channel_for_topic的model进行预测
+extra_channel_for_topic = ['点集', '自媒体']
+
 def coll_news_for_channles(news_num):
     import multiprocessing as mp
     procs = []

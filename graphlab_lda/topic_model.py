@@ -6,7 +6,7 @@
 # @Software: PyCharm Community Edition
 # Download data if you haven't already
 import json
-
+import requests
 import graphlab as gl
 import os
 import topic_model_doc_process
@@ -169,7 +169,7 @@ def lda_predict(nid):
     return res
 
 
-news_topic_sql = "insert into news_topic (nid, model_v, ch_name, topic_id, probability) VALUES (%s,  %s, %s, %s, %s)"
+news_topic_sql = "insert into news_topic (nid, model_v, ch_name, topic_id, probability, real_cname) VALUES (%s,  %s, %s, %s, %s, %s)"
 def lda_predict_and_save(nid):
     global model_v
     ch_name, pred = lda_predict_core(nid)
@@ -295,10 +295,36 @@ def produce_news_topic_manual(num):
         redis_lda.produce_nid(r[0])
 
 
+###############################################################################
+### @brief: 处理自媒体和点集频道
+### @input: nid list, 其中nid都是自媒体或者点集的频道
+### @output: {nid1:(真实频道, 预测频道), nid2...}
+###############################################################################
+def get_nid_predict_chname(nid_list):
+    from topic_model_doc_process import channel_for_topic_dict
+    nid_chanl_list = {}
+    print 'predict ---- '
+    print nid_list
+    url = "http://127.0.0.1:9993/ml/newsClassifyOnNids"
+    data = {}
+    data['nids'] = nid_list
+    response = requests.post(url, data=data)
+    cont = json.loads(response.content())
+    if cont['bSuccess'] == 'true':
+        res = cont['result']
+        for r in res:
+            if str(r['chid']) in channel_for_topic_dict.keys():
+                print r['chid']
+                nid_chanl_list[r['nid']] = channel_for_topic_dict[str(r['chid'])]
+    else:
+        print 'predict 自媒体失败'
+
+    return nid_chanl_list
+
 
 def predict_topic_nids(nid_list):
     global g_channel_model_dict, model_v
-    from topic_model_doc_process import channel_for_topic
+    from topic_model_doc_process import channel_for_topic, extra_channel_for_topic
 
     nid_info = {}
     print nid_list
@@ -309,8 +335,10 @@ def predict_topic_nids(nid_list):
         title = row[0]
         content_list = row[1]
         chanl_name = row[2]
-        if chanl_name not in channel_for_topic:
+
+        if chanl_name not in channel_for_topic and chanl_name not in extra_channel_for_topic:
             continue
+
         txt = ''
         for content in content_list:
             if 'txt' in content.keys():
@@ -320,6 +348,11 @@ def predict_topic_nids(nid_list):
         nid_info[nid] = [chanl_name, ' '.join(word_list)]
         cursor.close()
         conn.close()
+
+    #主要用于处理自媒体和点集
+    extra_chanl_nids = [n for n in nid_info.keys() if nid_info[n][0] in extra_channel_for_topic]
+    extra_nid_chname_dict = get_nid_predict_chname(extra_chanl_nids)
+
     chname_news_dict = {}
     for chname in channel_for_topic:
         nid_pred_dict = {}
@@ -332,6 +365,10 @@ def predict_topic_nids(nid_list):
             id = n[0]
             if n[1][0] == chname:
                 chname_news_dict[chname].append(id) #获取该频道的nid列表
+        #添加点集和自媒体的新闻
+        for n in extra_nid_chname_dict.keys():
+            if extra_nid_chname_dict[n] == chname:
+                chname_news_dict[chname].append(n) #获取该频道的nid列表
 
         if len(chname_news_dict[chname]) == 0:
             print '    num of ' + chname + 'is 0'
@@ -369,8 +406,11 @@ def predict_topic_nids(nid_list):
         conn, cursor = doc_process.get_postgredb()
         for item in nid_pred_dict.items():
             n = item[0]
+            extra_chanl = ''
+            if n in extra_nid_chname_dict.keys():
+                extra_chanl =nid_info[n] #点集或者自媒体
             for pred in item[1].items():
-                cursor.execute(news_topic_sql, [n, model_v, chname, pred[0], pred[1]])
+                cursor.execute(news_topic_sql, [n, model_v, chname, pred[0], pred[1], extra_chanl])
         conn.commit()
         cursor.close()
         conn.close()
@@ -413,6 +453,7 @@ def predict_click(click_info):
 
 
 
+#添加旧新闻进入news_topic
 
 
 
