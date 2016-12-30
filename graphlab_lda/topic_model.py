@@ -304,20 +304,15 @@ def get_nid_predict_chname(nid_list):
     from topic_model_doc_process import channel_for_topic_dict
     nid_chanl_list = {}
     print 'predict ---- 自媒体和点集 ' + str(len(nid_list))
-    print nid_list
     url = "http://127.0.0.1:9993/ml/newsClassifyOnNids"
     data = {}
     data['nids'] = nid_list
     response = requests.post(url, data=data)
-    print type(response.content)
     cont = json.loads(response.content)
-    print type(cont)
-    print cont
     if cont['bSuccess']:
         res = cont['result']
         for r in res:
             if str(r['chid']) in channel_for_topic_dict.keys():
-                print r['chid']
                 nid_chanl_list[str(r['nid'])] = channel_for_topic_dict[str(r['chid'])]
     else:
         print 'predict 自媒体失败'
