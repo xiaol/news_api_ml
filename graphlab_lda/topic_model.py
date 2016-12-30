@@ -310,7 +310,8 @@ def get_nid_predict_chname(nid_list):
     data['nids'] = nid_list
     response = requests.post(url, data=data)
     print type(response.content)
-    cont = response.content
+    cont = json.loads(response.content)
+    print type(response.content)
     if cont['bSuccess'] == 'true':
         res = cont['result']
         for r in res:
