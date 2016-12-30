@@ -303,7 +303,7 @@ def produce_news_topic_manual(num):
 def get_nid_predict_chname(nid_list):
     from topic_model_doc_process import channel_for_topic_dict
     nid_chanl_list = {}
-    print 'predict ---- '
+    print 'predict ---- 自媒体和点集 ' + str(len(nid_list))
     print nid_list
     url = "http://127.0.0.1:9993/ml/newsClassifyOnNids"
     data = {}
@@ -318,13 +318,14 @@ def get_nid_predict_chname(nid_list):
         for r in res:
             if str(r['chid']) in channel_for_topic_dict.keys():
                 print r['chid']
-                nid_chanl_list[r['nid']] = channel_for_topic_dict[str(r['chid'])]
+                nid_chanl_list[str(r['nid'])] = channel_for_topic_dict[str(r['chid'])]
     else:
         print 'predict 自媒体失败'
 
     return nid_chanl_list
 
 
+# @imput: nid_list是nid列表,其中nid是字符串
 def predict_topic_nids(nid_list):
     global g_channel_model_dict, model_v
     from topic_model_doc_process import channel_for_topic, extra_channel_for_topic
@@ -339,7 +340,7 @@ def predict_topic_nids(nid_list):
         content_list = row[1]
         chanl_name = row[2]
 
-        if chanl_name not in channel_for_topic and chanl_name not in extra_channel_for_topic:
+        if (chanl_name not in channel_for_topic) and (chanl_name not in extra_channel_for_topic):
             continue
 
         txt = ''
