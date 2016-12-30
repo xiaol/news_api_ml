@@ -311,8 +311,9 @@ def get_nid_predict_chname(nid_list):
     response = requests.post(url, data=data)
     print type(response.content)
     cont = json.loads(response.content)
-    print type(response.content)
-    if cont['bSuccess'] == 'true':
+    print type(cont)
+    print cont
+    if cont['bSuccess']:
         res = cont['result']
         for r in res:
             if str(r['chid']) in channel_for_topic_dict.keys():
