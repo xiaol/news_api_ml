@@ -412,7 +412,7 @@ def predict_topic_nids(nid_list):
             n = item[0]
             extra_chanl = ''
             if n in extra_nid_chname_dict.keys():
-                extra_chanl =nid_info[n] #点集或者自媒体
+                extra_chanl =nid_info[n][0] #点集或者自媒体
             for pred in item[1].items():
                 cursor.execute(news_topic_sql, [n, model_v, chname, pred[0], pred[1], extra_chanl])
         conn.commit()
