@@ -457,7 +457,7 @@ def show_topics():
     newest_dir = get_newest_model_dir()
     p = os.path.join(real_dir_path, 'models', newest_dir, chname)
     print p
-    model = gl.load_model(os.path.join(real_dir_path, 'models', newest_dir, chname, 'w'))
+    model = gl.load_model(os.path.join(real_dir_path, 'models', newest_dir, chname))
     model.show()
 
 
