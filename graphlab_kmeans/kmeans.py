@@ -8,7 +8,7 @@
 import os
 import datetime
 import json
-import graphlab_lda as gl
+import graphlab as gl
 from util import doc_process
 
 #添加日志
@@ -33,7 +33,7 @@ g_channel_kmeans_model_dict = {}
 def create_model_proc(chname, model_save_dir=None):
     global g_channle_kmeans_model_dict, data_dir
     logger.info('create kmeans model for {}'.format(chname))
-    docs = gl.SFrame.read_csv(data_dir+chname, header=False)
+    docs = gl.SFrame.read_csv(os.path.join(data_dir, chname), header=False)
     docs = gl.text_analytics.count_words(docs['X1'])
     docs = docs.dict_trim_by_keys(gl.text_analytics.stopwords(), exclude=True)
     model = gl.kmeans.create(docs, num_clusters=10)
