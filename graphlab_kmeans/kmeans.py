@@ -15,7 +15,7 @@ from util import doc_process
 import logging
 real_dir_path = os.path.split(os.path.realpath(__file__))[0]
 logger = logging.getLogger(__name__)
-handler = logging.FileHandler(os.path.join(real_dir_path), '../log/kmeans/kmeans.log', 'w')
+handler = logging.FileHandler(os.path.join(real_dir_path, '../log/kmeans/kmeans.log'), 'w')
 formatter = logging.Formatter('%(asctime)s-%(name)s-%(levelname)s-%(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
