@@ -455,9 +455,8 @@ def predict_click(click_info):
 def show_topics():
     chname = '体育'
     newest_dir = get_newest_model_dir()
-    p = os.path.join(real_dir_path, 'models', newest_dir, chname)
-    print p
     model = gl.load_model(os.path.join(real_dir_path, 'models', newest_dir, chname))
+    print type(model)
     model.show()
 
 
