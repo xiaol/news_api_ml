@@ -451,8 +451,12 @@ def predict_click(click_info):
     conn.close()
 
 
-
-#添加旧新闻进入news_topic
+#可视化
+def show_topics():
+    chname = '体育'
+    newest_dir = get_newest_model_dir()
+    model = gl.load_model(os.path.join(real_dir_path, 'models', newest_dir, chname, 'w'))
+    model.show()
 
 
 
