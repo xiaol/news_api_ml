@@ -36,7 +36,7 @@ def create_model_proc(chname, model_save_dir=None):
     docs = gl.SFrame.read_csv(os.path.join(data_dir, chname), header=False)
     docs = gl.text_analytics.count_words(docs['X1'])
     #docs = docs.dict_trim_by_keys(gl.text_analytics.stopwords(), exclude=True)
-    model = gl.kmeans.create(docs, num_clusters=10)
+    model = gl.kmeans.create(gl.SFrame(docs), num_clusters=10)
     g_channel_kmeans_model_dict[chname] = model
     #save_model_to_db(model, chname)
     #save model
