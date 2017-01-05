@@ -172,10 +172,7 @@ if __name__ == '__main__':
         http_server.listen(port) #同时提供手工处理端口
         #topic_model.load_newest_models()
         redis_lda.consume_user_click()
-    elif port == 9100: #可视化
-        http_server = tornado.httpserver.HTTPServer(EmptyApp())
-        http_server.listen(port) #同时提供手工处理端口
-        topic_model.show_topics()
+
     tornado.ioloop.IOLoop.instance().start()
 
 

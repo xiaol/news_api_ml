@@ -43,6 +43,8 @@ def save_model_to_db(model, ch_name):
 
 
 def create_model_proc(csv_file, model_save_dir=None):
+    if not os.path.exists(data_dir + csv_file):
+        return
     docs = gl.SFrame.read_csv(data_dir+csv_file, header=False)
     docs = gl.text_analytics.count_words(docs['X1'])
     docs = docs.dict_trim_by_keys(gl.text_analytics.stopwords(), exclude=True)
@@ -449,16 +451,5 @@ def predict_click(click_info):
         conn2.close()
     cursor.close()
     conn.close()
-
-
-#可视化
-def show_topics():
-    chname = '体育'
-    newest_dir = get_newest_model_dir()
-    model = gl.load_model(os.path.join(real_dir_path, 'models', newest_dir, chname))
-    c = model.show()
-    print type(c)
-
-
 
 
