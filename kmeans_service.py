@@ -15,12 +15,20 @@ class CreateKmeansModel(tornado.web.RequestHandler):
         from graphlab_kmeans import kmeans
         kmeans.create_kmeans_models()
 
+class PredictKmeans(tornado.web.RequestHandler):
+    def get(self):
+        nids = self.get_arguments('nid')
+        from graphlab_kmeans import kmeans
+        res = kmeans.kmeans_predict(nids)
+        self.write(res)
+
 
 
 class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
             ("/kmeans/createmodel", CreateKmeansModel),
+            ("/kmeans/predict_nids", PredictKmeans),
         ]
         settings = {}
         tornado.web.Application.__init__(self, handlers, **settings)

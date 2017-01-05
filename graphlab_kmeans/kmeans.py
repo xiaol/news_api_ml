@@ -7,7 +7,6 @@
 
 import os
 import datetime
-import json
 import graphlab as gl
 from util import doc_process
 
@@ -28,20 +27,22 @@ kmeans_model_save_dir = real_dir_path + '/' + 'models/'
 if not os.path.exists(kmeans_model_save_dir):
     os.mkdir(kmeans_model_save_dir)
 g_channel_kmeans_model_dict = {}
+chnl_k_dict = {'体育':12}
 
 
 def create_model_proc(chname, model_save_dir=None):
+    if chname not in chnl_k_dict.keys():
+        return
     global g_channle_kmeans_model_dict, data_dir
     logger.info('create kmeans model for {}'.format(chname))
     docs = gl.SFrame.read_csv(os.path.join(data_dir, chname), header=False)
     docs = gl.text_analytics.count_words(docs['X1'])
-    #docs = docs.dict_trim_by_keys(gl.text_analytics.stopwords(), exclude=True)
-    model = gl.kmeans.create(gl.SFrame(docs), num_clusters=10)
+    model = gl.kmeans.create(gl.SFrame(docs), num_clusters=chnl_k_dict[chname])
     g_channel_kmeans_model_dict[chname] = model
     #save_model_to_db(model, chname)
-    #save model
-    #if model_save_dir:
-    #    model.save(model_save_dir+'/'+chname)
+    #save model to file
+    if model_save_dir:
+        model.save(model_save_dir+'/'+chname)
 
 def create_kmeans_models():
     global kmeans_model_save_dir, g_channle_kmeans_model_dict
@@ -51,9 +52,77 @@ def create_kmeans_models():
     if not os.path.exists(model_path):
         os.mkdir(model_path)
         logger.info('create kmeans models {}'.format(time_str))
-    #from topic_model_doc_process import channel_for_topic
-    channel_for_topic = ['体育']
-    for chanl in channel_for_topic:
+    for chanl in chnl_k_dict.keys():
         create_model_proc(chanl, model_path)
     print 'create models finished!!'
+
+
+###############################################################################
+#@brief  :预测新数据
+#@input  :
+###############################################################################
+nid_sql = 'select a.title, a.content, c.cname \
+from (select * from newslist_v2 where nid=%s) a \
+inner join channellist_v2 c on a."chid"=c."id"'
+from graphlab_lda.topic_model_doc_process import channel_for_topic
+def kmeans_predict(nid_list):
+    global g_channel_kmeans_model_dict
+    #if len(g_channel_kmeans_model_dict) == 0:
+        #from graphlab_lda import topic_model
+        #topic_model.load_newest_models()
+    nid_info = {}
+    for nid in nid_list:
+        conn, cursor = doc_process.get_postgredb()
+        cursor.execute(nid_sql, [nid])
+        row = cursor.fetchone()
+        title = row[0]
+        content_list = row[1]
+        chanl_name = row[2]
+
+        if chanl_name not in g_channel_kmeans_model_dict:
+            continue
+
+        txt = ''
+        for content in content_list:
+            if 'txt' in content.keys():
+                txt += content['txt'].encode('utf-8')
+        total_txt = title + txt
+        word_list = doc_process.filter_html_stopwords_pos(total_txt, remove_num=True, remove_single_word=True)
+        nid_info[nid] = [chanl_name, ' '.join(word_list)]
+        cursor.close()
+        conn.close()
+
+    for chname in g_channel_kmeans_model_dict.keys():
+        nids = []
+        doc_list = []
+        for nid in nid_info.keys():
+            if nid_info[nid][0] == chname:
+                nids.append(nid)
+                doc_list.append(nid_info[nid][1])
+
+        ws = gl.SArray(doc_list)
+        docs = gl.SFrame(data={'X1': ws})
+        docs = gl.text_analytics.count_words(docs['X1'])
+        docs = gl.SFrame(docs)
+        pred = g_channel_kmeans_model_dict[chname].predict(docs, output_type = 'cluster_id')
+        if len(nids) != len(pred):
+            print 'len(nids) != len(pred)'
+            return
+        clstid_nid_dict = {}
+        for i in xrange(0, len(pred)):
+            if pred[i] not in clstid_nid_dict.keys():
+                clstid_nid_dict[i] = []
+                clstid_nid_dict[i].append(nids[i])
+            else:
+                clstid_nid_dict[i].append(nids[i])
+        print clstid_nid_dict
+
+
+
+
+
+
+
+
+
 
