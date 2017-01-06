@@ -150,7 +150,7 @@ def kmeans_predict(nid_list):
         conn.commit()
         cursor.close()
         conn.close()
-    #print clstid_nid_dict
+    print clstid_nid_dict
     #return clstid_nid_dict
 
 
