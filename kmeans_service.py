@@ -5,6 +5,7 @@
 # @File    : kmeans_service.py.py
 # @Software: PyCharm Community Edition
 
+import json
 import sys
 import tornado
 from tornado import web
@@ -20,7 +21,7 @@ class PredictKmeans(tornado.web.RequestHandler):
         nids = self.get_arguments('nid')
         from graphlab_kmeans import kmeans
         res = kmeans.kmeans_predict(nids)
-        self.write(res)
+        self.write(json.dumps(res))
 
 
 
