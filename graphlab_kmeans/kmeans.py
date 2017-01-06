@@ -147,6 +147,7 @@ def kmeans_predict(nid_list):
                 clstid_nid_dict[pred[i]].append(nids[i])
             else:
                 clstid_nid_dict[pred[i]].append(nids[i])
+        conn.commit()
         cursor.close()
         conn.close()
     print clstid_nid_dict
