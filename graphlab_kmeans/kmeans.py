@@ -138,10 +138,10 @@ def kmeans_predict(nid_list):
             return
         for i in xrange(0, len(pred)):
             if pred[i] not in clstid_nid_dict.keys():
-                clstid_nid_dict[i] = []
-                clstid_nid_dict[i].append(nids[i])
+                clstid_nid_dict[pred[i]] = []
+                clstid_nid_dict[pred[i]].append(nids[i])
             else:
-                clstid_nid_dict[i].append(nids[i])
+                clstid_nid_dict[pred[i]].append(nids[i])
     print clstid_nid_dict
     return clstid_nid_dict
 
