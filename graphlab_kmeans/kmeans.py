@@ -27,7 +27,7 @@ kmeans_model_save_dir = real_dir_path + '/' + 'models/'
 if not os.path.exists(kmeans_model_save_dir):
     os.mkdir(kmeans_model_save_dir)
 g_channel_kmeans_model_dict = {}
-chnl_k_dict = {'体育':12}
+chnl_k_dict = {'体育':12, '娱乐':10, '社会':10, '科技':12, '国际':10}
 
 
 def get_newest_model_dir():
@@ -48,7 +48,8 @@ def create_model_proc(chname, model_save_dir=None):
     logger.info('create kmeans model for {}'.format(chname))
     docs = gl.SFrame.read_csv(os.path.join(data_dir, chname), header=False)
     docs = gl.text_analytics.count_words(docs['X1'])
-    model = gl.kmeans.create(gl.SFrame(docs), num_clusters=chnl_k_dict[chname])
+    model = gl.kmeans.create(gl.SFrame(docs), num_clusters=chnl_k_dict[chname],
+                             max_iterations=100)
     g_channel_kmeans_model_dict[chname] = model
     #save_model_to_db(model, chname)
     #save model to file
