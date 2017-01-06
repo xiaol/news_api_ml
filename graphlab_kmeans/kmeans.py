@@ -93,7 +93,7 @@ nid_sql = 'select a.title, a.content, c.cname \
 from (select * from newslist_v2 where nid=%s) a \
 inner join channellist_v2 c on a."chid"=c."id"'
 
-insert_sql = "insert into news_kmeans  (nid, modev_v, ch_name, cluster_id) VALUES ({0}, '{1}', '{2}', {3})"
+insert_sql = "insert into news_kmeans  (nid, model_v, ch_name, cluster_id) VALUES ({0}, '{1}', '{2}', {3})"
 def kmeans_predict(nid_list):
     global g_channel_kmeans_model_dict
     if len(g_channel_kmeans_model_dict) == 0:
