@@ -59,7 +59,6 @@ def create_kmeans_models():
 
 def get_newest_model_dir():
     global kmeans_model_save_dir, kmeans_model_save_dir
-    kmeans_model_save_dir = real_dir_path + '/models'
     models = os.listdir(kmeans_model_save_dir)
     ms = {}
     for m in models:
