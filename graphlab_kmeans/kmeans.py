@@ -57,6 +57,35 @@ def create_kmeans_models():
     print 'create models finished!!'
 
 
+def get_newest_model_dir():
+    global kmeans_model_save_dir, kmeans_model_save_dir
+    kmeans_model_save_dir = real_dir_path + '/models'
+    models = os.listdir(kmeans_model_save_dir)
+    ms = {}
+    for m in models:
+        ms[m] = m.replace('-', '')
+    ms_sort = sorted(ms.items(), key=lambda x:x[1])
+    return kmeans_model_save_dir + ms_sort.pop()[0]
+
+
+def load_models(models_dir):
+    print 'load_models()'
+    global g_channel_kmeans_model_dict, model_v
+    import os
+    model_v = os.path.split(models_dir)[1]
+    if len(g_channel_kmeans_model_dict) != 0:
+        g_channel_kmeans_model_dict.clear()
+    models_files = os.listdir(models_dir)
+    for mf in models_files:
+        print '    load ' + mf
+        print models_dir
+        g_channel_kmeans_model_dict[mf] = gl.load_model(models_dir + '/'+ mf)
+
+
+model_v = os.path.split(get_newest_model_dir())[1]
+def load_newest_models():
+    load_models(get_newest_model_dir())
+
 ###############################################################################
 #@brief  :预测新数据
 #@input  :
@@ -67,9 +96,8 @@ inner join channellist_v2 c on a."chid"=c."id"'
 from graphlab_lda.topic_model_doc_process import channel_for_topic
 def kmeans_predict(nid_list):
     global g_channel_kmeans_model_dict
-    #if len(g_channel_kmeans_model_dict) == 0:
-        #from graphlab_lda import topic_model
-        #topic_model.load_newest_models()
+    if len(g_channel_kmeans_model_dict) == 0:
+        load_newest_models()
     nid_info = {}
     for nid in nid_list:
         conn, cursor = doc_process.get_postgredb()
