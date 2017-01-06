@@ -119,6 +119,7 @@ def kmeans_predict(nid_list):
         cursor.close()
         conn.close()
 
+    clstid_nid_dict = {}
     for chname in g_channel_kmeans_model_dict.keys():
         nids = []
         doc_list = []
@@ -135,14 +136,14 @@ def kmeans_predict(nid_list):
         if len(nids) != len(pred):
             print 'len(nids) != len(pred)'
             return
-        clstid_nid_dict = {}
         for i in xrange(0, len(pred)):
             if pred[i] not in clstid_nid_dict.keys():
                 clstid_nid_dict[i] = []
                 clstid_nid_dict[i].append(nids[i])
             else:
                 clstid_nid_dict[i].append(nids[i])
-        print clstid_nid_dict
+    print clstid_nid_dict
+    return clstid_nid_dict
 
 
 
