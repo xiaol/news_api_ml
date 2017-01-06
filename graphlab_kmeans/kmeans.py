@@ -30,6 +30,17 @@ g_channel_kmeans_model_dict = {}
 chnl_k_dict = {'体育':12}
 
 
+def get_newest_model_dir():
+    global kmeans_model_save_dir, kmeans_model_save_dir
+    models = os.listdir(kmeans_model_save_dir)
+    ms = {}
+    for m in models:
+        ms[m] = m.replace('-', '')
+    ms_sort = sorted(ms.items(), key=lambda x:x[1])
+    return kmeans_model_save_dir + ms_sort.pop()[0]
+
+#初始化模型版本号为最新的保存的模型
+model_v = os.path.split(get_newest_model_dir())[1]
 def create_model_proc(chname, model_save_dir=None):
     if chname not in chnl_k_dict.keys():
         return
@@ -45,26 +56,16 @@ def create_model_proc(chname, model_save_dir=None):
         model.save(model_save_dir+'/'+chname)
 
 def create_kmeans_models():
-    global kmeans_model_save_dir, g_channle_kmeans_model_dict
+    global kmeans_model_save_dir, g_channle_kmeans_model_dict, model_v
     model_create_time = datetime.datetime.now()
     time_str = model_create_time.strftime('%Y-%m-%d-%H-%M-%S')
-    model_path = kmeans_model_save_dir + time_str
-    if not os.path.exists(model_path):
-        os.mkdir(model_path)
+    model_v = kmeans_model_save_dir + time_str
+    if not os.path.exists(model_v):
+        os.mkdir(model_v)
         logger.info('create kmeans models {}'.format(time_str))
     for chanl in chnl_k_dict.keys():
-        create_model_proc(chanl, model_path)
+        create_model_proc(chanl, model_v)
     print 'create models finished!!'
-
-
-def get_newest_model_dir():
-    global kmeans_model_save_dir, kmeans_model_save_dir
-    models = os.listdir(kmeans_model_save_dir)
-    ms = {}
-    for m in models:
-        ms[m] = m.replace('-', '')
-    ms_sort = sorted(ms.items(), key=lambda x:x[1])
-    return kmeans_model_save_dir + ms_sort.pop()[0]
 
 
 def load_models(models_dir):
@@ -81,7 +82,6 @@ def load_models(models_dir):
         g_channel_kmeans_model_dict[mf] = gl.load_model(models_dir + '/'+ mf)
 
 
-model_v = os.path.split(get_newest_model_dir())[1]
 def load_newest_models():
     load_models(get_newest_model_dir())
 
@@ -92,7 +92,8 @@ def load_newest_models():
 nid_sql = 'select a.title, a.content, c.cname \
 from (select * from newslist_v2 where nid=%s) a \
 inner join channellist_v2 c on a."chid"=c."id"'
-from graphlab_lda.topic_model_doc_process import channel_for_topic
+
+insert_sql = "insert into news_kmeans  (nid, modev_v, ch_name, cluster_id) VALUES ({0}, '{1}', '{2}', {3})"
 def kmeans_predict(nid_list):
     global g_channel_kmeans_model_dict
     if len(g_channel_kmeans_model_dict) == 0:
@@ -136,12 +137,18 @@ def kmeans_predict(nid_list):
         if len(nids) != len(pred):
             print 'len(nids) != len(pred)'
             return
+        conn, cursor = doc_process.get_postgredb()
         for i in xrange(0, len(pred)):
+            #入库
+            cursor.execute(insert_sql.format(nids[i], model_v, chname, pred[i]))
+
             if pred[i] not in clstid_nid_dict.keys():
                 clstid_nid_dict[pred[i]] = []
                 clstid_nid_dict[pred[i]].append(nids[i])
             else:
                 clstid_nid_dict[pred[i]].append(nids[i])
+        cursor.close()
+        conn.close()
     print clstid_nid_dict
     return clstid_nid_dict
 
