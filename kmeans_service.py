@@ -24,7 +24,6 @@ class PredictKmeans(tornado.web.RequestHandler):
         self.write(json.dumps(res))
 
 
-
 class Application(tornado.web.Application):
     def __init__(self):
         handlers = [

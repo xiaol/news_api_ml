@@ -30,6 +30,9 @@ def consume_nid(num):
             if n >=num or (t1 - t0).total_seconds() > 30:
                 #topic_model.lda_predict_and_save(nid_list)
                 topic_model.predict_topic_nids(nid_list)
+                #for kmeans
+                from graphlab_kmeans import kmeans
+                kmeans.kmeans_predict(nid_list)
                 n = 0
                 del nid_list[:]
                 t0 = datetime.datetime.now()
