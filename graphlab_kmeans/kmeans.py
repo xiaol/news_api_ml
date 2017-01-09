@@ -71,7 +71,7 @@ def create_kmeans_models():
     t0 = datetime.datetime.now()
     proc_name = []
     for chanl in chnl_k_dict.keys():
-        mp = Process(target=create_kmeans_models, args=(chanl, model_v))
+        mp = Process(target=create_model_proc, args=(chanl, model_v))
         mp.start()
         proc_name.append(mp)
         #create_model_proc(chanl, model_v)
