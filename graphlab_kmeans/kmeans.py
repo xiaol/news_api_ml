@@ -9,6 +9,7 @@ import os
 import datetime
 import graphlab as gl
 from util import doc_process
+from multiprocessing import Process
 
 #添加日志
 import logging
@@ -27,7 +28,8 @@ kmeans_model_save_dir = real_dir_path + '/' + 'models/'
 if not os.path.exists(kmeans_model_save_dir):
     os.mkdir(kmeans_model_save_dir)
 g_channel_kmeans_model_dict = {}
-chnl_k_dict = {'体育':12, '娱乐':10, '社会':10, '科技':12, '国际':10}
+#chnl_k_dict = {'体育':20, '娱乐':10, '社会':10, '科技':12, '国际':5}
+chnl_k_dict = {'体育':20, '科技':15}
 
 
 def get_newest_model_dir():
@@ -50,7 +52,7 @@ def create_model_proc(chname, model_save_dir=None):
     docs = gl.text_analytics.count_words(docs['X1'])
     model = gl.kmeans.create(gl.SFrame(docs), num_clusters=chnl_k_dict[chname],
                              max_iterations=100)
-    g_channel_kmeans_model_dict[chname] = model
+    #g_channel_kmeans_model_dict[chname] = model
     #save_model_to_db(model, chname)
     #save model to file
     if model_save_dir:
@@ -64,9 +66,20 @@ def create_kmeans_models():
     if not os.path.exists(model_v):
         os.mkdir(model_v)
         logger.info('create kmeans models {}'.format(time_str))
+
+
+    t0 = datetime.datetime.now()
+    proc_name = []
     for chanl in chnl_k_dict.keys():
-        create_model_proc(chanl, model_v)
-    print 'create models finished!!'
+        mp = Process(target=create_kmeans_models, args=(chanl, model_v))
+        mp.start()
+        proc_name.append(mp)
+        #create_model_proc(chanl, model_v)
+    for i in proc_name:
+        i.join()
+    t1 = datetime.datetime.now()
+    time_cost = (t1 - t0).seconds
+    print 'create models finished!! it cost ' + str(time_cost) + '\'s'
 
 
 def load_models(models_dir):
