@@ -57,7 +57,7 @@ def create_model_proc(chname, model_save_dir=None):
     model = gl.kmeans.create(gl.SFrame(docs), num_clusters=chnl_k_dict[chname],
                              max_iterations=100)
     print 'create kmeans model for {} finish'.format(chname)
-    #g_channel_kmeans_model_dict[chname] = model
+    g_channel_kmeans_model_dict[chname] = model
     #save_model_to_db(model, chname)
     #save model to file
     if model_save_dir:
@@ -74,14 +74,14 @@ def create_kmeans_models():
 
 
     t0 = datetime.datetime.now()
-    proc_name = []
+    #proc_name = []
     for chanl in chnl_k_dict.keys():
-        mp = Process(target=create_model_proc, args=(chanl, model_v))
-        mp.start()
-        proc_name.append(mp)
-        #create_model_proc(chanl, model_v)
-    for i in proc_name:
-        i.join()
+        #mp = Process(target=create_model_proc, args=(chanl, model_v))
+        #mp.start()
+        #proc_name.append(mp)
+        create_model_proc(chanl, model_v)
+    #for i in proc_name:
+        #i.join()
     t1 = datetime.datetime.now()
     time_cost = (t1 - t0).seconds
     print 'create models finished!! it cost ' + str(time_cost) + '\'s'
