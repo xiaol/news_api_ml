@@ -47,11 +47,13 @@ def create_model_proc(chname, model_save_dir=None):
     if chname not in chnl_k_dict.keys():
         return
     global g_channle_kmeans_model_dict, data_dir
-    logger.info('create kmeans model for {}'.format(chname))
+    #logger.info('create kmeans model for {}'.format(chname))
+    print 'create kmeans model for {}........'.format(chname)
     docs = gl.SFrame.read_csv(os.path.join(data_dir, chname), header=False)
     docs = gl.text_analytics.count_words(docs['X1'])
     model = gl.kmeans.create(gl.SFrame(docs), num_clusters=chnl_k_dict[chname],
                              max_iterations=100)
+    print 'create kmeans model for {} finish'.format(chname)
     #g_channel_kmeans_model_dict[chname] = model
     #save_model_to_db(model, chname)
     #save model to file
