@@ -49,6 +49,7 @@ def create_model_proc(chname, model_save_dir=None):
     global g_channle_kmeans_model_dict, data_dir
     #logger.info('create kmeans model for {}'.format(chname))
     print 'create kmeans model for {}........'.format(chname)
+    print os.path.join(data_dir, chname)
     docs = gl.SFrame.read_csv(os.path.join(data_dir, chname), header=False)
     print 'read csv finished'
     docs = gl.text_analytics.count_words(docs['X1'])
