@@ -50,7 +50,9 @@ def create_model_proc(chname, model_save_dir=None):
     #logger.info('create kmeans model for {}'.format(chname))
     print 'create kmeans model for {}........'.format(chname)
     docs = gl.SFrame.read_csv(os.path.join(data_dir, chname), header=False)
+    print 'read csv finished'
     docs = gl.text_analytics.count_words(docs['X1'])
+    print 'count words finished'
     model = gl.kmeans.create(gl.SFrame(docs), num_clusters=chnl_k_dict[chname],
                              max_iterations=100)
     print 'create kmeans model for {} finish'.format(chname)
