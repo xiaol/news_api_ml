@@ -61,6 +61,9 @@ def consume_user_click():
             print 'consum ' + str(uid) + ' ' + str(nid) + ' ' + 'begin'
             #topic_model.predict_user_topic_core(uid, nid, ctime)
             topic_model.predict_click((uid, nid, ctime))
+            #for kmeans
+            #from graphlab_kmeans import kmeans
+            #kmeans.predict_click((uid, nid, ctime))
         except :
             traceback.print_exc()
             continue

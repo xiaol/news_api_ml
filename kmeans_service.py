@@ -36,7 +36,10 @@ class Application(tornado.web.Application):
 
 if __name__ == '__main__':
     port = int(sys.argv[1])
-    http_server = tornado.httpserver.HTTPServer(Application())
-    http_server.listen(port) #同时提供手工处理端口
+    if port == 9100:
+        http_server = tornado.httpserver.HTTPServer(Application())
+        http_server.listen(port) #同时提供手工处理端口
+    elif port == 9980:
+        pass
 
     tornado.ioloop.IOLoop.instance().start()
