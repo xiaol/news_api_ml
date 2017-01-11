@@ -49,14 +49,12 @@ def create_model_proc(chname, model_save_dir=None):
         return
     global g_channle_kmeans_model_dict, data_dir
     #logger.info('create kmeans model for {}'.format(chname))
-    print 'create kmeans model for {}........'.format(chname)
     print os.path.join(data_dir, chname)
     docs = gl.SFrame.read_csv(os.path.join(data_dir, chname), header=False)
-    print 'read csv finished'
-    docs = gl.text_analytics.count_words(docs['X1'])
-    print 'count words finished'
+    trim_sa = gl.text_analytics.trim_rare_words(docs['X1'], threshold=3, to_lower=False, delimiters=None)
+    docs = gl.text_analytics.count_words(trim_sa)
     model = gl.kmeans.create(gl.SFrame(docs), num_clusters=chnl_k_dict[chname],
-                             max_iterations=40)
+                             max_iterations=4)
     print 'create kmeans model for {} finish'.format(chname)
     g_channel_kmeans_model_dict[chname] = model
     #save_model_to_db(model, chname)
@@ -102,15 +100,30 @@ def load_newest_models():
 #@brief  :预测新数据
 #@input  :
 ###############################################################################
-nid_sql = 'select a.title, a.content, c.cname \
+nid_sql = 'select a.title, a.content, c.cname\
 from (select * from newslist_v2 where nid=%s) a \
 inner join channellist_v2 c on a."chid"=c."id"'
 
-insert_sql = "insert into news_kmeans  (nid, model_v, ch_name, cluster_id) VALUES ({0}, '{1}', '{2}', {3})"
+chname_id_dict = {}
+def get_chname_id_dict():
+    global chname_id_dict
+    chname_id_sql = "select id, cname from channellist_v2"
+    conn, cursor = doc_process.get_postgredb()
+    cursor.execute(chname_id_sql)
+    rows = cursor.fetchall()
+    for r in rows:
+        chname_id_dict[r[1]] = r[0]
+    cursor.close()
+    conn.close()
+
+
+insert_sql = "insert into news_kmeans  (nid, model_v, ch_name, cluster_id, chid) VALUES ({0}, '{1}', '{2}', {3}, {4})"
 def kmeans_predict(nid_list):
-    global g_channel_kmeans_model_dict
+    global g_channel_kmeans_model_dict, chname_id_dict
     if len(g_channel_kmeans_model_dict) == 0:
         load_newest_models()
+    if (len(chname_id_dict)) == 0:
+        get_chname_id_dict()
     nid_info = {}
     for nid in nid_list:
         conn, cursor = doc_process.get_postgredb()
@@ -153,7 +166,7 @@ def kmeans_predict(nid_list):
         conn, cursor = doc_process.get_postgredb()
         for i in xrange(0, len(pred)):
             #入库
-            cursor.execute(insert_sql.format(nids[i], model_v, chname, pred[i]))
+            cursor.execute(insert_sql.format(nids[i], model_v, chname, pred[i], chname_id_dict[chname]))
 
             if pred[i] not in clstid_nid_dict.keys():
                 clstid_nid_dict[pred[i]] = []
@@ -167,7 +180,44 @@ def kmeans_predict(nid_list):
     #return clstid_nid_dict
 
 
-
+nt_sql = "select ch_name, cluster_id from news_kmeans where nid = {0} and model_v = '{1}' "
+ut_sql = "select times from user_kmeans_cluster where uid = {0} and model_v = '{1}' and ch_name = '{2}' and cluster_id ='{3}' "
+ut_update_sql = "update user_kmeans_cluster set times='{0}', create_time = '{1}', fail_time='{2}' where " \
+                "uid='{3}' and model_v = '{4}' and ch_name = '{5}' and cluster_id='{6}'"
+user_topic_insert_sql = "insert into user_kmeans_cluster (uid, model_v, ch_name, cluster_id, times, create_time, fail_time, chid) " \
+                        "VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}')"
+################################################################################
+#@brief : 添加用户点击
+################################################################################
+from datetime import timedelta
+def predict_click(click_info):
+    global model_v, chname_id_dict
+    if (len(chname_id_dict)) == 0:
+        get_chname_id_dict()
+    uid = click_info[0]
+    nid = click_info[1]
+    time_str = click_info[2]
+    ctime = datetime.datetime.strptime(time_str, '%Y-%m-%d %H:%M:%S')
+    valid_time = ctime + timedelta(days=15) #有效时间定为30天
+    fail_time = valid_time.strftime('%Y-%m-%d %H:%M:%S')
+    conn, cursor = doc_process.get_postgredb()
+    cursor.execute(nt_sql.format(nid, model_v)) #获取nid可能的话题
+    rows = cursor.fetchall()
+    for r in rows:
+        ch_name = r[0]
+        cluster_id = r[1]
+        conn2, cursor2 = doc_process.get_postgredb()
+        cursor2.execute(ut_sql.format(uid, model_v, ch_name, cluster_id))
+        rows2 = cursor2.fetchone()
+        if rows2: #该用户已经关注过该topic_id, 更新probability即可
+            times = 1 + rows2[0]
+            cursor2.execute(ut_update_sql.format(times, time_str, fail_time, uid, model_v, ch_name, cluster_id))
+        else:
+            cursor2.execute(user_topic_insert_sql.format(uid, model_v, ch_name, cluster_id, '1', time_str, fail_time, chname_id_dict[ch_name]))
+        conn2.commit()
+        conn2.close()
+    cursor.close()
+    conn.close()
 
 
 
