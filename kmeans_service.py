@@ -24,11 +24,22 @@ class PredictKmeans(tornado.web.RequestHandler):
         self.write(json.dumps(res))
 
 
+class PredictClick(tornado.web.RequestHandler):
+    def get(self):
+        uid = 1
+        nid = 1000000
+        time_str = '2017'
+        from graphlab_kmeans import kmeans
+        kmeans.predict_click((uid, nid, time_str))
+
+
+
 class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
             ("/kmeans/createmodel", CreateKmeansModel),
             ("/kmeans/predict_nids", PredictKmeans),
+            ("/kmeans/predict_click", PredictClick),
         ]
         settings = {}
         tornado.web.Application.__init__(self, handlers, **settings)
