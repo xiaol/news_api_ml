@@ -29,7 +29,8 @@ if not os.path.exists(kmeans_model_save_dir):
     os.mkdir(kmeans_model_save_dir)
 g_channel_kmeans_model_dict = {}
 #chnl_k_dict = {'体育':20, '娱乐':10, '社会':10, '科技':12, '国际':5}
-chnl_k_dict = {'体育':20, '科技':15}
+#chnl_k_dict = {'体育':20, '科技':15}
+chnl_k_dict = {'娱乐':20, '社会':20, '国际':10}
 
 
 def get_newest_model_dir():
@@ -55,7 +56,7 @@ def create_model_proc(chname, model_save_dir=None):
     docs = gl.text_analytics.count_words(docs['X1'])
     print 'count words finished'
     model = gl.kmeans.create(gl.SFrame(docs), num_clusters=chnl_k_dict[chname],
-                             max_iterations=100)
+                             max_iterations=40)
     print 'create kmeans model for {} finish'.format(chname)
     g_channel_kmeans_model_dict[chname] = model
     #save_model_to_db(model, chname)
@@ -72,16 +73,9 @@ def create_kmeans_models():
         os.mkdir(model_v)
         logger.info('create kmeans models {}'.format(time_str))
 
-
     t0 = datetime.datetime.now()
-    #proc_name = []
     for chanl in chnl_k_dict.keys():
-        #mp = Process(target=create_model_proc, args=(chanl, model_v))
-        #mp.start()
-        #proc_name.append(mp)
-        create_model_proc(chanl, model_v)
-    #for i in proc_name:
-        #i.join()
+        create_model_proc(chanl, model_v) #只能单进程。 gl的数据结构(SFrame等)无法通过传递给子进程
     t1 = datetime.datetime.now()
     time_cost = (t1 - t0).seconds
     print 'create models finished!! it cost ' + str(time_cost) + '\'s'
