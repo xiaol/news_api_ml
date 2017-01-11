@@ -53,7 +53,7 @@ def create_model_proc(chname, model_save_dir=None):
     trim_sa = gl.text_analytics.trim_rare_words(docs['X1'], threshold=3, to_lower=False, delimiters=None)
     docs = gl.text_analytics.count_words(trim_sa)
     model = gl.kmeans.create(gl.SFrame(docs), num_clusters=chnl_k_dict[chname],
-                             max_iterations=4)
+                             max_iterations=100)
     print 'create kmeans model for {} finish'.format(chname)
     g_channel_kmeans_model_dict[chname] = model
     #save_model_to_db(model, chname)
