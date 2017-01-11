@@ -48,8 +48,7 @@ def create_model_proc(chname, model_save_dir=None):
     if chname not in chnl_k_dict.keys():
         return
     global g_channle_kmeans_model_dict, data_dir
-    #logger.info('create kmeans model for {}'.format(chname))
-    print os.path.join(data_dir, chname)
+    print '******************{}'.format(chname)
     docs = gl.SFrame.read_csv(os.path.join(data_dir, chname), header=False)
     trim_sa = gl.text_analytics.trim_rare_words(docs['X1'], threshold=3, to_lower=False, delimiters=None)
     docs = gl.text_analytics.count_words(trim_sa)
