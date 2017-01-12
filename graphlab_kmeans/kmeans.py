@@ -51,8 +51,7 @@ def create_model_proc(chname, model_save_dir=None):
     global g_channle_kmeans_model_dict, data_dir
     print '******************{}'.format(chname)
     docs = gl.SFrame.read_csv(os.path.join(data_dir, chname), header=False)
-    #trim_sa = gl.text_analytics.trim_rare_words(docs['X1'], threshold=2, to_lower=False, delimiters=None)
-    trim_sa = gl.text_analytics.trim_rare_words(docs['X1'], threshold=2, to_lower=False, delimiters=None)
+    trim_sa = gl.text_analytics.trim_rare_words(docs['X1'], threshold=5, to_lower=False)
     docs = gl.text_analytics.count_words(trim_sa)
     model = gl.kmeans.create(gl.SFrame(docs), num_clusters=chnl_k_dict[chname],
                              max_iterations=200)
