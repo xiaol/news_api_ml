@@ -128,6 +128,8 @@ def kmeans_predict(nid_list):
         conn, cursor = doc_process.get_postgredb()
         cursor.execute(nid_sql, [nid])
         row = cursor.fetchone()
+        if not row:
+            print 'Error: do not get info of nid: ' + str(nid)
         title = row[0]
         content_list = row[1]
         chanl_name = row[2]
