@@ -29,9 +29,9 @@ if not os.path.exists(kmeans_model_save_dir):
     os.mkdir(kmeans_model_save_dir)
 g_channel_kmeans_model_dict = {}
 #chnl_k_dict = {'体育':20, '娱乐':10, '社会':10, '科技':12, '国际':5}
-#chnl_k_dict = {'体育':20, '科技':15}
+chnl_k_dict = {'体育':20}
 #chnl_k_dict = {'娱乐':20, '社会':20, '国际':10}
-chnl_k_dict = {'体育':20, '娱乐':20, '社会':20, '科技':20, '国际':10}
+#chnl_k_dict = {'体育':20, '娱乐':20, '社会':20, '科技':20, '国际':10}
 
 
 def get_newest_model_dir():
@@ -51,6 +51,7 @@ def create_model_proc(chname, model_save_dir=None):
     global g_channle_kmeans_model_dict, data_dir
     print '******************{}'.format(chname)
     docs = gl.SFrame.read_csv(os.path.join(data_dir, chname), header=False)
+    #trim_sa = gl.text_analytics.trim_rare_words(docs['X1'], threshold=2, to_lower=False, delimiters=None)
     trim_sa = gl.text_analytics.trim_rare_words(docs['X1'], threshold=2, to_lower=False, delimiters=None)
     docs = gl.text_analytics.count_words(trim_sa)
     model = gl.kmeans.create(gl.SFrame(docs), num_clusters=chnl_k_dict[chname],
