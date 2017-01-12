@@ -27,7 +27,7 @@ class PredictKmeans(tornado.web.RequestHandler):
 class PredictClick(tornado.web.RequestHandler):
     def get(self):
         uid = 1
-        nid = 1000000
+        nid = 10682265
         time_str = '2017'
         from graphlab_kmeans import kmeans
         kmeans.predict_click((uid, nid, time_str))
