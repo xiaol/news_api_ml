@@ -150,6 +150,7 @@ def kmeans_predict(nid_list):
 
     #clstid_nid_dict = {}
     for chname in g_channel_kmeans_model_dict.keys():
+        print 'predict ---- ' + chname
         nids = []
         doc_list = []
         for nid in nid_info.keys():
@@ -157,6 +158,7 @@ def kmeans_predict(nid_list):
                 nids.append(nid)
                 doc_list.append(nid_info[nid][1])
 
+        print 'news num of ' + chname + ' is ' + str(len(chname))
         if len(nids) == 0:
             continue
         ws = gl.SArray(doc_list)

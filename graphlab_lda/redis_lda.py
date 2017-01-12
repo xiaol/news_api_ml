@@ -29,7 +29,7 @@ def consume_nid(num):
             t1 = datetime.datetime.now()
             if n >=num or (t1 - t0).total_seconds() > 30:
                 #topic_model.lda_predict_and_save(nid_list)
-                topic_model.predict_topic_nids(nid_list)
+                #topic_model.predict_topic_nids(nid_list)
                 #for kmeans
                 from graphlab_kmeans import kmeans
                 kmeans.kmeans_predict(nid_list)
@@ -60,7 +60,7 @@ def consume_user_click():
             ctime = data[2]
             print 'consum ' + str(uid) + ' ' + str(nid) + ' ' + 'begin'
             #topic_model.predict_user_topic_core(uid, nid, ctime)
-            topic_model.predict_click((uid, nid, ctime))
+            #topic_model.predict_click((uid, nid, ctime))
             #for kmeans
             from graphlab_kmeans import kmeans
             kmeans.predict_click((uid, nid, ctime))
