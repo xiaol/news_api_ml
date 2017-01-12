@@ -154,6 +154,7 @@ def kmeans_predict(nid_list):
                 nids.append(nid)
                 doc_list.append(nid_info[nid][1])
 
+        print doc_list
         ws = gl.SArray(doc_list)
         docs = gl.SFrame(data={'X1': ws})
         docs = gl.text_analytics.count_words(docs['X1'])
