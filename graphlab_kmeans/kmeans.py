@@ -174,7 +174,7 @@ def kmeans_predict(nid_list):
             #入库
             now = datetime.datetime.now()
             time_str = now.strftime('%Y-%m-%d %H:%M:%S')
-            cursor.execute(insert_sql.format(nids[i], model_v, chname, pred[i], chname_id_dict[chname]), time_str)
+            cursor.execute(insert_sql.format(nids[i], model_v, chname, pred[i], chname_id_dict[chname], time_str))
 
             #if pred[i] not in clstid_nid_dict.keys():
             #    clstid_nid_dict[pred[i]] = []
