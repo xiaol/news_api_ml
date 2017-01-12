@@ -116,7 +116,7 @@ def get_chname_id_dict():
     conn.close()
 
 
-insert_sql = "insert into news_kmeans  (nid, model_v, ch_name, cluster_id, chid) VALUES ({0}, '{1}', '{2}', {3}, {4})"
+insert_sql = "insert into news_kmeans  (nid, model_v, ch_name, cluster_id, chid, ctime) VALUES ({0}, '{1}', '{2}', {3}, {4}, '{5}')"
 def kmeans_predict(nid_list):
     global g_channel_kmeans_model_dict, chname_id_dict
     if len(g_channel_kmeans_model_dict) == 0:
@@ -148,7 +148,7 @@ def kmeans_predict(nid_list):
         cursor.close()
         conn.close()
 
-    clstid_nid_dict = {}
+    #clstid_nid_dict = {}
     for chname in g_channel_kmeans_model_dict.keys():
         nids = []
         doc_list = []
@@ -170,17 +170,19 @@ def kmeans_predict(nid_list):
         conn, cursor = doc_process.get_postgredb()
         for i in xrange(0, len(pred)):
             #入库
-            cursor.execute(insert_sql.format(nids[i], model_v, chname, pred[i], chname_id_dict[chname]))
+            time = datetime.datetime.now()
+            time_str = datetime.datetime.strftime(time, '%Y-%m-%d %H:%M:%S')
+            cursor.execute(insert_sql.format(nids[i], model_v, chname, pred[i], chname_id_dict[chname]), time_str)
 
-            if pred[i] not in clstid_nid_dict.keys():
-                clstid_nid_dict[pred[i]] = []
-                clstid_nid_dict[pred[i]].append(nids[i])
-            else:
-                clstid_nid_dict[pred[i]].append(nids[i])
+            #if pred[i] not in clstid_nid_dict.keys():
+            #    clstid_nid_dict[pred[i]] = []
+            #    clstid_nid_dict[pred[i]].append(nids[i])
+            #else:
+            #    clstid_nid_dict[pred[i]].append(nids[i])
         conn.commit()
         cursor.close()
         conn.close()
-    print clstid_nid_dict
+    #print clstid_nid_dict
     #return clstid_nid_dict
 
 
