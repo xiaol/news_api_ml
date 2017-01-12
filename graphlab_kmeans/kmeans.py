@@ -172,8 +172,8 @@ def kmeans_predict(nid_list):
         conn, cursor = doc_process.get_postgredb()
         for i in xrange(0, len(pred)):
             #入库
-            time = datetime.datetime.now()
-            time_str = datetime.datetime.strftime(time, '%Y-%m-%d %H:%M:%S')
+            now = datetime.datetime.now()
+            time_str = now.strftime('%Y-%m-%d %H:%M:%S')
             cursor.execute(insert_sql.format(nids[i], model_v, chname, pred[i], chname_id_dict[chname]), time_str)
 
             #if pred[i] not in clstid_nid_dict.keys():
