@@ -31,8 +31,8 @@ def consume_nid(num):
                 #topic_model.lda_predict_and_save(nid_list)
                 topic_model.predict_topic_nids(nid_list)
                 #for kmeans
-                #from graphlab_kmeans import kmeans
-                #kmeans.kmeans_predict(nid_list)
+                from graphlab_kmeans import kmeans
+                kmeans.kmeans_predict(nid_list)
                 n = 0
                 del nid_list[:]
                 t0 = datetime.datetime.now()
@@ -62,8 +62,8 @@ def consume_user_click():
             #topic_model.predict_user_topic_core(uid, nid, ctime)
             topic_model.predict_click((uid, nid, ctime))
             #for kmeans
-            #from graphlab_kmeans import kmeans
-            #kmeans.predict_click((uid, nid, ctime))
+            from graphlab_kmeans import kmeans
+            kmeans.predict_click((uid, nid, ctime))
         except :
             traceback.print_exc()
             continue

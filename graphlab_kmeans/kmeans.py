@@ -29,9 +29,9 @@ if not os.path.exists(kmeans_model_save_dir):
     os.mkdir(kmeans_model_save_dir)
 g_channel_kmeans_model_dict = {}
 #chnl_k_dict = {'体育':20, '娱乐':10, '社会':10, '科技':12, '国际':5}
-chnl_k_dict = {'体育':20}
+#chnl_k_dict = {'体育':20}
 #chnl_k_dict = {'娱乐':20, '社会':20, '国际':10}
-#chnl_k_dict = {'体育':20, '娱乐':20, '社会':20, '科技':20, '国际':10}
+chnl_k_dict = {'体育':20, '娱乐':20, '社会':20, '科技':20, '国际':10}
 
 
 def get_newest_model_dir():
