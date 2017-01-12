@@ -99,7 +99,7 @@ def load_newest_models():
 #@brief  :预测新数据
 #@input  :
 ###############################################################################
-nid_sql = 'select a.title, a.content, c.cname\
+nid_sql = 'select a.title, a.content, c.cname \
 from (select * from newslist_v2 where nid=%s) a \
 inner join channellist_v2 c on a."chid"=c."id"'
 
