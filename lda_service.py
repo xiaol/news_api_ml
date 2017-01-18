@@ -15,6 +15,7 @@ import traceback
 
 from graphlab_lda import topic_model_doc_process
 from graphlab_lda import topic_model
+from graphlab_lda import redis_lda
 
 
 class CollNews(tornado.web.RequestHandler):
@@ -156,7 +157,6 @@ if __name__ == '__main__':
         http_server = tornado.httpserver.HTTPServer(Application())
         http_server.listen(port)
     elif port == 9988:#消费新闻队列数据
-        from graphlab_lda import redis_lda
         http_server = tornado.httpserver.HTTPServer(EmptyApp())
         http_server.listen(port) #同时提供手工处理端口
         topic_model.load_newest_models()
@@ -167,7 +167,6 @@ if __name__ == '__main__':
         http_server = tornado.httpserver.HTTPServer(ProduceClickEventApplication())
         http_server.listen(port) #同时提供手工处理端口
     elif port == 9990: #消费用户点击逻辑进程。
-        from graphlab_lda import redis_lda
         http_server = tornado.httpserver.HTTPServer(EmptyApp())
         http_server.listen(port) #同时提供手工处理端口
         #topic_model.load_newest_models()
