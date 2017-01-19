@@ -123,6 +123,7 @@ def get_chname_id_dict():
 insert_sql = "insert into news_kmeans  (nid, model_v, ch_name, cluster_id, chid, ctime) VALUES ({0}, '{1}', '{2}', {3}, {4}, '{5}')"
 def kmeans_predict(nid_list):
     global g_channel_kmeans_model_dict, chname_id_dict
+    print "****************************************************"  + model_v
     if len(g_channel_kmeans_model_dict) == 0:
         load_newest_models()
     if (len(chname_id_dict)) == 0:
