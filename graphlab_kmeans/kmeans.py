@@ -193,7 +193,8 @@ def kmeans_predict(nid_list):
     #return clstid_nid_dict
 
 
-nt_sql = "select ch_name, cluster_id from news_kmeans where nid = {0} and model_v = '{1}' "
+#nt_sql = "select ch_name, cluster_id from news_kmeans where nid = {0} and model_v = '{1}' "
+nt_sql = "select ch_name, cluster_id, model_v from news_kmeans where nid = {0}"
 ut_sql = "select times from user_kmeans_cluster where uid = {0} and model_v = '{1}' and ch_name = '{2}' and cluster_id ='{3}' "
 ut_update_sql = "update user_kmeans_cluster set times='{0}', create_time = '{1}', fail_time='{2}' where " \
                 "uid='{3}' and model_v = '{4}' and ch_name = '{5}' and cluster_id='{6}'"
@@ -204,7 +205,7 @@ user_topic_insert_sql = "insert into user_kmeans_cluster (uid, model_v, ch_name,
 ################################################################################
 from datetime import timedelta
 def predict_click(click_info):
-    global model_v, chname_id_dict
+    global chname_id_dict
     if (len(chname_id_dict)) == 0:
         get_chname_id_dict()
     uid = click_info[0]
@@ -215,20 +216,21 @@ def predict_click(click_info):
     valid_time = ctime + timedelta(days=15) #有效时间定为30天
     fail_time = valid_time.strftime('%Y-%m-%d %H:%M:%S')
     conn, cursor = doc_process.get_postgredb()
-    cursor.execute(nt_sql.format(nid, model_v)) #获取nid可能的话题
+    cursor.execute(nt_sql.format(nid)) #获取nid可能的话题
     rows = cursor.fetchall()
     for r in rows:
         ch_name = r[0]
         cluster_id = r[1]
+        local_model_v = r[2]
         conn2, cursor2 = doc_process.get_postgredb()
-        cursor2.execute(ut_sql.format(uid, model_v, ch_name, cluster_id))
+        cursor2.execute(ut_sql.format(uid, local_model_v, ch_name, cluster_id))
         rows2 = cursor2.fetchone()
         if rows2: #该用户已经关注过该topic_id, 更新probability即可
             times = 1 + rows2[0]
             print "update '{0}' '{1}' '{2}' '{3}' '{4}' '{5}' '{6}'".format(times, time_str, fail_time, uid, model_v, ch_name, cluster_id)
-            cursor2.execute(ut_update_sql.format(times, time_str, fail_time, uid, model_v, ch_name, cluster_id))
+            cursor2.execute(ut_update_sql.format(times, time_str, fail_time, uid, local_model_v, ch_name, cluster_id))
         else:
-            cursor2.execute(user_topic_insert_sql.format(uid, model_v, ch_name, cluster_id, '1', time_str, fail_time, chname_id_dict[ch_name]))
+            cursor2.execute(user_topic_insert_sql.format(uid, local_model_v, ch_name, cluster_id, '1', time_str, fail_time, chname_id_dict[ch_name]))
         conn2.commit()
         conn2.close()
     cursor.close()
