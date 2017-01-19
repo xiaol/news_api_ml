@@ -10,7 +10,7 @@ from redis_lda import produce_user_click
 from topic_model_doc_process import channel_for_topic
 
 #定义取用户点击的循环周期
-period = 10
+period = 30
 #click_sql = "select uid, nid, ctime from newsrecommendclick where ctime > now() - INTERVAL '5 minute'"
 click_sql = "select c.uid, c.nid, c.ctime from newsrecommendclick c \
 inner join newslist_v2 nl  on c.nid=nl.nid \

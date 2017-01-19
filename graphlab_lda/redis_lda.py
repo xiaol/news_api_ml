@@ -30,7 +30,7 @@ def consume_nid(num):
             nid_list.append(nid)
             n += 1
             t1 = datetime.datetime.now()
-            if n >=num or (t1 - t0).total_seconds() > 30:
+            if n >=num or (t1 - t0).total_seconds() > 10:
                 #topic_model.lda_predict_and_save(nid_list)
                 topic_model.predict_topic_nids(nid_list)
                 #for kmeans
