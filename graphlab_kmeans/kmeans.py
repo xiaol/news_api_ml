@@ -211,7 +211,7 @@ def predict_click(click_info):
     uid = click_info[0]
     nid = click_info[1]
     time_str = click_info[2]
-    print 'consume ' + str(uid) + ' ' + str(nid) + ' '+time_str
+    print 'consume kmenas -----' + str(uid) + ' ' + str(nid) + ' '+time_str
     ctime = datetime.datetime.strptime(time_str, '%Y-%m-%d %H:%M:%S')
     valid_time = ctime + timedelta(days=15) #有效时间定为30天
     fail_time = valid_time.strftime('%Y-%m-%d %H:%M:%S')
@@ -227,9 +227,10 @@ def predict_click(click_info):
         rows2 = cursor2.fetchone()
         if rows2: #该用户已经关注过该topic_id, 更新probability即可
             times = 1 + rows2[0]
-            print "update '{0}' '{1}' '{2}' '{3}' '{4}' '{5}' '{6}'".format(times, time_str, fail_time, uid, model_v, ch_name, cluster_id)
+            print "update '{0}' '{1}' '{2}' '{3}' '{4}'".format(uid, nid, model_v, ch_name, cluster_id)
             cursor2.execute(ut_update_sql.format(times, time_str, fail_time, uid, local_model_v, ch_name, cluster_id))
         else:
+            print "insert '{0}' '{1}' '{2}' '{3}' '{4}'".format(uid, nid, model_v, ch_name, cluster_id)
             cursor2.execute(user_topic_insert_sql.format(uid, local_model_v, ch_name, cluster_id, '1', time_str, fail_time, chname_id_dict[ch_name]))
         conn2.commit()
         conn2.close()
