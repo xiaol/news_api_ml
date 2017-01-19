@@ -51,6 +51,10 @@ if __name__ == '__main__':
         http_server = tornado.httpserver.HTTPServer(Application())
         http_server.listen(port) #同时提供手工处理端口
     elif port == 9980:
-        pass
+        from graphlab_kmeans import kmeans
+        kmeans.updateModel()
+    elif port == 9981:
+        from graphlab_kmeans import kmeans
+        kmeans.updateModel2()
 
     tornado.ioloop.IOLoop.instance().start()
