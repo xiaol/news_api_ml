@@ -250,8 +250,6 @@ s2 ="update user_kmeans_cluster set model_v='{0}'"
 def updateModel2():
     conn, cursor = doc_process.get_postgredb()
     cursor.execute(s2.format('2017-01-17-17-27-04')) #获取nid可能的话题
-    rows = cursor.fetchall()
-    print len(rows)
     conn.commit()
     cursor.close()
     conn.close()
