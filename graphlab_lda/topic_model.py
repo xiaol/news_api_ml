@@ -171,7 +171,7 @@ def lda_predict(nid):
     return res
 
 
-news_topic_sql = "insert into news_topic (nid, model_v, ch_name, topic_id, probability, real_cname) VALUES (%s,  %s, %s, %s, %s, %s)"
+news_topic_sql = "insert into news_topic (nid, model_v, ch_name, topic_id, probability, real_cname, ctime) VALUES (%s,  %s, %s, %s, %s, %s, %s)"
 def lda_predict_and_save(nid):
     global model_v
     ch_name, pred = lda_predict_core(nid)
@@ -354,6 +354,9 @@ def predict_topic_nids(nid_list):
     extra_chanl_nids = [n for n in nid_info.keys() if nid_info[n][0] in extra_channel_for_topic]
     extra_nid_chname_dict = get_nid_predict_chname(extra_chanl_nids)
 
+    now = datetime.datetime.now()
+    time_str = now.strftime('%Y-%m-%d %H:%M:%S')
+
     chname_news_dict = {}
     for chname in channel_for_topic:
         nid_pred_dict = {}
@@ -411,7 +414,7 @@ def predict_topic_nids(nid_list):
             if n in extra_nid_chname_dict.keys():
                 extra_chanl =nid_info[n][0] #点集或者自媒体
             for pred in item[1].items():
-                cursor.execute(news_topic_sql, [n, model_v, chname, pred[0], pred[1], extra_chanl])
+                cursor.execute(news_topic_sql, [n, model_v, chname, pred[0], pred[1], extra_chanl, time_str])
         conn.commit()
         cursor.close()
         conn.close()
