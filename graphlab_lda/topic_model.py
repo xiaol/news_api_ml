@@ -19,7 +19,8 @@ real_dir_path = os.path.split(os.path.realpath(__file__))[0]
 g_channel_model_dict = {}
 import datetime
 data_dir = real_dir_path + '/data/'
-model_dir = real_dir_path + '/models/'
+#model_dir = real_dir_path + '/models/'
+model_dir = '~/ossfs/topic_models/'
 
 model_v = ''
 
@@ -72,8 +73,8 @@ def create_models():
 
 def get_newest_model_dir():
     global model_dir
-    models_dir = real_dir_path + '/models'
-    models = os.listdir(models_dir)
+    #models_dir = real_dir_path + '/models'
+    models = os.listdir(model_dir)
     ms = {}
     for m in models:
         ms[m] = m.replace('-', '')
