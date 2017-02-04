@@ -20,7 +20,8 @@ g_channel_model_dict = {}
 import datetime
 data_dir = real_dir_path + '/data/'
 #model_dir = real_dir_path + '/models/'
-model_dir = '~/ossfs/topic_models/'
+#model_dir = '~/ossfs/topic_models/'
+model_dir = os.path.join('~/ossfs', 'topic_models')
 
 model_v = ''
 
@@ -54,14 +55,15 @@ def create_model_proc(csv_file, model_save_dir=None):
     save_model_to_db(model, csv_file)
     #save model
     if model_save_dir:
-        model.save(model_save_dir+'/'+csv_file)
+        #model.save(model_save_dir+'/'+csv_file)
+        model.save(os.path.join(model_save_dir, csv_file))
 
 
 def create_models():
     global model_dir
     model_create_time = datetime.datetime.now()
     time_str = model_create_time.strftime('%Y-%m-%d-%H-%M-%S')
-    model_path = model_dir + time_str
+    model_path = os.path.join(model_dir, time_str)
     if not os.path.exists(model_path):
         os.mkdir(model_path)
 
@@ -79,7 +81,8 @@ def get_newest_model_dir():
     for m in models:
         ms[m] = m.replace('-', '')
     ms_sort = sorted(ms.items(), key=lambda x:x[1])
-    return model_dir + ms_sort.pop()[0]
+    #return model_dir + ms_sort.pop()[0]
+    return os.path.join(model_dir,  ms_sort.pop()[0])
 
 
 def load_models(models_dir):
