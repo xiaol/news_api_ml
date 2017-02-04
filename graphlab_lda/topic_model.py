@@ -21,7 +21,7 @@ import datetime
 data_dir = real_dir_path + '/data/'
 #model_dir = real_dir_path + '/models/'
 #model_dir = '~/ossfs/topic_models/'
-model_dir = os.path.join('~/ossfs', 'topic_models')
+model_dir = os.path.join('/root/ossfs', 'topic_models')
 
 model_v = ''
 
