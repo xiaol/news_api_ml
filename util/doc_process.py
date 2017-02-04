@@ -142,4 +142,24 @@ def get_postgredb():
     return connection, cursor
 
 
+nid_sql = 'select a.title, a.content, c.cname \
+from (select * from newslist_v2 where nid=%s) a \
+inner join channellist_v2 c on a."chid"=c."id"'
+def get_words_on_nid(nid):
+    conn, cursor = get_postgredb()
+    cursor.execute(nid_sql, [nid])
+    rows = cursor.fetchall()
+    word_list = []
+    for row in rows:
+        title = row[0]  #str类型
+        content_list = row[1]
+        txt = ''
+        for content in content_list:
+            if 'txt' in content.keys():
+                txt += content['txt'].encode('utf-8')
+        total_txt = title + txt
+        word_list = filter_html_stopwords_pos(total_txt, remove_num=True, remove_single_word=True)
+    return word_list
+
+
 
