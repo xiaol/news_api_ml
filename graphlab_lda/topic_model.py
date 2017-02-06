@@ -447,6 +447,8 @@ def predict_click(click_info):
         valid_time = ctime + timedelta(days=30) #有效时间定为30天
         fail_time = valid_time.strftime('%Y-%m-%d %H:%M:%S')
         conn, cursor = doc_process.get_postgredb()
+        print nid
+        print model_v
         cursor.execute(nt_sql.format(nid, model_v)) #获取nid可能的话题
         rows = cursor.fetchall()
         print 'predict topic num = ' + str(len(rows))
