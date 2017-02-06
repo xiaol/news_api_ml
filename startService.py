@@ -120,9 +120,19 @@ class NewsAdsExtractOnnid(tornado.web.RequestHandler):
 
 class Test(tornado.web.RequestHandler):
     def post(self):
-        nids = [9681927, 9681188]
-        res = DocPreProcess.getTextOfNewsNids(nids)
-        self.write(json.dumps(res))
+        import requests
+        nid_list = [9681927, 9681188]
+        nid_chanl_list = {}
+        print 'predict ---- 自媒体和点集 ' + str(len(nid_list))
+        url = "http://127.0.0.1:9993/ml/newsClassifyOnNids"
+        data = {}
+        data['nids'] = nid_list
+        response = requests.post(url, data=data)
+        print response
+        print type(response.content)
+        print response.content
+        print json.loads(response.content)
+        self.write(json.dumps(response.content))
 
 class Application(tornado.web.Application):
     def __init__(self):
