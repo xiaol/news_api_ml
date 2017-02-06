@@ -397,9 +397,9 @@ def getTextOfNewsNids(nids):
         return []
     conn, cursor = get_postgredb()
     nids_str = ''
-    nids_str += nids[0]
+    nids_str += str(nids[0])
     for i in xrange (1, len(nids)):
-        nids_str += ',' + nids[i]
+        nids_str += ',' + str(nids[i])
     cursor.execute(sql_nid.format(nids_str.encode('utf-8')))
     rows = cursor.fetchall()
     texts_list = []
