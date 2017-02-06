@@ -359,7 +359,8 @@ def predict_topic_nids(nid_list):
 
     #主要用于处理自媒体和点集
     extra_chanl_nids = [n for n in nid_info.keys() if nid_info[n][0] in extra_channel_for_topic]
-    extra_nid_chname_dict = get_nid_predict_chname(extra_chanl_nids)
+    if len(extra_chanl_nids) != 0:
+        extra_nid_chname_dict = get_nid_predict_chname(extra_chanl_nids)
 
     now = datetime.datetime.now()
     time_str = now.strftime('%Y-%m-%d %H:%M:%S')
