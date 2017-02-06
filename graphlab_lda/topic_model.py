@@ -339,7 +339,11 @@ def predict_topic_nids(nid_list):
     nid_info = {}
     print nid_list
     for nid in nid_list:
-        conn, cursor = doc_process.get_postgredb()
+        try:
+            conn, cursor = doc_process.get_postgredb()
+        except:
+            traceback.print_exc()
+            break
         cursor.execute(nid_sql, [nid])
         row = cursor.fetchone()
         title = row[0]

@@ -13,6 +13,7 @@ import jieba.analyse
 # 将HTML中标签等信息去掉
 # @param htmlstr HTML字符串.
 import psycopg2
+import traceback
 
 
 def filter_tags(htmlstr):
@@ -137,9 +138,13 @@ POSTGRE_HOST = '120.27.163.25'
 POSTGRE_DBNAME = 'BDP'
 POSTGRES = "postgresql://postgres:ly@postgres&2015@120.27.163.25/BDP"
 def get_postgredb():
-    connection = psycopg2.connect(database=POSTGRE_DBNAME, user=POSTGRE_USER, password=POSTGRE_PWD, host=POSTGRE_HOST,)
-    cursor = connection.cursor()
-    return connection, cursor
+    try:
+        connection = psycopg2.connect(database=POSTGRE_DBNAME, user=POSTGRE_USER, password=POSTGRE_PWD, host=POSTGRE_HOST,)
+        cursor = connection.cursor()
+        return connection, cursor
+    except:
+        traceback.print_exc()
+        raise
 
 
 nid_sql = 'select a.title, a.content, c.cname \
