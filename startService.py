@@ -117,6 +117,13 @@ class NewsAdsExtractOnnid(tornado.web.RequestHandler):
         response = AdsExtract.get_ads_paras(pname, content_list)
         self.write(json.dumps(response))
 
+
+class Test(tornado.web.RequestHandler):
+    def post(self):
+        nids = [9681927, 9681188]
+        res = DocPreProcess.getTextOfNewsNids(nids)
+        self.write(json.dumps(res))
+
 class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
@@ -131,6 +138,7 @@ class Application(tornado.web.Application):
             (r"/ml/ModifyNewsAdsResults", ModifyNewsAdsResults),
             (r"/ml/SaveAdsModify", SaveAdsModify),
             (r"/ml/GetModifiedWechatNames", GetModifiedWechatNames),
+            (r"/ml/test", Test),
 
         ]
         settings = {}
