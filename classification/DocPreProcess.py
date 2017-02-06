@@ -393,7 +393,8 @@ def docPreProcess():
 sql_nid = 'select nid, title, content from newslist_v2 where nid in ({0})'
 def getTextOfNewsNids(nids):
     if not nids:
-        return
+        print nids
+        return []
     conn, cursor = get_postgredb()
     nids_str = ''
     nids_str += nids[0]
