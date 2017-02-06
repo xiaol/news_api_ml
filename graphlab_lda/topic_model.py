@@ -438,31 +438,37 @@ ut_update_sql = "update usertopics set probability='{0}', create_time = '{1}', f
                 "uid='{3}' and model_v = '{4}' and ch_name = '{5}' and topic_id='{6}'"
 #预测用户点击行为
 def predict_click(click_info):
-    global model_v
-    uid = click_info[0]
-    nid = click_info[1]
-    time_str = click_info[2]
-    ctime = datetime.datetime.strptime(time_str, '%Y-%m-%d %H:%M:%S')
-    valid_time = ctime + timedelta(days=30) #有效时间定为30天
-    fail_time = valid_time.strftime('%Y-%m-%d %H:%M:%S')
-    conn, cursor = doc_process.get_postgredb()
-    cursor.execute(nt_sql.format(nid, model_v)) #获取nid可能的话题
-    rows = cursor.fetchall()
-    for r in rows:
-        ch_name = r[0]
-        topic_id = r[1]
-        probability = r[2]
-        conn2, cursor2 = doc_process.get_postgredb()
-        cursor2.execute(ut_sql.format(uid, model_v, ch_name, topic_id))
-        rows2 = cursor2.fetchone()
-        if rows2: #该用户已经关注过该topic_id, 更新probability即可
-            new_prop = probability + rows2[0]
-            cursor2.execute(ut_update_sql.format(new_prop, time_str, fail_time, uid, model_v, ch_name, topic_id))
-        else:
-            cursor2.execute(user_topic_insert_sql.format(uid, model_v, ch_name, topic_id, probability, time_str, fail_time))
-        conn2.commit()
-        conn2.close()
-    cursor.close()
-    conn.close()
+    try:
+        global model_v
+        uid = click_info[0]
+        nid = click_info[1]
+        time_str = click_info[2]
+        ctime = datetime.datetime.strptime(time_str, '%Y-%m-%d %H:%M:%S')
+        valid_time = ctime + timedelta(days=30) #有效时间定为30天
+        fail_time = valid_time.strftime('%Y-%m-%d %H:%M:%S')
+        conn, cursor = doc_process.get_postgredb()
+        cursor.execute(nt_sql.format(nid, model_v)) #获取nid可能的话题
+        rows = cursor.fetchall()
+        print 'predict topic num = ' + str(len(rows))
+        for r in rows:
+            ch_name = r[0]
+            topic_id = r[1]
+            probability = r[2]
+            conn2, cursor2 = doc_process.get_postgredb()
+            cursor2.execute(ut_sql.format(uid, model_v, ch_name, topic_id))
+            rows2 = cursor2.fetchone()
+            if rows2: #该用户已经关注过该topic_id, 更新probability即可
+                print 'update'
+                new_prop = probability + rows2[0]
+                cursor2.execute(ut_update_sql.format(new_prop, time_str, fail_time, uid, model_v, ch_name, topic_id))
+            else:
+                print 'insert'
+                cursor2.execute(user_topic_insert_sql.format(uid, model_v, ch_name, topic_id, probability, time_str, fail_time))
+            conn2.commit()
+            conn2.close()
+        cursor.close()
+        conn.close()
+    except:
+        traceback.print_exc()
 
 
