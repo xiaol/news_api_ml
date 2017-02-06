@@ -308,25 +308,27 @@ def produce_news_topic_manual(num):
 ### @output: {nid1:(真实频道, 预测频道), nid2...}
 ###############################################################################
 def get_nid_predict_chname(nid_list):
-    from topic_model_doc_process import channel_for_topic_dict
-    nid_chanl_list = {}
-    print 'predict ---- 自媒体和点集 ' + str(len(nid_list))
-    url = "http://127.0.0.1:9993/ml/newsClassifyOnNids"
-    data = {}
-    data['nids'] = nid_list
-    response = requests.post(url, data=data)
-    print response
-    print response.content
-    cont = json.loads(response.content)
-    if cont['bSuccess']:
-        res = cont['result']
-        for r in res:
-            if str(r['chid']) in channel_for_topic_dict.keys():
-                nid_chanl_list[str(r['nid'])] = channel_for_topic_dict[str(r['chid'])]
-    else:
-        print 'predict 自媒体失败'
+    try:
+        from topic_model_doc_process import channel_for_topic_dict
+        nid_chanl_dict = {}
+        print 'predict ---- 自媒体和点集 ' + str(len(nid_list))
+        url = "http://127.0.0.1:9993/ml/newsClassifyOnNids"
+        data = {}
+        data['nids'] = nid_list
+        response = requests.post(url, data=data)
+        cont = json.loads(response.content)
+        if cont['bSuccess']:
+            res = cont['result']
+            for r in res:
+                if str(r['chid']) in channel_for_topic_dict.keys():
+                    nid_chanl_dict[str(r['nid'])] = channel_for_topic_dict[str(r['chid'])]
+        else:
+            print 'predict 自媒体失败'
 
-    return nid_chanl_list
+        return nid_chanl_dict
+    except :
+        traceback.print_exc()
+        return {}
 
 
 # @imput: nid_list是nid列表,其中nid是字符串
