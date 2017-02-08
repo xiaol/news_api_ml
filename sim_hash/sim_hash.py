@@ -9,10 +9,13 @@ from util import doc_process
 import traceback
 import logging
 import datetime
+import os
+
+real_dir_path = os.path.split(os.path.realpath(__file__))[0]
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-handler = logging.FileHandler('../log/sim_hash/log.txt')
+handler = logging.FileHandler(real_dir_path + '../log/sim_hash/log.txt')
 handler.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
