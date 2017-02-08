@@ -6,6 +6,7 @@
 # @Software: PyCharm Community Edition
 from graphlab_lda import topic_model
 from graphlab_kmeans import kmeans
+from sim_hash import sim_hash
 from redis import Redis
 import traceback
 redis_inst = Redis(host='localhost', port=6379)
@@ -35,6 +36,8 @@ def consume_nid(num):
                 topic_model.predict_topic_nids(nid_list)
                 #for kmeans
                 kmeans.kmeans_predict(nid_list)
+                #for simhash
+                sim_hash.cal_and_check_news_hash(nid_list)
                 n = 0
                 del nid_list[:]
                 t0 = datetime.datetime.now()

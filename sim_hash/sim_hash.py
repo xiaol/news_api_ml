@@ -100,7 +100,7 @@ class simhash():
 
     def similarity_with_val(self, other_hash_val):
         b = self.hashbits
-        return float(b - self.hamming_distance(other_hash_val)) / b
+        return float(b - self.hamming_distance_with_val(other_hash_val)) / b
 
 
 ###########################################################################
@@ -128,7 +128,7 @@ def get_news_hash(nid_list):
 #        threshold      ---  相同的判断阈值
 #@output: list  --- 相同的nid
 ################################################################################
-hash_sql = "select nid, hash_val, ctime from news_hash where ctime > now() - interval '{0} day'"
+hash_sql = "select nid, hash_val, ctime from news_simhash where ctime > now() - interval '{0} day'"
 def get_same_news(news_simhash, check_interval=999999, threshold = 0.92):
     try:
         conn, cursor = doc_process.get_postgredb()
@@ -137,7 +137,8 @@ def get_same_news(news_simhash, check_interval=999999, threshold = 0.92):
         same_list = []
         for r in rows:
             hv = r[1]
-            if news_simhash.similarity_with_val(hv) >= threshold:  #存在相同的新闻
+            print news_simhash.similarity_with_val(int(hv))
+            if news_simhash.similarity_with_val(int(hv)) >= threshold:  #存在相同的新闻
                 same_list.append(r[0])
                 break
         cursor.close()
@@ -152,11 +153,11 @@ def get_same_news(news_simhash, check_interval=999999, threshold = 0.92):
 ################################################################################
 #@brief : 计算新闻hash值,并且检测是否是重复新闻。如果重复,则删除该新闻
 ################################################################################
-insert_same_sql = 'insert into news_hash_map (nid, same_nid) VALUES ({0}, {1}'
-insert_news_simhash_sql = "insert into news_hash (nid, hash_val, ctime) VALUES('{0}', '{1}', '{2}'"
+insert_same_sql = 'insert into news_simhash_map (nid, same_nid) VALUES ({0}, {1})'
+insert_news_simhash_sql = "insert into news_simhash (nid, hash_val, ctime) VALUES('{0}', '{1}', '{2}')"
 def cal_and_check_news_hash(nid_list):
     try:
-        logger.info('begin to calculate simhash of %d'.format(' '.join(str(m) for m in nid_list)))
+        logger.info('begin to calculate simhash of {}'.format(' '.join(str(m) for m in nid_list)))
         t0 = datetime.datetime.now()
         for nid in nid_list:
             words_list = doc_process.get_words_on_nid(nid)
@@ -165,14 +166,16 @@ def cal_and_check_news_hash(nid_list):
             conn, cursor = doc_process.get_postgredb()
             if len(same_list) > 0: #已经存在相同的新闻
                 for n in same_list:
-                    cursor.execute(insert_same_sql.format(nid, n))
+                    if n != nid:
+                        cursor.execute(insert_same_sql.format(nid, n))
             else: #没有相同的新闻,将nid添加到news_hash
                 t = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 cursor.execute(insert_news_simhash_sql.format(nid, h.__str__(), t))
+            conn.commit()
             cursor.close()
             conn.close()
         t1 = datetime.datetime.now()
-        logger.info('finish to calculate simhash. it takes %d s'.format(str((t1 - t0).total_seconds())))
+        logger.info('finish to calculate simhash. it takes {} s'.format(str((t1 - t0).total_seconds())))
     except:
         logger.error(traceback.format_exc())
 
@@ -180,8 +183,8 @@ def cal_and_check_news_hash(nid_list):
 import jieba
 if __name__ == '__main__':
 
-    nid_list = [11580728, 11603489]
-    cal_and_check_news_hash()
+    nid_list = [11584438, 11576416]
+    cal_and_check_news_hash(nid_list)
     #w1 = doc_process.get_words_on_nid(11580728)
     #w2 = doc_process.get_words_on_nid(11603489)
     #h1 = simhash(w1)
