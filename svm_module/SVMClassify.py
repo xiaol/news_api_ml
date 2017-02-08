@@ -179,7 +179,7 @@ def svmPredictNews(nids, texts, _id = 0, category='all'):
 
 #返回格式不同
 def svmPredictNews2(nids):
-    logger.info('svmPredictOnSrcid begin...')
+    logger.info('svmPredictOnNids begin...')
     texts = getTextOfNewsNids(nids)
     if len(texts) == 0:
         return {'bSuccess': False, 'result': 'nothing done!'}

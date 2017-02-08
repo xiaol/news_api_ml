@@ -6,7 +6,17 @@
 # @Software: PyCharm Community Edition
 
 from util import doc_process
+import traceback
+import logging
+import datetime
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+handler = logging.FileHandler('../log/sim_hash/log.txt')
+handler.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 class simhash():
     def __init__(self, tokens='', hashbits=128):
@@ -26,8 +36,6 @@ class simhash():
         # Returns a Charikar simhash with appropriate bitlength
         v = [0] * self.hashbits
 
-        #print type(tokens)
-        print len(tokens)
         for t in [self._string_hash(x) for x in tokens]:
             bitmask = 0
             # print (t)
@@ -46,12 +54,13 @@ class simhash():
                 # 整个文档的fingerprint为最终各个位大于等于0的位的和
         return fingerprint
 
+    #计算一个词的hash值。 一个汉字utf-8中使用三个字节表示
     def _string_hash(self, v):
         # A variable-length version of Python's builtin hash
         if v == "":
             return 0
         else:
-            x = ord(v[0]) << 7
+            x = ord(v[0]) << 7   #第一个字节左移7位
             m = 1000003
             mask = 2 ** self.hashbits - 1
             for c in v:
@@ -61,6 +70,7 @@ class simhash():
                 x = -2
             return x
 
+    #与另一个simhash类比较
     def hamming_distance(self, other_hash):
         x = (self.hash ^ other_hash.hash) & ((1 << self.hashbits) - 1)
         tot = 0
@@ -69,35 +79,116 @@ class simhash():
             x &= x - 1
         return tot
 
+    #与一个hash值比较
+    def hamming_distance_with_val(self, other_hash_val):
+        x = (self.hash ^ other_hash_val) & ((1 << self.hashbits) - 1)
+        tot = 0
+        while x:
+            tot += 1
+            x &= x - 1
+        return tot
+
     def similarity(self, other_hash):
-        #a = float(self.hash)
-        #b = float(other_hash.hash)
-        #if a > b: return b / a
-        #return a / b
+        '''
+        a = float(self.hash)
+        b = float(other_hash.hash)
+        if a > b: return b / a
+        return a / b
+        '''
         b = self.hashbits
         return float(b - self.hamming_distance(other_hash)) / b
 
+    def similarity_with_val(self, other_hash_val):
+        b = self.hashbits
+        return float(b - self.hamming_distance(other_hash_val)) / b
+
+
+###########################################################################
+#@brief :计算新闻的hash值.
+#@input  : nid, int或str类型都可以
+###########################################################################
+def get_news_hash(nid_list):
+    try:
+        nid_hash_dict = {}
+        for nid in nid_list:
+            words_list = doc_process.get_words_on_nid(nid)
+            h = simhash(words_list)
+            nid_hash_dict[nid] = h.__long__()
+        return nid_hash_dict
+    except:
+        logger.error(traceback.format_exc())
+        return {}
+
+
+################################################################################
+#@brief: 查看是否有重复。  相似度达到一定值就认为是相同
+#@input:
+#         news_simhash   ---  新闻的simhash对象
+#        check_interval --- 检查数据时间范围,例如检查三天内的数据, default: 999999
+#        threshold      ---  相同的判断阈值
+#@output: list  --- 相同的nid
+################################################################################
+hash_sql = "select nid, hash_val, ctime from news_hash where ctime > now() - interval '{0} day'"
+def get_same_news(news_simhash, check_interval=999999, threshold = 0.92):
+    try:
+        conn, cursor = doc_process.get_postgredb()
+        cursor.execute(hash_sql.format(check_interval))
+        rows = cursor.fetchall()
+        same_list = []
+        for r in rows:
+            hv = r[1]
+            if news_simhash.similarity_with_val(hv) >= threshold:  #存在相同的新闻
+                same_list.append(r[0])
+                break
+        cursor.close()
+        conn.close()
+        return same_list
+    except:
+        cursor.close()
+        conn.close()
+        logger.error(traceback.format_exc())
+
+
+################################################################################
+#@brief : 计算新闻hash值,并且检测是否是重复新闻。如果重复,则删除该新闻
+################################################################################
+insert_same_sql = 'insert into news_hash_map (nid, same_nid) VALUES ({0}, {1}'
+insert_news_simhash_sql = "insert into news_hash (nid, hash_val, ctime) VALUES('{0}', '{1}', '{2}'"
+def cal_and_check_news_hash(nid_list):
+    try:
+        logger.info('begin to calculate simhash of %d'.format(' '.join(str(m) for m in nid_list)))
+        t0 = datetime.datetime.now()
+        for nid in nid_list:
+            words_list = doc_process.get_words_on_nid(nid)
+            h = simhash(words_list)
+            same_list = get_same_news(h, 2)
+            conn, cursor = doc_process.get_postgredb()
+            if len(same_list) > 0: #已经存在相同的新闻
+                for n in same_list:
+                    cursor.execute(insert_same_sql.format(nid, n))
+            else: #没有相同的新闻,将nid添加到news_hash
+                t = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                cursor.execute(insert_news_simhash_sql.format(nid, h.__str__(), t))
+            cursor.close()
+            conn.close()
+        t1 = datetime.datetime.now()
+        logger.info('finish to calculate simhash. it takes %d s'.format(str((t1 - t0).total_seconds())))
+    except:
+        logger.error(traceback.format_exc())
+
+
 import jieba
 if __name__ == '__main__':
-    # 看看哪些东西google最看重？标点？
-    s = '看看哪些东西google最看重标点'
-    #hash1 = simhash(jieba.cut(''.join(s.split())))
-    # print("0x%x" % hash1)
-    # print ("%s\t0x%x" % (s, hash1))
 
-    s = '看一下哪些东西google最看重标点'
-    #hash2 = simhash(jieba.cut(''.join(s.split())))
-    # print ("%s\t[simhash = 0x%x]" % (s, hash2))
+    nid_list = [11580728, 11603489]
+    cal_and_check_news_hash()
+    #w1 = doc_process.get_words_on_nid(11580728)
+    #w2 = doc_process.get_words_on_nid(11603489)
+    #h1 = simhash(w1)
+    #h2 = simhash(w2)
+    #print 100 * h2.similarity(h1)
+    #print h1.hamming_distance(h2), "bits differ out of", h1.hashbits
 
-    #print '%f%% percent similarity on hash' % (100 * (hash1.similarity(hash2)))
-    #print hash1.hamming_distance(hash2), "bits differ out of", hash1.hashbits
 
-    w1 = doc_process.get_words_on_nid(11580728)
-    w2 = doc_process.get_words_on_nid(11603489)
-    print ' '.join(w1)
-    print '------'
-    print ' '.join(w2)
-    print type(w1)
-    h1 = simhash(w1)
-    h2 = simhash(w2)
-    print 100 * h2.similarity(h1)
+
+
