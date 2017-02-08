@@ -132,7 +132,7 @@ def get_news_hash(nid_list):
 #@output: list  --- 相同的nid
 ################################################################################
 hash_sql = "select nid, hash_val, ctime from news_simhash where ctime > now() - interval '{0} day'"
-def get_same_news(news_simhash, check_interval=999999, threshold = 0.92):
+def get_same_news(news_simhash, check_interval=999999, threshold = 0.95):
     try:
         conn, cursor = doc_process.get_postgredb()
         cursor.execute(hash_sql.format(check_interval))
