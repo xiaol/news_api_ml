@@ -15,7 +15,8 @@ import traceback
 
 from graphlab_lda import topic_model_doc_process
 from graphlab_lda import topic_model
-from graphlab_lda import redis_lda
+#from graphlab_lda import redis_lda
+from redis_process import nid_queue
 
 
 class CollNews(tornado.web.RequestHandler):
@@ -40,7 +41,7 @@ class PredictNewsTopic(tornado.web.RequestHandler):
     def get(self):
         nid = int(self.get_argument('nid'))
         from graphlab_lda import redis_lda
-        redis_lda.produce_nid(nid)
+        nid_queue.produce_nid(nid)
 
 #预测单次点击事件
 class PredictOneClick(tornado.web.RequestHandler):
@@ -62,9 +63,10 @@ class PredictUserTopic(tornado.web.RequestHandler):
         #uid = int(self.get_argument('uid'))
         #nid = int(self.get_argument('nid'))
         #ctime = self.get_argument('ctime')
-        from graphlab_lda import redis_lda
+        #from graphlab_lda import redis_lda
         for click in clicks:
-            redis_lda.produce_user_click(click[0], click[1], click[2])
+            #redis_lda.produce_user_click(click[0], click[1], click[2])
+            nid_queue.produce_user_click(click[0], click[1], click[2])
 
 
 class PredictOnNidAndSave(tornado.web.RequestHandler):
@@ -160,7 +162,8 @@ if __name__ == '__main__':
         http_server = tornado.httpserver.HTTPServer(EmptyApp())
         http_server.listen(port) #同时提供手工处理端口
         topic_model.load_newest_models()
-        redis_lda.consume_nid(200)
+        nid_queue.consume_nid_lda(200)
+        #redis_lda.consume_nid(200)
     elif port == 9989: #用户点击事件入队列
         from graphlab_lda.timed_task import get_clicks_5m, period
         ioloop.PeriodicCallback(get_clicks_5m, period * 1000).start() #定时从点击表中取
@@ -169,8 +172,7 @@ if __name__ == '__main__':
     elif port == 9990: #消费用户点击逻辑进程。
         http_server = tornado.httpserver.HTTPServer(EmptyApp())
         http_server.listen(port) #同时提供手工处理端口
-        #topic_model.load_newest_models()
-        redis_lda.consume_user_click()
+        nid_queue.consume_user_click()
 
     tornado.ioloop.IOLoop.instance().start()
 

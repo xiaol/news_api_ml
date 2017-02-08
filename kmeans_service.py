@@ -56,5 +56,10 @@ if __name__ == '__main__':
     elif port == 9981:
         from graphlab_kmeans import kmeans
         kmeans.updateModel2()
+    elif port == 9979: #消费nid
+        http_server = tornado.httpserver.HTTPServer(tornado.web.Application())
+        http_server.listen(port) #同时提供手工处理端口
+        from redis_process import nid_queue
+        nid_queue.consume_nid_kmeans(200)
 
     tornado.ioloop.IOLoop.instance().start()

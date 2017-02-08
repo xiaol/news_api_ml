@@ -146,7 +146,9 @@ if __name__ == "__main__":
         http_server = tornado.httpserver.HTTPServer(AdsProcessProductApp())
         http_server.listen(port)
     elif port == 9998:
-        redis_ads.consume_nid()
+        #redis_ads.consume_nid()
+        from redis_process import nid_queue
+        nid_queue.consume_nid_ads()
     elif port == 9999:
         AdsExtract.read_data()
         http_server = tornado.httpserver.HTTPServer(ManualHandleApplication())

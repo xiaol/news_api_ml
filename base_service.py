@@ -9,12 +9,14 @@ import tornado
 import tornado.ioloop
 import tornado.web
 import tornado.httpserver
-from base_service import produce_consume_nid
+#from base_service import produce_consume_nid
+from redis_process import nid_queue
 
 class PushNewsIntoQueue(tornado.web.RequestHandler):
     def get(self):
         nid = self.get_argument('nid')
-        produce_consume_nid.push_nid_to_queue(nid)
+        #produce_consume_nid.push_nid_to_queue(nid)
+        nid_queue.produce_nid(nid)
 
 
 class StayAliveApp(tornado.web.Application):
