@@ -170,14 +170,14 @@ def del_nid_of_fewer_comment(nid, n):
         d1 = rows[0][1] #comment数量
         d2 = rows[1][1]
         if d1 > d2:
-            offline_nid = rows[1][0]
+            off_n = 1 #删除rows[1]
         else:
-            offline_nid = rows[0][0]
-        cursor.execute(offonline_sql.format(offline_nid))
+            off_n = 0
+        cursor.execute(offonline_sql.format(rows[off_n][0]))
         conn.commit()
         cursor.close()
         conn.close()
-        logger.info('offline {}'.format(nid))
+        logger.info('{0} has {1} comments and {2} has {3} comments, offline {4}'.format(rows[0][0], rows[0][1], rows[1][0], rows[1][1], rows[off_n][0]))
     except Exception as e:
         logger.error(traceback.format_exc())
 
