@@ -157,10 +157,11 @@ def get_same_news(news_simhash, check_interval=999999, threshold = 0.95):
 #@brief : 删除重复的新闻
 ################################################################################
 del_sql = 'delete from newslist_v2 where nid={0}'
+offonline_sql = 'update newslist_v2 set state=1 where nid={0}'
 def del_nid(nid):
     try:
         conn, cursor = doc_process.get_postgredb()
-        cursor.execute(del_sql.format(nid))
+        cursor.execute(offonline_sql.format(nid))
         conn.commit()
         cursor.close()
         conn.close()
