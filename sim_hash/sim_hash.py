@@ -165,7 +165,7 @@ def del_nid(nid):
         conn.commit()
         cursor.close()
         conn.close()
-        logger.info('delete {}'.format(nid))
+        logger.info('offline {}'.format(nid))
     except Exception as e:
         logger.error(traceback.format_exc())
 
