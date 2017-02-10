@@ -154,6 +154,22 @@ def get_same_news(news_simhash, check_interval=999999, threshold = 0.95):
 
 
 ################################################################################
+#@brief : 删除重复的新闻
+################################################################################
+del_sql = 'delete from newslist_v2 where nid={0}'
+def del_nid(nid):
+    try:
+        conn, cursor = doc_process.get_postgredb()
+        cursor.execute(del_sql.format(nid))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        logger.info('delete {}'.format(nid))
+    except Exception as e:
+        logger.error(traceback.format_exc())
+
+
+################################################################################
 #@brief : 计算新闻hash值,并且检测是否是重复新闻。如果重复,则删除该新闻
 ################################################################################
 insert_same_sql = 'insert into news_simhash_map (nid, same_nid) VALUES ({0}, {1})'
@@ -171,6 +187,7 @@ def cal_and_check_news_hash(nid_list):
                 for n in same_list:
                     if n != nid:
                         cursor.execute(insert_same_sql.format(nid, n))
+                        del_nid(nid)
             else: #没有相同的新闻,将nid添加到news_hash
                 t = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 cursor.execute(insert_news_simhash_sql.format(nid, h.__str__(), t))
