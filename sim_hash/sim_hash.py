@@ -156,12 +156,24 @@ def get_same_news(news_simhash, check_interval=999999, threshold = 0.95):
 ################################################################################
 #@brief : 删除重复的新闻
 ################################################################################
+get_comment_num_sql = 'select nid, comment from newslist_v2 where nid in ({0}, {1})'
 del_sql = 'delete from newslist_v2 where nid={0}'
 offonline_sql = 'update newslist_v2 set state=1 where nid={0}'
-def del_nid(nid):
+def del_nid_of_fewer_comment(nid, n):
     try:
         conn, cursor = doc_process.get_postgredb()
-        cursor.execute(offonline_sql.format(nid))
+        cursor.execute(get_comment_num_sql.format(nid, n))
+        rows = cursor.fetchall()
+        if len(rows) != 2:
+            logger.error('error to query nids comment: {0}, {1}'.format(nid, n))
+            return
+        d1 = rows[0][1] #comment数量
+        d2 = rows[1][1]
+        if d1 > d2:
+            offline_nid = rows[1][0]
+        else:
+            offline_nid = rows[0][0]
+        cursor.execute(offonline_sql.format(offline_nid))
         conn.commit()
         cursor.close()
         conn.close()
@@ -188,7 +200,7 @@ def cal_and_check_news_hash(nid_list):
                 for n in same_list:
                     if n != nid:
                         cursor.execute(insert_same_sql.format(nid, n))
-                        del_nid(nid)
+                        del_nid_of_fewer_comment(nid, n)
             else: #没有相同的新闻,将nid添加到news_hash
                 t = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 cursor.execute(insert_news_simhash_sql.format(nid, h.__str__(), t))
