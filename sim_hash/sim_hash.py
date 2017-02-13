@@ -213,6 +213,16 @@ def cal_and_check_news_hash(nid_list):
         logger.error(traceback.format_exc())
 
 
+def is_news_same(nid1, nid2, same_t):
+    w1 = doc_process.get_words_on_nid(11580728)
+    w2 = doc_process.get_words_on_nid(11603489)
+    h1 = simhash(w1)
+    h2 = simhash(w2)
+    if h1.similarity(h2) > same_t:
+        return True
+    return False
+
+
 import jieba
 if __name__ == '__main__':
 
