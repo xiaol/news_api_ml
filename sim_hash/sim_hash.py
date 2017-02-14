@@ -22,7 +22,7 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 class simhash():
-    def __init__(self, tokens='', hashbits=128):
+    def __init__(self, tokens='', hashbits=64):
         self.hashbits = hashbits
         self.hash = self.simhash(tokens)
 
@@ -132,7 +132,7 @@ def get_news_hash(nid_list):
 #@output: list  --- 相同的nid
 ################################################################################
 hash_sql = "select nid, hash_val, ctime from news_simhash where ctime > now() - interval '{0} day'"
-def get_same_news(news_simhash, check_interval=999999, threshold = 0.95):
+def get_same_news(news_simhash, check_interval=999999, threshold = 3):
     try:
         conn, cursor = doc_process.get_postgredb()
         cursor.execute(hash_sql.format(check_interval))
@@ -141,7 +141,7 @@ def get_same_news(news_simhash, check_interval=999999, threshold = 0.95):
         for r in rows:
             hv = r[1]
             print news_simhash.similarity_with_val(int(hv))
-            if news_simhash.similarity_with_val(int(hv)) >= threshold:  #存在相同的新闻
+            if news_simhash.hamming_distance_with_val(int(hv)) > threshold:  #存在相同的新闻
                 same_list.append(r[0])
                 break
         cursor.close()
@@ -214,8 +214,8 @@ def cal_and_check_news_hash(nid_list):
 
 
 def is_news_same(nid1, nid2, same_t):
-    w1 = doc_process.get_words_on_nid(11580728)
-    w2 = doc_process.get_words_on_nid(11603489)
+    w1 = doc_process.get_words_on_nid(nid1)
+    w2 = doc_process.get_words_on_nid(nid2)
     h1 = simhash(w1)
     h2 = simhash(w2)
     if h1.similarity(h2) > same_t:

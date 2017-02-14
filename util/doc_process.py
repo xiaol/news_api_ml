@@ -153,6 +153,7 @@ def get_postgredb():
 nid_sql = 'select a.title, a.content, c.cname \
 from (select * from newslist_v2 where nid=%s) a \
 inner join channellist_v2 c on a."chid"=c."id"'
+#获取nid的段落的字符串。 去除了html,但是没有去除停用词和特殊词性的词
 def get_words_on_nid(nid):
     conn, cursor = get_postgredb()
     cursor.execute(nid_sql, [nid])
@@ -166,7 +167,8 @@ def get_words_on_nid(nid):
             if 'txt' in content.keys():
                 txt += content['txt'].encode('utf-8')
         total_txt = title + txt
-        word_list = filter_html_stopwords_pos(total_txt, remove_num=True, remove_single_word=True)
+        #word_list = filter_html_stopwords_pos(total_txt, remove_num=True, remove_single_word=True)
+        word_list = filter_tags(total_txt)
     return word_list
 
 
