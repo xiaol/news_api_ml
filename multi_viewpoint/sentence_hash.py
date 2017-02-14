@@ -78,7 +78,7 @@ def coll_sentence_hash():
         cal_sentence_hash_on_nid(n[0])
         if i % 100 == 0:
             t1 = datetime.datetime.now()
-            logger.info('{0} finished!, it takes {1}s'.format(i * 100, (t1 - t0).total_seconds()))
+            logger.info('{0} finished! Latest 100 news takes {1}s'.format(i, (t1 - t0).total_seconds()))
             t0 = t1
 
 
