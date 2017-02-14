@@ -22,10 +22,11 @@ def get_nid_sentence(nid):
     doc_process.get_sentences_on_nid(nid)
 
 
-insert_sentence_hash = "insert into news_sentence_hash (nid, sentence, hash_val, ctime) VALUES({0}, '{1}', '{2}', '{3}')"
+#insert_sentence_hash = "insert into news_sentence_hash (nid, sentence, hash_val, ctime) VALUES({0}, '{1}', '{2}', '{3}')"
 insert_sentence_hash = "insert into news_sentence_hash (nid, sentence, hash_val, ctime) VALUES(%s,  %s, %s, %s)"
 query_sen_sql = "select nid, sentence, hash_val from news_sentence_hash"
-insert_same_sentence = "insert into news_same_sentence_map (nid1, nid2, sentence1, sentence2, ctime) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')"
+#insert_same_sentence = "insert into news_same_sentence_map (nid1, nid2, sentence1, sentence2, ctime) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')"
+insert_same_sentence = "insert into news_same_sentence_map (nid1, nid2, sentence1, sentence2, ctime) VALUES (%s, %s, %s, %s, %s)"
 def cal_sentence_hash_on_nid(nid, same_t=0.95):
     sentences_list = doc_process.get_sentences_on_nid(nid)
     n = 0
@@ -52,7 +53,7 @@ def cal_sentence_hash_on_nid(nid, same_t=0.95):
                 #先检查两篇新闻是否是相同的, 若相同则忽略。 同样利用simhash计算
                 #if sim_hash.is_news_same(nid, nid1, same_t):
                 #    continue
-                cursor.execute(insert_same_sentence.format(nid, nid1, s, r[1], t))
+                cursor.execute(insert_same_sentence, (nid, nid1, s, r[1], t))
                 break
 
         #插入库
