@@ -168,7 +168,8 @@ def get_words_on_nid(nid):
                 txt += content['txt'].encode('utf-8')
         total_txt = title + txt
         #word_list = filter_html_stopwords_pos(total_txt, remove_num=True, remove_single_word=True)
-        word_list = filter_tags(total_txt)
+        #txt_no_html = filter_tags(total_txt)
+        word_list = remove_html_and_stopwords(total_txt)
     return word_list
 
 
