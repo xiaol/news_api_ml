@@ -23,6 +23,7 @@ def get_nid_sentence(nid):
 
 
 insert_sentence_hash = "insert into news_sentence_hash (nid, sentence, hash_val, ctime) VALUES({0}, '{1}', '{2}', '{3}')"
+insert_sentence_hash = "insert into news_sentence_hash (nid, sentence, hash_val, ctime) VALUES(%s,  %s, %s, %s)"
 query_sen_sql = "select nid, sentence, hash_val from news_sentence_hash"
 insert_same_sentence = "insert into news_same_sentence_map (nid1, nid2, sentence1, sentence2, ctime) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')"
 def cal_sentence_hash_on_nid(nid, same_t=0.95):
@@ -55,7 +56,8 @@ def cal_sentence_hash_on_nid(nid, same_t=0.95):
                 break
 
         #插入库
-        cursor.execute(insert_sentence_hash.format(nid, s, hv, t))
+        #cursor.execute(insert_sentence_hash.format(nid, s, hv, t))
+        cursor.execute(insert_sentence_hash, (nid, s, hv, t))
         conn.commit()
         cursor.close()
         conn.close()
