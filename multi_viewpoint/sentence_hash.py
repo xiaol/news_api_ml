@@ -72,11 +72,14 @@ def coll_sentence_hash():
     rows = cursor.fetchall()
     logger.info('there are {} news to calulate'.format(str(len(rows))))
     i = 0
+    t0 = datetime.datetime.now()
     for n in rows:
         i += 1
-        if i % 1 == 0:
-            logger.info('{} finished!'.format(i * 100))
         cal_sentence_hash_on_nid(n[0])
+        if i % 100 == 0:
+            t1 = datetime.datetime.now()
+            logger.info('{0} finished!, it takes {1}s'.format(i * 100, (t1 - t0).total_seconds()))
+            t0 = t1
 
 
 
