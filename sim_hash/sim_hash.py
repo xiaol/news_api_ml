@@ -141,7 +141,7 @@ def get_same_news(news_simhash, check_interval=999999, threshold = 3):
         for r in rows:
             hv = r[1]
             print news_simhash.similarity_with_val(int(hv))
-            if news_simhash.hamming_distance_with_val(int(hv)) > threshold:  #存在相同的新闻
+            if news_simhash.hamming_distance_with_val(int(hv)) <= threshold:  #存在相同的新闻
                 same_list.append(r[0])
                 break
         cursor.close()
@@ -218,16 +218,17 @@ def is_news_same(nid1, nid2, same_t):
     w2 = doc_process.get_words_on_nid(nid2)
     h1 = simhash(w1)
     h2 = simhash(w2)
-    if h1.similarity(h2) > same_t:
-        return True
-    return False
+    if h1.hamming_distance(h2) > same_t:
+        return False
+    return True
 
 
 import jieba
 if __name__ == '__main__':
 
-    nid_list = [11584438, 11576416]
-    cal_and_check_news_hash(nid_list)
+    nid_list = [11921370, 11952414]
+    print is_news_same(11921370, 11952414, 3)
+    #cal_and_check_news_hash(nid_list)
     #w1 = doc_process.get_words_on_nid(11580728)
     #w2 = doc_process.get_words_on_nid(11603489)
     #h1 = simhash(w1)
