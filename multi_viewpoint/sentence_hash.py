@@ -56,7 +56,7 @@ def cal_sentence_hash_on_nid(nid, same_t=3):
         #s_fir, s_sec, s_thi, s_fou = get_4_segments(h.__long__())
         fir, sec, thi, fou = get_4_segments(h.__long__())
         t = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        cursor.execute(query_sen_sql, (fir, sec, thi, fou))
+        cursor.execute(query_sen_sql, (str(fir), str(sec), str(thi), str(fou)))
         rows = cursor.fetchall()  #所有可能相同的段落
         #检查是否有相同的段落
         for r in rows:
