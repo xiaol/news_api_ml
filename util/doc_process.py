@@ -85,7 +85,7 @@ def remove_html_and_stopwords(str):
     stopwords_set = set(stopwords)
     final_words = []
     for w in words:
-        if not w.encode('utf-8') in stopwords_set:
+        if not w.encode('utf-8') in stopwords_set and (not w.isspace()):
             final_words.append(w)
     return final_words
 
