@@ -131,7 +131,7 @@ def get_news_hash(nid_list):
 #        threshold      ---  相同的判断阈值
 #@output: list  --- 相同的nid
 ################################################################################
-hash_sql = "select nid, hash_val, ctime from news_simhash where ctime > now() - interval '{0} day'"
+hash_sql = "select ns.nid, hash_val, ns.ctime from news_simhash ns inner join newslist_v2 nv on ns.nid=nv.nid where ns.ctime > now() - interval '{0} day' and nv.state=0"
 def get_same_news(news_simhash, check_interval=999999, threshold = 3):
     try:
         conn, cursor = doc_process.get_postgredb()
@@ -164,9 +164,6 @@ def del_nid_of_fewer_comment(nid, n):
         conn, cursor = doc_process.get_postgredb()
         cursor.execute(get_comment_num_sql.format(nid, n))
         rows = cursor.fetchall()
-        if len(rows) != 2:
-            logger.error('error to query nids comment: {0}, {1}'.format(nid, n))
-            return
         d1 = rows[0][1] #comment数量
         d2 = rows[1][1]
         if d1 > d2:
@@ -222,12 +219,11 @@ def is_news_same(nid1, nid2, same_t):
         return False
     return True
 
-
 import jieba
 if __name__ == '__main__':
 
-    nid_list = [11921370, 11952414]
-    print is_news_same(11921370, 11952414, 3)
+    nid_list = [11952459, 11952414]
+    print is_news_same(11952760, 11963937, 3)
     #cal_and_check_news_hash(nid_list)
     #w1 = doc_process.get_words_on_nid(11580728)
     #w2 = doc_process.get_words_on_nid(11603489)
