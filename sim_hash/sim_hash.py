@@ -140,7 +140,6 @@ def get_same_news(news_simhash, check_interval=999999, threshold = 3):
         same_list = []
         for r in rows:
             hv = r[1]
-            print news_simhash.similarity_with_val(int(hv))
             if news_simhash.hamming_distance_with_val(int(hv)) <= threshold:  #存在相同的新闻
                 same_list.append(r[0])
                 break
@@ -198,9 +197,9 @@ def cal_and_check_news_hash(nid_list):
                     if n != nid:
                         cursor.execute(insert_same_sql.format(nid, n))
                         del_nid_of_fewer_comment(nid, n)
-            else: #没有相同的新闻,将nid添加到news_hash
-                t = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                cursor.execute(insert_news_simhash_sql.format(nid, h.__str__(), t))
+            #else: #没有相同的新闻,将nid添加到news_hash
+            t = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            cursor.execute(insert_news_simhash_sql.format(nid, h.__str__(), t))
             conn.commit()
             cursor.close()
             conn.close()
