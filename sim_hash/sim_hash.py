@@ -41,7 +41,6 @@ class simhash():
 
         for t in [self._string_hash(x) for x in tokens]:
             bitmask = 0
-            # print (t)
             for i in range(self.hashbits):
                 bitmask = 1 << i
                 # print(t,bitmask, t & bitmask)
@@ -132,23 +131,25 @@ def get_news_hash(nid_list):
 #@output: list  --- 相同的nid
 ################################################################################
 hash_sql = "select ns.nid, hash_val, ns.ctime from news_simhash ns inner join newslist_v2 nv on ns.nid=nv.nid where ns.ctime > now() - interval '{0} day' and nv.state=0"
-def get_same_news(news_simhash, check_interval=999999, threshold = 3):
+def get_news_interval(interval = 9999):
+    conn, cursor = doc_process.get_postgredb()
+    cursor.execute(hash_sql.format(interval))
+    rows = cursor.fetchall()
+    nid_hv_list = []
+    for r in rows:
+        nid_hv_list.append((r[0], r[1]))
+    return nid_hv_list
+
+def get_same_news(news_simhash, check_list, threshold = 3):
     try:
-        conn, cursor = doc_process.get_postgredb()
-        cursor.execute(hash_sql.format(check_interval))
-        rows = cursor.fetchall()
         same_list = []
-        for r in rows:
+        for r in check_list:
             hv = r[1]
             if news_simhash.hamming_distance_with_val(int(hv)) <= threshold:  #存在相同的新闻
                 same_list.append(r[0])
                 break
-        cursor.close()
-        conn.close()
         return same_list
     except:
-        cursor.close()
-        conn.close()
         logger.error(traceback.format_exc())
 
 
@@ -187,10 +188,11 @@ def cal_and_check_news_hash(nid_list):
     try:
         logger.info('begin to calculate simhash of {}'.format(' '.join(str(m) for m in nid_list)))
         t0 = datetime.datetime.now()
+        check_list = get_news_interval(2)
         for nid in nid_list:
             words_list = doc_process.get_words_on_nid(nid)
             h = simhash(words_list)
-            same_list = get_same_news(h, 2)
+            same_list = get_same_news(h, check_list)
             conn, cursor = doc_process.get_postgredb()
             if len(same_list) > 0: #已经存在相同的新闻
                 for n in same_list:
@@ -222,7 +224,8 @@ import jieba
 if __name__ == '__main__':
 
     nid_list = [11952459, 11952414]
-    print is_news_same(11952760, 11963937, 3)
+    #print is_news_same(11952760, 11963937, 3)
+    print is_news_same(11968383, 11968382, 3)
     #cal_and_check_news_hash(nid_list)
     #w1 = doc_process.get_words_on_nid(11580728)
     #w2 = doc_process.get_words_on_nid(11603489)
