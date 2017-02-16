@@ -82,6 +82,8 @@ def cal_sentence_hash_on_nid(nid, same_t=3):
         cursor.close()
         conn.close()
     except:
+        cursor.close()
+        conn.close()
         logger.exception(traceback.format_exc())
 
 
