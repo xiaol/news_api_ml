@@ -11,6 +11,7 @@ import os
 import logging
 import traceback
 from multiprocessing import Process
+from multiprocessing import Pool
 
 real_dir_path = os.path.split(os.path.realpath(__file__))[0]
 logger = logging.getLogger(__name__)
@@ -123,9 +124,10 @@ cal_sql = 'select nid from newslist_v2 limit %s offset %s'
 def coll_sentence_hash():
     logger.info("Begin to collect sentence...")
     exist_set = get_exist_nids()
-    limit = 100000
-    offset = 100000
-    mp_list = []
+    limit = 5
+    offset = 5
+    pool = Pool(5)
+    i = 0
     while True:
         conn, cursor = doc_process.get_postgredb()
         cursor.execute(cal_sql, (limit, offset))
@@ -137,11 +139,15 @@ def coll_sentence_hash():
         for r in rows:
             all_set.add(r[0])
         need_to_cal_set = all_set - exist_set
-        mp = Process(target=cal_process, args=(need_to_cal_set, ))
-        mp.start()
-        mp_list.append(mp)
-    for mp in mp_list:
-        mp.join()
+        pool.apply_async(cal_process, args=(need_to_cal_set,))
+        i += len(rows)
+        if i > 100:
+            logger.info('100 finished!!')
+            break
+
+    pool.close()
+    pool.join()
+
     logger.info("Congratulations! Finish to collect sentences.")
 
 
