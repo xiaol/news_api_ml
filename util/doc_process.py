@@ -185,7 +185,8 @@ def get_words_on_nid(nid):
 
 # 设置分句的标志符号；可以根据实际需要进行修改
 #cutlist = "。！？".decode('utf-8')
-cutlist = "。！？.!?。!?".decode('utf-8')
+#cutlist = "。！？.!?。!?".decode('utf-8')
+cutlist = "。！？!?。!?".decode('utf-8') #不包含英文句号,因为也会被当成小数点
 
 
 # 检查某字符是否分句标志符号的函数；如果是，返回True，否则返回False
