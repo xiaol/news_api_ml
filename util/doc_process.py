@@ -8,6 +8,7 @@ import os
 import re
 import jieba
 import jieba.analyse
+import time
 
 ##过滤HTML中的标签
 # 将HTML中标签等信息去掉
@@ -145,9 +146,16 @@ def get_postgredb():
         connection = psycopg2.connect(database=POSTGRE_DBNAME, user=POSTGRE_USER, password=POSTGRE_PWD, host=POSTGRE_HOST,)
         cursor = connection.cursor()
         return connection, cursor
-    except:
-        traceback.print_exc()
-        raise
+    except:    #出现异常,再次连接
+        try:
+            time.sleep(2)
+            connection = psycopg2.connect(database=POSTGRE_DBNAME, user=POSTGRE_USER, password=POSTGRE_PWD, host=POSTGRE_HOST,)
+            cursor = connection.cursor()
+            return connection, cursor
+        except:
+            traceback.print_exc()
+            raise
+
 
 
 nid_sql = 'select a.title, a.content, c.cname \

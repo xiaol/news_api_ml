@@ -85,17 +85,34 @@ def cal_sentence_hash_nid_list(nid_list):
     for n in nid_list:
         cal_sentence_hash_on_nid(n)
 
-cal_sql = 'select nid from newslist_v2'
-def coll_sentence_hash():
+s_nid_sql = "select distinct nid from news_sentence_hash "
+def get_exist_nids():
     conn, cursor = doc_process.get_postgredb()
     cursor.execute(cal_sql)
     rows = cursor.fetchall()
-    logger.info('there are {} news to calulate'.format(str(len(rows))))
+    nid_set = set()
+    for r in rows:
+        nid_set.add(r[0])
+    conn.close()
+
+
+cal_sql = 'select nid from newslist_v2'
+def coll_sentence_hash():
+    exist_set = get_exist_nids()
+    conn, cursor = doc_process.get_postgredb()
+    cursor.execute(cal_sql)
+    rows = cursor.fetchall()
+    conn.close()
     i = 0
     t0 = datetime.datetime.now()
-    for n in rows:
+    all_set = set()
+    for r in rows:
+        all_set.add(r[0])
+    need_to_cal_set = all_set - exist_set
+    logger.info('total {0} news, {1} have been added, so there are {2} news to calulate'.format(len(all_set), len(exist_set), len(need_to_cal_set)))
+    for n in need_to_cal_set:
         i += 1
-        cal_sentence_hash_on_nid(n[0])
+        cal_sentence_hash_on_nid(n)
         if i % 100 == 0:
             t1 = datetime.datetime.now()
             logger.info('{0} finished! Latest 100 news takes {1}s'.format(i, (t1 - t0).total_seconds()))
