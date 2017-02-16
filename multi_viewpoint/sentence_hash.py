@@ -102,6 +102,7 @@ def get_exist_nids():
     for r in rows:
         nid_set.add(r[0])
     conn.close()
+    return nid_set
 
 
 ################################################################################
