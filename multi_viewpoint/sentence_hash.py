@@ -96,7 +96,7 @@ def cal_sentence_hash_nid_list(nid_list):
 s_nid_sql = "select distinct nid from news_sentence_hash "
 def get_exist_nids():
     conn, cursor = doc_process.get_postgredb()
-    cursor.execute(cal_sql)
+    cursor.execute(s_nid_sql)
     rows = cursor.fetchall()
     nid_set = set()
     for r in rows:
