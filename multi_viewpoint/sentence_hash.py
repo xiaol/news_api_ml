@@ -114,7 +114,7 @@ def cal_process(nid_set):
     t0 = datetime.datetime.now()
     for n in nid_set:
         i += 1
-        cal_sentence_hash_on_nid(n, same_t=2)
+        cal_sentence_hash_on_nid(n)
         if i % 100 == 0:
             t1 = datetime.datetime.now()
             logger.info('{0} finished! Latest 100 news takes {1}s'.format(i, (t1 - t0).total_seconds()))
