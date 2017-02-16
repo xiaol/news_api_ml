@@ -10,6 +10,7 @@ import datetime
 import os
 import logging
 import traceback
+from multiprocessing import Process
 
 real_dir_path = os.path.split(os.path.realpath(__file__))[0]
 logger = logging.getLogger(__name__)
@@ -102,27 +103,47 @@ def get_exist_nids():
     conn.close()
 
 
-cal_sql = 'select nid from newslist_v2'
-def coll_sentence_hash():
-    exist_set = get_exist_nids()
-    conn, cursor = doc_process.get_postgredb()
-    cursor.execute(cal_sql)
-    rows = cursor.fetchall()
-    conn.close()
+################################################################################
+#@brief: 计算子进程
+################################################################################
+def cal_process(nid_set):
+    logger.info('there are {} news to calulate'.format(len(nid_set)))
     i = 0
     t0 = datetime.datetime.now()
-    all_set = set()
-    for r in rows:
-        all_set.add(r[0])
-    need_to_cal_set = all_set - exist_set
-    logger.info('total {0} news, {1} have been added, so there are {2} news to calulate'.format(len(all_set), len(exist_set), len(need_to_cal_set)))
-    for n in need_to_cal_set:
+    for n in nid_set:
         i += 1
         cal_sentence_hash_on_nid(n)
         if i % 100 == 0:
             t1 = datetime.datetime.now()
             logger.info('{0} finished! Latest 100 news takes {1}s'.format(i, (t1 - t0).total_seconds()))
             t0 = t1
+
+
+cal_sql = 'select nid from newslist_v2 limit %s offset %s'
+def coll_sentence_hash():
+    logger.info("Begin to collect sentence...")
+    exist_set = get_exist_nids()
+    limit = 100000
+    offset = 100000
+    mp_list = []
+    while True:
+        conn, cursor = doc_process.get_postgredb()
+        cursor.execute(cal_sql, (limit, offset))
+        rows = cursor.fetchall()
+        conn.close()
+        if len(rows) == 0:
+            break
+        all_set = set()
+        for r in rows:
+            all_set.add(r[0])
+        need_to_cal_set = all_set - exist_set
+        mp = Process(target=cal_process, args=(need_to_cal_set, ))
+        mp.start()
+        mp_list.append(mp)
+    for mp in mp_list:
+        mp.join()
+    logger.info("Congratulations! Finish to collect sentences.")
+
 
 
 
