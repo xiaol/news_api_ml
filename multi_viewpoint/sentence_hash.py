@@ -52,7 +52,7 @@ def cal_sentence_hash_on_nid(nid, same_t=3):
         n = 0
         conn, cursor = doc_process.get_postgredb()
         for s in (su.encode('utf-8') for su in sentences_list):  #计算每一段话的hash值
-            s_list = doc_process.filter_tags(s)
+            s_list = doc_process.filter_html_stopwords_pos(s)
             n += 1
             if len(s) < 30: #10个汉字
                 continue

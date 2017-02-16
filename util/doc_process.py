@@ -225,7 +225,7 @@ def get_sentences_on_nid(nid):
         content_list = r[2]
         for elems in content_list: #段落
             if "txt" in elems.keys():
-                l = Cut(cutlist, filter_html_stopwords_pos(elems['txt']))
+                l = Cut(cutlist, filter_tags(elems['txt']))
                 sentences.extend(l)
 
     return sentences
