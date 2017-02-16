@@ -182,7 +182,8 @@ def get_words_on_nid(nid):
 
 
 # 设置分句的标志符号；可以根据实际需要进行修改
-cutlist = "。！？".decode('utf-8')
+#cutlist = "。！？".decode('utf-8')
+cutlist = "。！？.!?。!?".decode('utf-8')
 
 
 # 检查某字符是否分句标志符号的函数；如果是，返回True，否则返回False
@@ -206,6 +207,8 @@ def Cut(cutlist, lines):  # 参数1：引用分句标志符；参数2：被分�
             line = []  # 将符号列表清空，以便下次分句使用
         else:  # 如果当前字符不是分句符号，则将该字符直接放入临时列表中
             line.append(i)
+    if len(line) != 0:
+        l.append(''.join(line))
     return l
 
 
@@ -219,7 +222,6 @@ def get_sentences_on_nid(nid):
         title = r[1]
         content_list = r[2]
         for elems in content_list: #段落
-            is_question_flag = 0
             if "txt" in elems.keys():
                 l = Cut(cutlist, filter_tags(elems['txt']))
                 sentences.extend(l)
