@@ -70,7 +70,7 @@ def cal_sentence_hash_on_nid(nid, same_t=3):
                 l2 = float(len(r[1]))
                 if l1 > 1.5 * l2 or l2 > 1.5 * l1:
                     continue
-                if h.hamming_distance_with_val(long(r[2])) > same_t:
+                if h.hamming_distance_with_val(long(r[2])) <= same_t:
                     nid1 = r[0]
                     #先检查两篇新闻是否是相同的, 若相同则忽略。 同样利用simhash计算
                     if sim_hash.is_news_same(nid, nid1, same_t):
