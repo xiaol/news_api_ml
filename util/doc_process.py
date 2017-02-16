@@ -177,9 +177,9 @@ def get_words_on_nid(nid):
             if 'txt' in content.keys():
                 txt += content['txt'].encode('utf-8')
         total_txt = title + txt
-        #word_list = filter_html_stopwords_pos(total_txt, remove_num=True, remove_single_word=True)
+        word_list = filter_html_stopwords_pos(total_txt, remove_num=True, remove_single_word=True)
         #txt_no_html = filter_tags(total_txt)
-        word_list = remove_html_and_stopwords(total_txt)
+        #word_list = remove_html_and_stopwords(total_txt)
     return word_list
 
 
@@ -225,7 +225,7 @@ def get_sentences_on_nid(nid):
         content_list = r[2]
         for elems in content_list: #段落
             if "txt" in elems.keys():
-                l = Cut(cutlist, filter_tags(elems['txt']))
+                l = Cut(cutlist, filter_html_stopwords_pos(elems['txt']))
                 sentences.extend(l)
 
     return sentences
