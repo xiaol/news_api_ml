@@ -120,12 +120,12 @@ def cal_process(nid_set):
             t0 = t1
 
 
-cal_sql = 'select nid from newslist_v2 limit %s offset %s'
+cal_sql = "select nid from newslist_v2 limit %s offset %s"
 def coll_sentence_hash():
     logger.info("Begin to collect sentence...")
     exist_set = get_exist_nids()
     limit = 5
-    offset = 5
+    offset = 0
     pool = Pool(5)
     i = 0
     while True:
@@ -133,6 +133,7 @@ def coll_sentence_hash():
         cursor.execute(cal_sql, (limit, offset))
         rows = cursor.fetchall()
         conn.close()
+        offset += limit
         if len(rows) == 0:
             break
         all_set = set()
