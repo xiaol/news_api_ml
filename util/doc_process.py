@@ -138,9 +138,11 @@ def jieba_extract_keywords(str, K):
 
 POSTGRE_USER = 'postgres'
 POSTGRE_PWD = 'ly@postgres&2015'
-POSTGRE_HOST = '120.27.163.25'
+#POSTGRE_HOST = '120.27.163.25'
+POSTGRE_HOST = '10.47.54.175'
 POSTGRE_DBNAME = 'BDP'
-POSTGRES = "postgresql://postgres:ly@postgres&2015@120.27.163.25:5432/BDP"
+#POSTGRES = "postgresql://postgres:ly@postgres&2015@120.27.163.25:5432/BDP"
+POSTGRES = "postgresql://postgres:ly@postgres&2015@10.47.54.175:5432/BDP"
 def get_postgredb():
     try:
         connection = psycopg2.connect(database=POSTGRE_DBNAME, user=POSTGRE_USER, password=POSTGRE_PWD, host=POSTGRE_HOST,)
@@ -227,9 +229,6 @@ def get_sentences_on_nid(nid):
                 sentences.extend(l)
 
     return sentences
-
-
-
 
 
 
