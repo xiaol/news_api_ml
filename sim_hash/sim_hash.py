@@ -211,7 +211,7 @@ def cal_and_check_news_hash(nid_list):
         logger.error(traceback.format_exc())
 
 
-#2017.02.16, 将same_t由3改为4
+#2017.02.16, 将same_t由3改为4. 这样检测句子相似度时,先检查是否是相同的新闻 更加宽松。 比单独新闻去重严格。
 def is_news_same(nid1, nid2, same_t=4):
     try:
         w1 = doc_process.get_words_on_nid(nid1)
