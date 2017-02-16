@@ -73,7 +73,7 @@ def cal_sentence_hash_on_nid(nid, same_t=3):
                 if h.hamming_distance_with_val(long(r[2])) <= same_t:
                     nid1 = r[0]
                     #先检查两篇新闻是否是相同的, 若相同则忽略。 同样利用simhash计算
-                    if sim_hash.is_news_same(nid, nid1, same_t):
+                    if sim_hash.is_news_same(nid, nid1):
                         same_news.append(nid1)
                         continue
                     cursor.execute(insert_same_sentence, (nid, nid1, s, r[1], t))

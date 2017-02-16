@@ -211,21 +211,26 @@ def cal_and_check_news_hash(nid_list):
         logger.error(traceback.format_exc())
 
 
-def is_news_same(nid1, nid2, same_t):
-    w1 = doc_process.get_words_on_nid(nid1)
-    w2 = doc_process.get_words_on_nid(nid2)
-    h1 = simhash(w1)
-    h2 = simhash(w2)
-    if h1.hamming_distance(h2) > same_t:
-        return False
-    return True
+#2017.02.16, 将same_t由3改为4
+def is_news_same(nid1, nid2, same_t=4):
+    try:
+        w1 = doc_process.get_words_on_nid(nid1)
+        w2 = doc_process.get_words_on_nid(nid2)
+        h1 = simhash(w1)
+        h2 = simhash(w2)
+        if h1.hamming_distance(h2) > same_t:
+            return False
+        return True
+    except:
+        raise
 
 import jieba
 if __name__ == '__main__':
 
     nid_list = [11952459, 11952414]
     #print is_news_same(11952760, 11963937, 3)
-    print is_news_same(11968383, 11968382, 3)
+    print is_news_same(3235506, 3375849, 4)
+    print is_news_same(3211559, 3212267, 4)
     #cal_and_check_news_hash(nid_list)
     #w1 = doc_process.get_words_on_nid(11580728)
     #w2 = doc_process.get_words_on_nid(11603489)
