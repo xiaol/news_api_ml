@@ -77,7 +77,6 @@ def cal_sentence_hash_on_nid(nid, same_t=3):
                         same_news.append(nid1)
                         continue
                     cursor.execute(insert_same_sentence, (nid, nid1, s, r[1], t))
-                    break
             #插入库
             cursor.execute(insert_sentence_hash, (nid, s, n, h.__str__(), fir, sec, thi, fou, t))
             conn.commit()
