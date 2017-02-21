@@ -128,6 +128,9 @@ def get_nids_sentences(nid_set):
                     sents = Cut(content['txt'])
                     for i in sents:
                         if len(i) > 20:  #20个汉字
+                            print '***'
+                            print i
+                            print len(i)
                             nid_sentences_dict[nid].append(i)
                         #wl = filter_html_stopwords_pos(i)
                         #if len(wl) > 5:   #文本词数量<5, 不计算hash
@@ -169,7 +172,7 @@ def cal_process(nid_set, same_t=3):
                 for r in rows:
                     logger.info(r[1])
                     logger.info(str(len(r[1])))
-                    if r[0] in same_news or len(r[1]) < 20:
+                    if r[0] in same_news or len(r[1]) < 60:
                         continue
                     l1 = float(len(str_no_html))
                     l2 = float(len(r[1]))
