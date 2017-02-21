@@ -155,7 +155,7 @@ def cal_process(nid_set, same_t=3):
             sents = item[1]
             for s in sents:  #每个句子
                 n +=1
-                str_no_html, wl = filter_html_stopwords_pos(s, False, False, True)
+                str_no_html, wl = filter_html_stopwords_pos(s, True, True, True)
                 if len(wl) < 5:
                     continue
                 h = sim_hash.simhash(wl)
