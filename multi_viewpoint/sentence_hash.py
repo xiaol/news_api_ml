@@ -8,6 +8,7 @@
 from util.doc_process import get_postgredb
 from util.doc_process import Cut
 from util.doc_process import filter_html_stopwords_pos
+from util.doc_process import filter_tags
 from util.doc_process import get_sentences_on_nid
 
 from sim_hash import sim_hash
@@ -126,7 +127,8 @@ def get_nids_sentences(nid_set):
         content_list = r[2]
         for content in content_list:
                 if "txt" in content.keys():
-                    sents = Cut(content['txt'])
+                    str_no_tags = filter_tags(content['txt'])
+                    sents = Cut(str_no_tags)
                     for i in sents:
                         if len(i) > 20:  #20个汉字, i 是unicode, len代表汉字个数
                             nid_sentences_dict[nid].append(i)
@@ -135,6 +137,7 @@ def get_nids_sentences(nid_set):
                         #    nid_sentences_dict[nid].append(wl)
     conn.close()
     return nid_sentences_dict
+
 
 
 ################################################################################
@@ -155,7 +158,7 @@ def cal_process(nid_set, same_t=3):
             sents = item[1]
             for s in sents:  #每个句子
                 n +=1
-                str_no_html, wl = filter_html_stopwords_pos(s, True, True, True)
+                str_no_html, wl = filter_html_stopwords_pos(s, True, True, True, False)
                 if len(wl) < 5:
                     continue
                 h = sim_hash.simhash(wl)

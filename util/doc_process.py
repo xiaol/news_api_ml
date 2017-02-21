@@ -104,9 +104,12 @@ def filterPOS2(org_text, pos_list):
 
 POS = ['zg', 'uj', 'ul', 'e', 'd', 'uz', 'y']
 #去除html标签及停用词并筛选词性
-def filter_html_stopwords_pos(str, remove_num=False, remove_single_word=False, return_no_html=False):
+def filter_html_stopwords_pos(str, remove_num=False, remove_single_word=False, return_no_html=False, remove_html=True):
     #删除html标签
-    txt_no_html = filter_tags(str)
+    if remove_html:
+        txt_no_html = filter_tags(str)
+    else:
+        txt_no_html = str
     import jieba.posseg
     jieba.load_userdict(net_words_file)
     words = jieba.posseg.cut(txt_no_html)  #unicode is returned
@@ -139,6 +142,7 @@ def filter_html_stopwords_pos(str, remove_num=False, remove_single_word=False, r
     if return_no_html:
         return txt_no_html, final_words
     return final_words
+
 
 #jieba提取关键词
 def jieba_extract_keywords(str, K):
