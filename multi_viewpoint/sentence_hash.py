@@ -177,6 +177,17 @@ def cal_process(nid_set, same_t=3):
                         continue
                     if h.hamming_distance_with_val(long(r[2])) <= same_t:
                         nid1 = r[0]
+                        #除了检查hash值,还要检查相同词组
+                        wl2 = filter_html_stopwords_pos(sen, True, True)
+                        set1 = set(wl)
+                        set2 = set(wl2)
+                        set_same = set1 & set2
+                        l1 = float(len(set1))
+                        l2 = float(len(set2))
+                        l3 = float(len(set_same))
+                        if l3 < min(l1, l2) * 0.6:  #相同比例要达到0.6
+                            continue
+
                         #先检查两篇新闻是否是相同的, 若相同则忽略。 同样利用simhash计算
                         if sim_hash.is_news_same(nid, nid1, 4):
                             same_news.append(nid1)
