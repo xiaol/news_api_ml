@@ -131,6 +131,7 @@ def get_nids_sentences(nid_set):
                             print '***'
                             print i
                             print len(i)
+                            print type(i)
                             nid_sentences_dict[nid].append(i)
                         #wl = filter_html_stopwords_pos(i)
                         #if len(wl) > 5:   #文本词数量<5, 不计算hash
@@ -170,8 +171,9 @@ def cal_process(nid_set, same_t=3):
                 cursor.execute(query_sen_sql, (str(fir), str(sec), str(thi), str(fou)))
                 rows = cursor.fetchall()  #所有可能相同的段落
                 for r in rows:
-                    logger.info(r[1])
-                    logger.info(str(len(r[1])))
+                    print r[1]
+                    print len(r[1])
+                    print type(r[1])
                     if r[0] in same_news or len(r[1]) < 60:
                         continue
                     l1 = float(len(str_no_html))
@@ -226,8 +228,8 @@ ignore_cname = ("美女", "帅哥", "搞笑", "趣图")
 def coll_sentence_hash():
     logger.info("Begin to collect sentence...")
     exist_set = get_exist_nids()
-    limit = 10000
-    offset = 10000
+    limit = 10
+    offset = 10
     pool = Pool(1)
     while True:
         conn, cursor = get_postgredb()
