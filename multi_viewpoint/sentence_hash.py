@@ -154,7 +154,7 @@ def cal_process(nid_set, same_t=3):
             sents = item[1]
             for s in sents:  #每个句子
                 n +=1
-                wl = filter_html_stopwords_pos(i)
+                wl = filter_html_stopwords_pos(s)
                 h = sim_hash.simhash(wl)
                 fir, sec, thi, fou = get_4_segments(h.__long__())
                 t = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
