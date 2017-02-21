@@ -212,10 +212,9 @@ cal_sql = "select nid from newslist_v2 limit %s offset %s"
 def coll_sentence_hash():
     logger.info("Begin to collect sentence...")
     exist_set = get_exist_nids()
-    limit = 10
-    offset = 10
-    pool = Pool(3)
-    i = 0
+    limit = 10000
+    offset = 10000
+    pool = Pool(25)
     while True:
         conn, cursor = get_postgredb()
         cursor.execute(cal_sql, (limit, offset))
@@ -230,10 +229,7 @@ def coll_sentence_hash():
         need_to_cal_set = all_set - exist_set
         if len(need_to_cal_set) == 0:
             continue
-        i += len(need_to_cal_set)
         pool.apply_async(cal_process, args=(need_to_cal_set,))
-        if i >= 50:
-            break
 
     pool.close()
     pool.join()
