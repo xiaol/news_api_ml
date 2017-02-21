@@ -224,10 +224,10 @@ def coll_sentence_hash():
         all_set = set()
         for r in rows:
             all_set.add(r[0])
-        i += len(need_to_cal_set)
         need_to_cal_set = all_set - exist_set
         if len(need_to_cal_set) == 0:
             continue
+        i += len(need_to_cal_set)
         pool.apply_async(cal_process, args=(need_to_cal_set,))
         if i >= 50:
             break
