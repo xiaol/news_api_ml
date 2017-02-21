@@ -232,6 +232,17 @@ def Cut(lines, cutlist=cutlist):  # 参数1：引用分句标志符；参数2：
     l = []  # 句子列表，用于存储单个分句成功后的整句内容，为函数的返回值
     line = []  # 临时列表，用于存储捕获到分句标志符之前的每个字符，一旦发现分句符号后，就会将其内容全部赋给l，然后就会被清空
 
+
+    if lines.find('http') > 0:
+        myString_list = [item for item in lines.split(" ")]
+        for item in myString_list:
+            try:
+                url = re.search("(?P<url>https?://[^\s]+)", item).group("url")
+                l.append(url)
+                lines = lines.replace(url, ' ')
+            except:
+                pass
+
     for i in lines:  # 对函数参数2中的每一字符逐个进行检查 （本函数中，如果将if和else对换一下位置，会更好懂）
         if FindToken(cutlist, i):  # 如果当前字符是分句符号
             line.append(i)  # 将此字符放入临时列表中

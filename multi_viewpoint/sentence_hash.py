@@ -129,11 +129,10 @@ def get_nids_sentences(nid_set):
         for content in content_list:
                 if "txt" in content.keys():
                     str_no_tags = filter_tags(content['txt'])
-                    str_no_url = filter_url(str_no_tags)
-                    sents = Cut(str_no_url)
+                    sents = Cut(str_no_tags)
                     for i in sents:
-                        if len(i) > 20:  #20个汉字, i 是unicode, len代表汉字个数
-                            nid_sentences_dict[nid].append(i)
+                        #if len(i) > 20:  #20个汉字, i 是unicode, len代表汉字个数
+                        nid_sentences_dict[nid].append(i) #计算所有段落。 计算重复句子时再筛选掉字数少的句子; 去除广告时,对字数不做要求
                         #wl = filter_html_stopwords_pos(i)
                         #if len(wl) > 5:   #文本词数量<5, 不计算hash
                         #    nid_sentences_dict[nid].append(wl)
@@ -161,17 +160,18 @@ def cal_process(nid_set, same_t=3):
             for s in sents:  #每个句子
                 n +=1
                 str_no_html, wl = filter_html_stopwords_pos(s, True, True, True, False)
-                if len(wl) < 5:
-                    continue
                 h = sim_hash.simhash(wl)
                 fir, sec, thi, fou = get_4_segments(h.__long__())
                 t = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                #将段落入库
+                #将所有段落入库
                 cursor.execute(insert_sentence_hash, (nid, str_no_html, n, h.__str__(), fir, sec, thi, fou, t))
 
                 #检查是否有相同的段落
+                if len(wl) < 5: #小于5个词组, 不判断句子重复
+                    continue
                 cursor.execute(query_sen_sql, (str(fir), str(sec), str(thi), str(fou)))
                 rows = cursor.fetchall()  #所有可能相同的段落
+                logger.info('--------- {}'.format(str(len(rows))))
                 for r in rows:
                     sen = r[1].decode('utf-8')
                     if r[0] in same_news or len(sen) < 20: # r[1]是utf-8类型。
