@@ -8,6 +8,7 @@
 from util.doc_process import get_postgredb
 from util.doc_process import Cut
 from util.doc_process import filter_html_stopwords_pos
+from util.doc_process import get_sentences_on_nid
 
 from sim_hash import sim_hash
 import datetime
@@ -26,7 +27,7 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 def get_nid_sentence(nid):
-    doc_process.get_sentences_on_nid(nid)
+    get_sentences_on_nid(nid)
 
 
 #从64位取字段,建立索引
@@ -127,11 +128,7 @@ def get_nids_sentences(nid_set):
                 if "txt" in content.keys():
                     sents = Cut(content['txt'])
                     for i in sents:
-                        if len(i) > 20:  #20个汉字
-                            print '***'
-                            print i
-                            print len(i)
-                            print type(i)
+                        if len(i) > 20:  #20个汉字, i 是unicode, len代表汉字个数
                             nid_sentences_dict[nid].append(i)
                         #wl = filter_html_stopwords_pos(i)
                         #if len(wl) > 5:   #文本词数量<5, 不计算hash
@@ -171,10 +168,7 @@ def cal_process(nid_set, same_t=3):
                 cursor.execute(query_sen_sql, (str(fir), str(sec), str(thi), str(fou)))
                 rows = cursor.fetchall()  #所有可能相同的段落
                 for r in rows:
-                    print r[1]
-                    print len(r[1])
-                    print type(r[1])
-                    if r[0] in same_news or len(r[1]) < 60:
+                    if r[0] in same_news or len(r[1].decode('utf-8')) < 20: # r[1]是utf-8类型。
                         continue
                     l1 = float(len(str_no_html))
                     l2 = float(len(r[1]))
@@ -228,9 +222,9 @@ ignore_cname = ("美女", "帅哥", "搞笑", "趣图")
 def coll_sentence_hash():
     logger.info("Begin to collect sentence...")
     exist_set = get_exist_nids()
-    limit = 10
-    offset = 10
-    pool = Pool(1)
+    limit = 10000
+    offset = 10000
+    pool = Pool(25)
     while True:
         conn, cursor = get_postgredb()
         cursor.execute(cal_sql2, (ignore_cname, limit, offset))
