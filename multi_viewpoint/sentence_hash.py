@@ -226,7 +226,6 @@ def coll_sentence_hash():
             all_set.add(r[0])
         i += len(need_to_cal_set)
         need_to_cal_set = all_set - exist_set
-        need_to_cal_set = all_set
         if len(need_to_cal_set) == 0:
             continue
         pool.apply_async(cal_process, args=(need_to_cal_set,))
