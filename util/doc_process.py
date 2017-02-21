@@ -42,6 +42,18 @@ def filter_tags(htmlstr):
     s = replaceCharEntity(s)  # 替换实体
     return s
 
+def filter_url(str):
+    myString_list = [item for item in str.split(" ")]
+    url_list = []
+    for item in myString_list:
+        try:
+            url_list.append(re.search("(?P<url>https?://[^\s]+)", item).group("url"))
+        except:
+            pass
+    for i in url_list:
+        str = str.replace(i, ' ')
+    return str
+
 ##替换常用HTML字符实体.
 # 使用正常的字符替换HTML中特殊的字符实体.
 # 你可以添加新的实体字符到CHAR_ENTITIES中,处理更多HTML字符实体.

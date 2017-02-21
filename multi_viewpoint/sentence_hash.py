@@ -9,6 +9,7 @@ from util.doc_process import get_postgredb
 from util.doc_process import Cut
 from util.doc_process import filter_html_stopwords_pos
 from util.doc_process import filter_tags
+from util.doc_process import filter_url
 from util.doc_process import get_sentences_on_nid
 
 from sim_hash import sim_hash
@@ -128,7 +129,8 @@ def get_nids_sentences(nid_set):
         for content in content_list:
                 if "txt" in content.keys():
                     str_no_tags = filter_tags(content['txt'])
-                    sents = Cut(str_no_tags)
+                    str_no_url = filter_url(str_no_tags)
+                    sents = Cut(str_no_url)
                     for i in sents:
                         if len(i) > 20:  #20个汉字, i 是unicode, len代表汉字个数
                             nid_sentences_dict[nid].append(i)
