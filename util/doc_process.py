@@ -20,6 +20,8 @@ sentence_delimiters = ['?', '!', ';', '？', '！', '。', '；', '……', '…
 question_delimiters = [u'?', u'？']
 news_text_nid_sql = "select nid, title, content from newslist_v2 where nid={0}"
 
+
+
 def filter_tags(htmlstr):
     # 先过滤CDATA
     re_cdata = re.compile('//<!\[CDATA\[[^>]*//\]\]>', re.I)  # 匹配CDATA
@@ -124,6 +126,7 @@ def filter_html_stopwords_pos(str, remove_num=False, remove_single_word=False, r
                 continue
             else:
                 i += 1
+    i = 0
     if remove_single_word == True:
         while i < len(final_words):
             w = final_words[i]
