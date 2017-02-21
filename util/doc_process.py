@@ -116,14 +116,22 @@ def filter_html_stopwords_pos(str, remove_num=False, remove_single_word=False):
         if not w.encode('utf-8') in stopwords_set and (not w.isspace()):
             final_words.append(w)
     i = 0
-    while i < len(final_words):
-        w = final_words[i]
-        if (remove_num == True and w.isdigit()) or \
-                (remove_single_word == True and len(w) == 1):
-            final_words.remove(w)
-            continue
-        else:
-            i += 1
+    if remove_num == True:
+        while i < len(final_words):
+            w = final_words[i]
+            if w.isdigit():
+                final_words.remove(w)
+                continue
+            else:
+                i += 1
+    if remove_single_word == True:
+        while i < len(final_words):
+            w = final_words[i]
+            if len(w) == 1:
+                final_words.remove(w)
+                continue
+            else:
+                i += 1
 
     return final_words
 
@@ -183,12 +191,6 @@ def get_words_on_nid(nid):
     return word_list
 
 
-# 设置分句的标志符号；可以根据实际需要进行修改
-#cutlist = "。！？".decode('utf-8')
-#cutlist = "。！？.!?。!?".decode('utf-8')
-cutlist = "。！？!?。!?".decode('utf-8') #不包含英文句号,因为也会被当成小数点
-
-
 # 检查某字符是否分句标志符号的函数；如果是，返回True，否则返回False
 def FindToken(cutlist, char):
     if char in cutlist:
@@ -199,7 +201,11 @@ def FindToken(cutlist, char):
         # 进行分句的核心函数
 
 
-def Cut(cutlist, lines):  # 参数1：引用分句标志符；参数2：被分句的文本，为一行中文字符
+# 设置分句的标志符号；可以根据实际需要进行修改
+#cutlist = "。！？".decode('utf-8')
+#cutlist = "。！？.!?。!?".decode('utf-8')
+cutlist = "。！？!?。!?".decode('utf-8') #不包含英文句号,因为也会被当成小数点
+def Cut(lines, cutlist=cutlist):  # 参数1：引用分句标志符；参数2：被分句的文本，为一行中文字符
     l = []  # 句子列表，用于存储单个分句成功后的整句内容，为函数的返回值
     line = []  # 临时列表，用于存储捕获到分句标志符之前的每个字符，一旦发现分句符号后，就会将其内容全部赋给l，然后就会被清空
 
@@ -226,7 +232,7 @@ def get_sentences_on_nid(nid):
         content_list = r[2]
         for elems in content_list: #段落
             if "txt" in elems.keys():
-                l = Cut(cutlist, filter_tags(elems['txt']))
+                l = Cut(filter_tags(elems['txt']))
                 sentences.extend(l)
 
     return sentences

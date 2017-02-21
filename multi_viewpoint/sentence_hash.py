@@ -4,7 +4,11 @@
 # @Brief   : 
 # @File    : sentence_hash.py
 # @Software: PyCharm Community Edition
-from util  import doc_process
+#from util  import doc_process
+from util.doc_process import get_postgredb
+from util.doc_process import Cut
+from util.doc_process import filter_html_stopwords_pos
+
 from sim_hash import sim_hash
 import datetime
 import os
@@ -47,12 +51,12 @@ query_sen_sql = "select nid, sentence, hash_val from news_sentence_hash where fi
 insert_same_sentence = "insert into news_same_sentence_map (nid1, nid2, sentence1, sentence2, ctime) VALUES (%s, %s, %s, %s, %s)"
 def cal_sentence_hash_on_nid(nid, same_t=3):
     try:
-        sentences_list = doc_process.get_sentences_on_nid(nid)
+        sentences_list = get_sentences_on_nid(nid)
         same_news = []
         n = 0
-        conn, cursor = doc_process.get_postgredb()
+        conn, cursor = get_postgredb()
         for s in (su.encode('utf-8') for su in sentences_list):  #计算每一段话的hash值
-            s_list = doc_process.filter_html_stopwords_pos(s)
+            s_list = filter_html_stopwords_pos(s)
             n += 1
             if len(s) < 30: #10个汉字
                 continue
@@ -88,13 +92,9 @@ def cal_sentence_hash_on_nid(nid, same_t=3):
         logger.exception(traceback.format_exc())
 
 
-def cal_sentence_hash_nid_list(nid_list):
-    for n in nid_list:
-        cal_sentence_hash_on_nid(n)
-
 s_nid_sql = "select distinct nid from news_sentence_hash "
 def get_exist_nids():
-    conn, cursor = doc_process.get_postgredb()
+    conn, cursor = get_postgredb()
     cursor.execute(s_nid_sql)
     rows = cursor.fetchall()
     nid_set = set()
@@ -103,10 +103,94 @@ def get_exist_nids():
     conn.close()
     return nid_set
 
+################################################################################
+#获取新闻句子,句子以分词list形式给出,方便后面直接算hash
+#@input ---- nid_set
+#@output --- nid_sentenct_dict  格式:
+#    {'11111': [['i', 'love', 'you'], ["好", "就", "这样"], ...],
+#     '22222': [['举例', '说明'], ['今天', '天气', '不错']...]
+#      ...
+#    }
+################################################################################
+get_sent_sql = "select nid, title, content from newslist_v2 where nid in %s"
+def get_nids_sentences(nid_set):
+    nid_tuple = tuple(nid_set)
+    conn, cursor = get_postgredb()
+    cursor.execute(get_sent_sql, (nid_tuple, ))
+    rows = cursor.fetchall()
+    nid_sentences_dict = {}
+    for r in rows:
+        nid = r[0]
+        nid_sentences_dict[nid] = []
+        content_list = r[2]
+        for content in content_list:
+                if "txt" in content.keys():
+                    sents = Cut(content['txt'])
+                    for i in sents:
+                        wl = filter_html_stopwords_pos(i)
+                        if len(wl) > 5:   #文本词数量<5, 不计算hash
+                            nid_sentences_dict[nid].append(wl)
+    conn.close()
+    return nid_sentences_dict
+
 
 ################################################################################
 #@brief: 计算子进程
 ################################################################################
+def cal_process(nid_set, same_t=3):
+    logger.info('there are {} news to calulate'.format(len(nid_set)))
+    nid_sents_dict = get_nids_sentences(nid_set)
+    try:
+        i = 0
+        t0 = datetime.datetime.now()
+        conn, cursor = get_postgredb()
+        for item in nid_sents_dict.items(): #每条新闻
+            i += 1
+            n = 0
+            same_news = []
+            nid = item[0]
+            sents = item[1]
+            for s in sents:  #每个句子
+                n +=1
+                h = sim_hash.simhash(s)
+                fir, sec, thi, fou = get_4_segments(h.__long__())
+                t = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                #将段落入库
+                cursor.execute(insert_sentence_hash, (nid, s, n, h.__str__(), fir, sec, thi, fou, t))
+
+                #检查是否有相同的段落
+                cursor.execute(query_sen_sql, (str(fir), str(sec), str(thi), str(fou)))
+                rows = cursor.fetchall()  #所有可能相同的段落
+                for r in rows:
+                    if r[0] in same_news:
+                        continue
+                    l1 = float(len(s))
+                    l2 = float(len(r[1]))
+                    if l1 > 1.5 * l2 or l2 > 1.5 * l1:
+                        continue
+                    if h.hamming_distance_with_val(long(r[2])) <= same_t:
+                        nid1 = r[0]
+                        #先检查两篇新闻是否是相同的, 若相同则忽略。 同样利用simhash计算
+                        if sim_hash.is_news_same(nid, nid1, 4):
+                            same_news.append(nid1)
+                            continue
+                        cursor.execute(insert_same_sentence, (nid, nid1, s, r[1], t))
+                conn.commit()
+            if i % 100 == 0:
+                t1 = datetime.datetime.now()
+                logger.info('{0} finished! Latest 100 news takes {1}s'.format(i, (t1 - t0).total_seconds()))
+                t0 = t1
+        cursor.close()
+        conn.close()
+        del nid_sents_dict
+    except:
+        cursor.close()
+        conn.close()
+        logger.exception(traceback.format_exc())
+
+
+
+'''
 def cal_process(nid_set):
     logger.info('there are {} news to calulate'.format(len(nid_set)))
     i = 0
@@ -118,17 +202,19 @@ def cal_process(nid_set):
             t1 = datetime.datetime.now()
             logger.info('{0} finished! Latest 100 news takes {1}s'.format(i, (t1 - t0).total_seconds()))
             t0 = t1
+'''
 
 
 cal_sql = "select nid from newslist_v2 limit %s offset %s"
 def coll_sentence_hash():
     logger.info("Begin to collect sentence...")
     exist_set = get_exist_nids()
-    limit = 10000
-    offset = 10000
-    pool = Pool(25)
+    limit = 10
+    offset = 10
+    pool = Pool(3)
+    i = 0
     while True:
-        conn, cursor = doc_process.get_postgredb()
+        conn, cursor = get_postgredb()
         cursor.execute(cal_sql, (limit, offset))
         rows = cursor.fetchall()
         conn.close()
@@ -138,10 +224,14 @@ def coll_sentence_hash():
         all_set = set()
         for r in rows:
             all_set.add(r[0])
-        need_to_cal_set = all_set - exist_set
+        i += len(all_set)
+        #need_to_cal_set = all_set - exist_set
+        need_to_cal_set = all_set
         if len(need_to_cal_set) == 0:
             continue
         pool.apply_async(cal_process, args=(need_to_cal_set,))
+        if i >= 50:
+            break
 
     pool.close()
     pool.join()
