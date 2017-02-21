@@ -127,9 +127,11 @@ def get_nids_sentences(nid_set):
                 if "txt" in content.keys():
                     sents = Cut(content['txt'])
                     for i in sents:
-                        wl = filter_html_stopwords_pos(i)
-                        if len(wl) > 5:   #文本词数量<5, 不计算hash
-                            nid_sentences_dict[nid].append(wl)
+                        if len(i) > 20:  #20个汉字
+                            nid_sentences_dict[nid].append(i)
+                        #wl = filter_html_stopwords_pos(i)
+                        #if len(wl) > 5:   #文本词数量<5, 不计算hash
+                        #    nid_sentences_dict[nid].append(wl)
     conn.close()
     return nid_sentences_dict
 
@@ -152,7 +154,8 @@ def cal_process(nid_set, same_t=3):
             sents = item[1]
             for s in sents:  #每个句子
                 n +=1
-                h = sim_hash.simhash(s)
+                wl = filter_html_stopwords_pos(i)
+                h = sim_hash.simhash(wl)
                 fir, sec, thi, fou = get_4_segments(h.__long__())
                 t = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 #将段落入库
