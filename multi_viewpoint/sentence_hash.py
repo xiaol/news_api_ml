@@ -154,12 +154,12 @@ def cal_process(nid_set, same_t=3):
             sents = item[1]
             for s in sents:  #每个句子
                 n +=1
-                wl = filter_html_stopwords_pos(s)
+                str_no_html, wl = filter_html_stopwords_pos(s, False, False, True)
                 h = sim_hash.simhash(wl)
                 fir, sec, thi, fou = get_4_segments(h.__long__())
                 t = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 #将段落入库
-                cursor.execute(insert_sentence_hash, (nid, s, n, h.__str__(), fir, sec, thi, fou, t))
+                cursor.execute(insert_sentence_hash, (nid, str_no_html, n, h.__str__(), fir, sec, thi, fou, t))
 
                 #检查是否有相同的段落
                 cursor.execute(query_sen_sql, (str(fir), str(sec), str(thi), str(fou)))
@@ -167,7 +167,7 @@ def cal_process(nid_set, same_t=3):
                 for r in rows:
                     if r[0] in same_news:
                         continue
-                    l1 = float(len(s))
+                    l1 = float(len(str_no_html))
                     l2 = float(len(r[1]))
                     if l1 > 1.5 * l2 or l2 > 1.5 * l1:
                         continue
@@ -177,7 +177,7 @@ def cal_process(nid_set, same_t=3):
                         if sim_hash.is_news_same(nid, nid1, 4):
                             same_news.append(nid1)
                             continue
-                        cursor.execute(insert_same_sentence, (nid, nid1, s, r[1], t))
+                        cursor.execute(insert_same_sentence, (nid, nid1, str_no_html, r[1], t))
                 conn.commit()
             if i % 100 == 0:
                 t1 = datetime.datetime.now()

@@ -102,7 +102,7 @@ def filterPOS2(org_text, pos_list):
 
 POS = ['zg', 'uj', 'ul', 'e', 'd', 'uz', 'y']
 #去除html标签及停用词并筛选词性
-def filter_html_stopwords_pos(str, remove_num=False, remove_single_word=False):
+def filter_html_stopwords_pos(str, remove_num=False, remove_single_word=False, return_no_html=False):
     #删除html标签
     txt_no_html = filter_tags(str)
     import jieba.posseg
@@ -133,6 +133,8 @@ def filter_html_stopwords_pos(str, remove_num=False, remove_single_word=False):
             else:
                 i += 1
 
+    if return_no_html:
+        return txt_no_html, final_words
     return final_words
 
 #jieba提取关键词
