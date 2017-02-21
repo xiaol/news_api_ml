@@ -168,10 +168,11 @@ def cal_process(nid_set, same_t=3):
                 cursor.execute(query_sen_sql, (str(fir), str(sec), str(thi), str(fou)))
                 rows = cursor.fetchall()  #所有可能相同的段落
                 for r in rows:
-                    if r[0] in same_news or len(r[1].decode('utf-8')) < 20: # r[1]是utf-8类型。
+                    sen = r[1].decode('utf-8')
+                    if r[0] in same_news or len(sen) < 20: # r[1]是utf-8类型。
                         continue
                     l1 = float(len(str_no_html))
-                    l2 = float(len(r[1]))
+                    l2 = float(len(sen))
                     if l1 > 1.5 * l2 or l2 > 1.5 * l1:
                         continue
                     if h.hamming_distance_with_val(long(r[2])) <= same_t:
@@ -180,7 +181,7 @@ def cal_process(nid_set, same_t=3):
                         if sim_hash.is_news_same(nid, nid1, 4):
                             same_news.append(nid1)
                             continue
-                        cursor.execute(insert_same_sentence, (nid, nid1, str_no_html, r[1], t))
+                        cursor.execute(insert_same_sentence, (nid, nid1, str_no_html, sen, t))
                 conn.commit()
             if i % 100 == 0:
                 t1 = datetime.datetime.now()
@@ -239,7 +240,7 @@ def coll_sentence_hash():
         need_to_cal_set = all_set - exist_set
         if len(need_to_cal_set) == 0:
             continue
-        pool.apply_async(cal_process, args=(need_to_cal_set, 4))
+        pool.apply_async(cal_process, args=(need_to_cal_set, ))
 
     pool.close()
     pool.join()
