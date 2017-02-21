@@ -43,6 +43,8 @@ def filter_tags(htmlstr):
     return s
 
 def filter_url(str):
+    if str.find('www') < 0:
+        return str
     myString_list = [item for item in str.split(" ")]
     url_list = []
     for item in myString_list:
