@@ -155,6 +155,8 @@ def cal_process(nid_set, same_t=3):
             for s in sents:  #每个句子
                 n +=1
                 str_no_html, wl = filter_html_stopwords_pos(s, False, False, True)
+                if len(wl) < 5:
+                    continue
                 h = sim_hash.simhash(wl)
                 fir, sec, thi, fou = get_4_segments(h.__long__())
                 t = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -209,6 +211,13 @@ def cal_process(nid_set):
 
 
 cal_sql = "select nid from newslist_v2 limit %s offset %s"
+cal_sql2 ='SELECT a.nid \
+FROM newslist_v2 a \
+RIGHT OUTER JOIN (select * from channellist_v2 where "cname" not in %s) c \
+ON \
+a."chid" =c."id"  LIMIT %s offset %s'
+ignore_cname = ("美女", "帅哥", "搞笑", "趣图")
+
 def coll_sentence_hash():
     logger.info("Begin to collect sentence...")
     exist_set = get_exist_nids()
@@ -217,7 +226,7 @@ def coll_sentence_hash():
     pool = Pool(25)
     while True:
         conn, cursor = get_postgredb()
-        cursor.execute(cal_sql, (limit, offset))
+        cursor.execute(cal_sql2, (ignore_cname, limit, offset))
         rows = cursor.fetchall()
         conn.close()
         offset += limit
