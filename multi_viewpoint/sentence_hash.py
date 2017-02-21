@@ -167,7 +167,7 @@ def cal_process(nid_set, same_t=3):
                 cursor.execute(query_sen_sql, (str(fir), str(sec), str(thi), str(fou)))
                 rows = cursor.fetchall()  #所有可能相同的段落
                 for r in rows:
-                    if r[0] in same_news:
+                    if r[0] in same_news or len(r[1]) < 20:
                         continue
                     l1 = float(len(str_no_html))
                     l2 = float(len(r[1]))
