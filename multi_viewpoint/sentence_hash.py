@@ -167,7 +167,7 @@ def cal_process(nid_set, same_t=3):
                 cursor.execute(insert_sentence_hash, (nid, str_no_html, n, h.__str__(), fir, sec, thi, fou, t))
 
                 #检查是否有相同的段落
-                if len(str_no_html.decode('utf-8')) < 20: #小于20个汉字, 不判断句子重复
+                if len(str_no_html) < 20: #小于20个汉字, 不判断句子重复
                     continue
                 cursor.execute(query_sen_sql, (str(fir), str(sec), str(thi), str(fou)))
                 rows = cursor.fetchall()  #所有可能相同的段落
