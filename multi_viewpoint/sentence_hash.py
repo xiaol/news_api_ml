@@ -167,6 +167,8 @@ def cal_process(nid_set, same_t=3):
                 cursor.execute(query_sen_sql, (str(fir), str(sec), str(thi), str(fou)))
                 rows = cursor.fetchall()  #所有可能相同的段落
                 for r in rows:
+                    print r[1]
+                    print len(r[1])
                     if r[0] in same_news or len(r[1]) < 20:
                         continue
                     l1 = float(len(str_no_html))
@@ -223,7 +225,7 @@ def coll_sentence_hash():
     exist_set = get_exist_nids()
     limit = 10000
     offset = 10000
-    pool = Pool(25)
+    pool = Pool(1)
     while True:
         conn, cursor = get_postgredb()
         cursor.execute(cal_sql2, (ignore_cname, limit, offset))
