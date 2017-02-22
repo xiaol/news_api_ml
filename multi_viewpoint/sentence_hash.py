@@ -167,16 +167,14 @@ def cal_process(nid_set, same_t=3):
                 cursor.execute(insert_sentence_hash, (nid, str_no_html, n, h.__str__(), fir, sec, thi, fou, t))
 
                 #检查是否有相同的段落
-                if len(wl) < 5: #小于20个汉字, 不判断句子重复
-                    continue
+                #if len(wl) < 5: #小于20个汉字, 不判断句子重复  #2.22再次修改: 不做长度限制做重复判断; 真正判断相关观点时再判断; 广告去除也需要短句子
+                #    continue
                 cursor.execute(query_sen_sql, (str(fir), str(sec), str(thi), str(fou)))
                 rows = cursor.fetchall()  #所有可能相同的段落
                 for r in rows:
-                    if h.hamming_distance_with_val(long(r[2])) > same_t:
+                    if h.hamming_distance_with_val(long(r[2])) > same_t or r[0] in same_news:
                         continue
                     sen = r[1].decode('utf-8')
-                    if r[0] in same_news or len(sen) < 20: # r[1]是utf-8类型。
-                        continue
                     #除了检查hash值,还要检查相同词组
                     wl2 = filter_html_stopwords_pos(sen, True, True)
                     set1 = set(wl)
