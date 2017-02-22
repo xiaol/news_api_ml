@@ -170,11 +170,17 @@ def del_nid_of_fewer_comment(nid, n):
         if len(rs) == 1: #一个被手工上线
             for r in rs:
                 rnid = r[0]
-            del_nid = nid if rnid == n else n
+            if rnid == n:
+                del_nid = nid
+                stay_nid = n
+            else:
+                del_nid = n
+                stay_nid = nid
             cursor.execute(offonline_sql.format(del_nid))
             conn.commit()
             cursor.close()
             conn.close()
+            logger.info('{0} has been recommended, so offline {1}'.format(stay_nid, del_nid))
             return
 
         cursor.execute(get_comment_num_sql.format(nid, n))
