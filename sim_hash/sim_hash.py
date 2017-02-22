@@ -157,15 +157,14 @@ def get_same_news(news_simhash, check_list, threshold = 3):
 #@brief : 删除重复的新闻
 ################################################################################
 get_comment_num_sql = 'select nid, comment from newslist_v2 where nid in ({0}, {1})'
-recommend_sql = "select nid, rtime from newsrecommendlist where rtime > now() - interval '1 day' and nid in %s"
+recommend_sql = "select nid, rtime from newsrecommendlist where rtime > now() - interval '1 day' and nid in (%s, %s)"
 del_sql = 'delete from newslist_v2 where nid={0}'
 offonline_sql = 'update newslist_v2 set state=1 where nid={0}'
 def del_nid_of_fewer_comment(nid, n):
     try:
         conn, cursor = doc_process.get_postgredb()
         #先判断新闻是否已经被手工推荐。有则删除没有被手工推荐的新闻
-        s = str((nid, n))
-        cursor.execute(recommend_sql, (s, ))
+        cursor.execute(recommend_sql, (nid, n))
         rs = cursor.fetchall()
         if len(rs) == 1: #一个被手工上线
             for r in rs:
