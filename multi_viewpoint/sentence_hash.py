@@ -128,11 +128,11 @@ def get_nids_sentences(nid_set):
         content_list = r[2]
         for content in content_list:
                 if "txt" in content.keys():
-                    str_no_tags = filter_tags(content['txt'])
-                    sents = Cut(str_no_tags)
-                    for i in sents:
+                    #str_no_tags = filter_tags(content['txt'])
+                    nid_sentences_dict[nid] = Cut(filter_tags(content['txt']))
+                    #for i in sents:
                         #if len(i) > 20:  #20个汉字, i 是unicode, len代表汉字个数
-                        nid_sentences_dict[nid].append(i) #计算所有段落。 计算重复句子时再筛选掉字数少的句子; 去除广告时,对字数不做要求
+                    #    nid_sentences_dict[nid].append(i) #计算所有段落。 计算重复句子时再筛选掉字数少的句子; 去除广告时,对字数不做要求
                         #wl = filter_html_stopwords_pos(i)
                         #if len(wl) > 5:   #文本词数量<5, 不计算hash
                         #    nid_sentences_dict[nid].append(wl)
@@ -151,6 +151,7 @@ def cal_process(nid_set, same_t=3):
         i = 0
         t0 = datetime.datetime.now()
         conn, cursor = get_postgredb()
+        t = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         for item in nid_sents_dict.items(): #每条新闻
             i += 1
             n = 0
@@ -162,7 +163,6 @@ def cal_process(nid_set, same_t=3):
                 str_no_html, wl = filter_html_stopwords_pos(s, True, True, True, False)
                 h = sim_hash.simhash(wl)
                 fir, sec, thi, fou = get_4_segments(h.__long__())
-                t = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                 #将所有段落入库
                 cursor.execute(insert_sentence_hash, (nid, str_no_html, n, h.__str__(), fir, sec, thi, fou, t))
 
