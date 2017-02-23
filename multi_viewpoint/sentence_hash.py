@@ -19,6 +19,7 @@ import logging
 import traceback
 from multiprocessing import Process
 from multiprocessing import Pool
+import jieba
 
 real_dir_path = os.path.split(os.path.realpath(__file__))[0]
 logger = logging.getLogger(__name__)
@@ -175,9 +176,13 @@ def cal_process(nid_set, same_t=3):
                     if h.hamming_distance_with_val(long(r[2])) > same_t or r[0] in same_news:
                         continue
                     sen = r[1].decode('utf-8')
+                    sen_without_html = filter_tags(sen)
+                    if len(str_no_html) > len(sen_without_html) * 1.5 or len(sen_without_html) > len(str_no_html) * 1.5:
+                        continue
                     #除了检查hash值,还要检查相同词组
-                    wl2 = filter_html_stopwords_pos(sen, True, True)
-                    set1 = set(wl)
+                    wl1 = jieba.cut(str_no_html)
+                    wl2 = jieba.cut(sen_without_html)
+                    set1 = set(wl1)
                     set2 = set(wl2)
                     set_same = set1 & set2
                     l1 = float(len(set1))
