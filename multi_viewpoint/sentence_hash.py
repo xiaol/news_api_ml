@@ -144,6 +144,7 @@ def cal_process(nid_set, same_t=3):
             n = 0
             nid = item[0]
             sents = item[1]
+            logger.info('--- consume :{}'.format(nid))
             t = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             for s in sents:  #每个句子
                 n += 1
