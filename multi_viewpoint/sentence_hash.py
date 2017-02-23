@@ -129,7 +129,7 @@ def get_nids_sentences(nid_set):
         for content in content_list:
                 if "txt" in content.keys():
                     #str_no_tags = filter_tags(content['txt'])
-                    nid_sentences_dict[nid] = Cut(filter_tags(content['txt']))
+                    nid_sentences_dict[nid].extend(Cut(filter_tags(content['txt'])))
                     #for i in sents:
                         #if len(i) > 20:  #20个汉字, i 是unicode, len代表汉字个数
                     #    nid_sentences_dict[nid].append(i) #计算所有段落。 计算重复句子时再筛选掉字数少的句子; 去除广告时,对字数不做要求
