@@ -141,6 +141,27 @@ def get_nids_sentences(nid_set):
     return nid_sentences_dict
 
 
+################################################################################
+#@brief : 读取相同的新闻
+################################################################################
+same_sql = "select nid, same_nid where (nid in %s) or (same_nid in %s) "
+def get_relate_same_news(nid_set):
+    conn, cursor = get_postgredb()
+    nid_tuple = tuple(nid_set)
+    cursor.execute(same_sql, (nid_tuple, nid_tuple))
+    same_dict = {}
+    rows = cursor.fetchall()
+    for r in rows:
+        if r[0] not in same_dict.keys():
+            same_dict[r[0]] = []
+        if r[1] not in same_dict.keys():
+            same_dict[r[1]] = []
+        same_dict[r[0]].append(r[1])
+        same_dict[r[1]].append(r[0])
+
+    conn.close()
+    return same_dict
+
 
 ################################################################################
 #@brief: 计算子进程
@@ -148,6 +169,7 @@ def get_nids_sentences(nid_set):
 def cal_process(nid_set, same_t=3):
     logger.info('there are {} news to calulate'.format(len(nid_set)))
     nid_sents_dict = get_nids_sentences(nid_set)
+    same_dict = get_relate_same_news(nid_set)
     try:
         i = 0
         t0 = datetime.datetime.now()
@@ -155,17 +177,14 @@ def cal_process(nid_set, same_t=3):
         for item in nid_sents_dict.items(): #每条新闻
             i += 1
             n = 0
-            same_news = []
             nid = item[0]
             sents = item[1]
             t = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             for s in sents:  #每个句子
-                n +=1
+                n += 1
                 str_no_html, wl = filter_html_stopwords_pos(s, True, True, True, False)
                 h = sim_hash.simhash(wl)
                 fir, sec, thi, fou = get_4_segments(h.__long__())
-                #将所有段落入库
-                cursor.execute(insert_sentence_hash, (nid, str_no_html, n, h.__str__(), fir, sec, thi, fou, t))
 
                 #检查是否有相同的段落
                 #if len(wl) < 5: #小于20个汉字, 不判断句子重复  #2.22再次修改: 不做长度限制做重复判断; 真正判断相关观点时再判断; 广告去除也需要短句子
@@ -173,7 +192,8 @@ def cal_process(nid_set, same_t=3):
                 cursor.execute(query_sen_sql, (str(fir), str(sec), str(thi), str(fou)))
                 rows = cursor.fetchall()  #所有可能相同的段落
                 for r in rows:
-                    if h.hamming_distance_with_val(long(r[2])) > same_t or r[0] in same_news:
+                    #距离过大或者是同一篇新闻
+                    if h.hamming_distance_with_val(long(r[2])) > same_t or (nid in same_dict.keys() and r[0] in same_dict[nid]):
                         continue
                     sen = r[1].decode('utf-8')
                     sen_without_html = filter_tags(sen)
@@ -191,12 +211,22 @@ def cal_process(nid_set, same_t=3):
                     if l3 < max(l1, l2) * 0.6:  #相同比例要达到0.6
                         continue
 
+                    '''
                     #先检查两篇新闻是否是相同的, 若相同则忽略。 同样利用simhash计算
                     nid1 = r[0]
-                    #if sim_hash.is_news_same(nid, nid1, 4):
-                    #    same_news.append(nid1)
-                    #    continue
+                    sql = "select * from news_simhash_map where (nid = %s and same_nid = %s) or (nid = %s and same_nid = %s) "
+                    cursor.execute(sql, (nid, nid1, nid1, nid))
+                    if len(cursor.fetchall()) > 0:
+                        continue
+                    if sim_hash.is_news_same(nid, nid1, 3):
+                        in_sql = 'insert into news_simhash_map (nid, same_nid) values(%s, %s)'
+                        cursor.execute(in_sql, (nid, nid1))
+                        continue
                     cursor.execute(insert_same_sentence, (nid, nid1, str_no_html, sen, t))
+                    '''
+
+                #将所有段落入库
+                cursor.execute(insert_sentence_hash, (nid, str_no_html, n, h.__str__(), fir, sec, thi, fou, t))
                 conn.commit()
             if i % 100 == 0:
                 t1 = datetime.datetime.now()
@@ -211,20 +241,12 @@ def cal_process(nid_set, same_t=3):
         logger.exception(traceback.format_exc())
 
 
+#供即时计算
+def coll_sentence_hash_time(nid_list):
+    nid_set = set(nid_list)
+    cal_process(nid_set)
+    logger.info("Congratulations! Finish to collect sentences.")
 
-'''
-def cal_process(nid_set):
-    logger.info('there are {} news to calulate'.format(len(nid_set)))
-    i = 0
-    t0 = datetime.datetime.now()
-    for n in nid_set:
-        i += 1
-        cal_sentence_hash_on_nid(n)
-        if i % 100 == 0:
-            t1 = datetime.datetime.now()
-            logger.info('{0} finished! Latest 100 news takes {1}s'.format(i, (t1 - t0).total_seconds()))
-            t0 = t1
-'''
 
 
 cal_sql = "select nid from newslist_v2 limit %s offset %s"
@@ -232,7 +254,7 @@ cal_sql2 ='SELECT a.nid \
 FROM newslist_v2 a \
 RIGHT OUTER JOIN (select * from channellist_v2 where "cname" not in %s) c \
 ON \
-a."chid" =c."id"  LIMIT %s offset %s'
+a."chid" =c."id" where a.state=0 LIMIT %s offset %s'
 ignore_cname = ("美女", "帅哥", "搞笑", "趣图")
 
 def coll_sentence_hash():

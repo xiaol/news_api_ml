@@ -25,7 +25,9 @@ if __name__ == '__main__':
     if port == 9965:
         http_server = tornado.httpserver.HTTPServer(Application())
         http_server.listen(port)
-        sentence_hash.coll_sentence_hash()
+        #sentence_hash.coll_sentence_hash()
+        from redis_process import nid_queue
+        nid_queue.consume_nid_sentence_simhash(100)
 
     tornado.ioloop.IOLoop.instance().start()
 

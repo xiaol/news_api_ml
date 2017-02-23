@@ -8,6 +8,7 @@
 from graphlab_lda import topic_model
 from graphlab_kmeans import kmeans
 from sim_hash import sim_hash
+from multi_viewpoint import sentence_hash
 from redis import Redis
 import traceback
 import json
@@ -18,6 +19,7 @@ nid_queue = 'nid_queue'
 lda_queue = 'lda_queue'
 kmeans_queue = 'kmeans_queue'
 simhash_queue = 'simhash_queue'
+sentence_simhash_queue = 'sentence_simhash_queue'
 ads_queue = 'ads_queue'
 
 
@@ -27,6 +29,7 @@ def produce_nid(nid):
     redis_inst.lpush(lda_queue, nid)
     redis_inst.lpush(kmeans_queue, nid)
     redis_inst.lpush(simhash_queue, nid)
+    redis_inst.lpush(sentence_simhash_queue, nid)
     redis_inst.lpush(ads_queue, nid)
 
 
@@ -88,6 +91,23 @@ def consume_nid_simhash(num=1):
         t1 = datetime.datetime.now()
         if n >=num or (t1 - t0).total_seconds() > 10:
             sim_hash.cal_and_check_news_hash(nid_list)
+            n = 0
+            del nid_list[:]
+            t0 = datetime.datetime.now()
+
+
+def consume_nid_sentence_simhash(num=1):
+    global redis_inst
+    n = 0
+    nid_list = []
+    t0 = datetime.datetime.now()
+    while True:
+        nid = redis_inst.brpop(sentence_simhash_queue)[1]
+        nid_list.append(nid)
+        n += 1
+        t1 = datetime.datetime.now()
+        if n >= num or (t1 - t0).total_seconds() > 10:
+            sentence_hash.coll_sentence_hash_time(nid_list)
             n = 0
             del nid_list[:]
             t0 = datetime.datetime.now()
