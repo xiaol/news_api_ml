@@ -27,7 +27,7 @@ if __name__ == '__main__':
         http_server.listen(port)
         #sentence_hash.coll_sentence_hash()
         from redis_process import nid_queue
-        nid_queue.consume_nid_sentence_simhash(100)
+        nid_queue.consume_nid_sentence_simhash(200)
 
     tornado.ioloop.IOLoop.instance().start()
 
