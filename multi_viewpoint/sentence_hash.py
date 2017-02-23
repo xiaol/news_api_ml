@@ -116,7 +116,7 @@ def get_exist_nids():
 #      ...
 #    }
 ################################################################################
-get_sent_sql = "select nid, title, content from newslist_v2 where nid in %s"
+get_sent_sql = "select nid, title, content, state from newslist_v2 where nid in %s"
 def get_nids_sentences(nid_set):
     nid_tuple = tuple(nid_set)
     conn, cursor = get_postgredb()
@@ -124,6 +124,9 @@ def get_nids_sentences(nid_set):
     rows = cursor.fetchall()
     nid_sentences_dict = {}
     for r in rows:
+        if r[3] != 0: #已被下线
+            logger.info('{} has been offline.'.format(r[0]))
+            continue
         nid = r[0]
         nid_sentences_dict[nid] = []
         content_list = r[2]
@@ -144,7 +147,7 @@ def get_nids_sentences(nid_set):
 ################################################################################
 #@brief : 读取相同的新闻
 ################################################################################
-same_sql = "select nid, same_nid where (nid in %s) or (same_nid in %s) "
+same_sql = "select nid, same_nid from news_simhash_map where (nid in %s) or (same_nid in %s) "
 def get_relate_same_news(nid_set):
     conn, cursor = get_postgredb()
     nid_tuple = tuple(nid_set)
