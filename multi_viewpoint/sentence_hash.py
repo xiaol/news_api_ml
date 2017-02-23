@@ -43,59 +43,21 @@ def get_4_segments(hash_bits):
     sec = hash_bits & 0b00111100000000000000001111000000001111000000000000000011110000
     thi = hash_bits & 0b00000011110000000011110000000000000000111100000000111100000000
     fou = hash_bits & 0b00000000001111111100000000000000000000000011111111000000000000
-    return fir, sec, thi, fou
+    fir2 = hash_bits & 0b11000000001111000000000000000011110000000000001111000000000000
+    sec2 = hash_bits & 0b00111100000000111100000000000000001111000000000000111100000000
+    thi2 = hash_bits & 0b00000011110000000011110000000000000000111100000000000011110000
+    fou2 = hash_bits & 0b00000000001111000000001111000000000000000011110000000000001111
+    return fir, sec, thi, fou, fir2, sec2, thi2, fou2
 
 
 
 #insert_sentence_hash = "insert into news_sentence_hash (nid, sentence, hash_val, ctime) VALUES({0}, '{1}', '{2}', '{3}')"
 insert_sentence_hash = "insert into news_sentence_hash (nid, sentence, sentence_id, hash_val, first_16, second_16, third_16, fourth_16, ctime) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s)"
 #query_sen_sql = "select nid, sentence, hash_val from news_sentence_hash"
-query_sen_sql = "select nid, sentence, hash_val from news_sentence_hash where first_16=%s or second_16=%s or third_16=%s or fourth_16=%s"
+#query_sen_sql = "select nid, sentence, hash_val from news_sentence_hash where first_16=%s or second_16=%s or third_16=%s or fourth_16=%s"
+query_sen_sql = "select nid, hash_val from news_sentence_hash where (first_16=%s or second_16=%s or third_16=%s or fourth_16=%s) and (first2_16=%s or second2_16=%s or third2_16=%s or fourth2_16=%s) "
 #insert_same_sentence = "insert into news_same_sentence_map (nid1, nid2, sentence1, sentence2, ctime) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')"
 insert_same_sentence = "insert into news_same_sentence_map (nid1, nid2, sentence1, sentence2, ctime) VALUES (%s, %s, %s, %s, %s)"
-def cal_sentence_hash_on_nid(nid, same_t=3):
-    try:
-        sentences_list = get_sentences_on_nid(nid)
-        same_news = []
-        n = 0
-        conn, cursor = get_postgredb()
-        for s in (su.encode('utf-8') for su in sentences_list):  #计算每一段话的hash值
-            s_list = filter_html_stopwords_pos(s)
-            n += 1
-            if len(s) < 30: #10个汉字
-                continue
-            h = sim_hash.simhash(s_list)
-            #s_fir, s_sec, s_thi, s_fou = get_4_segments(h.__long__())
-            fir, sec, thi, fou = get_4_segments(h.__long__())
-            t = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            cursor.execute(query_sen_sql, (str(fir), str(sec), str(thi), str(fou)))
-            rows = cursor.fetchall()  #所有可能相同的段落
-            #检查是否有相同的段落
-            for r in rows:
-                if r[0] in same_news:
-                    continue
-                l1 = float(len(s))
-                l2 = float(len(r[1]))
-                if l1 > 1.5 * l2 or l2 > 1.5 * l1:
-                    continue
-                if h.hamming_distance_with_val(long(r[2])) <= same_t:
-                    nid1 = r[0]
-                    #先检查两篇新闻是否是相同的, 若相同则忽略。 同样利用simhash计算
-                    if sim_hash.is_news_same(nid, nid1):
-                        same_news.append(nid1)
-                        continue
-                    cursor.execute(insert_same_sentence, (nid, nid1, s, r[1], t))
-            #插入库
-            cursor.execute(insert_sentence_hash, (nid, s, n, h.__str__(), fir, sec, thi, fou, t))
-            conn.commit()
-        cursor.close()
-        conn.close()
-    except:
-        cursor.close()
-        conn.close()
-        logger.exception(traceback.format_exc())
-
-
 s_nid_sql = "select distinct nid from news_sentence_hash "
 def get_exist_nids():
     conn, cursor = get_postgredb()
@@ -175,7 +137,7 @@ def cal_process(nid_set, same_t=3):
     same_dict = get_relate_same_news(nid_set)
     try:
         i = 0
-        t0 = datetime.datetime.now()
+        #t0 = datetime.datetime.now()
         conn, cursor = get_postgredb()
         for item in nid_sents_dict.items(): #每条新闻
             i += 1
@@ -185,19 +147,29 @@ def cal_process(nid_set, same_t=3):
             t = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             for s in sents:  #每个句子
                 n += 1
+                print n
                 str_no_html, wl = filter_html_stopwords_pos(s, True, True, True, False)
                 h = sim_hash.simhash(wl)
-                fir, sec, thi, fou = get_4_segments(h.__long__())
+                fir, sec, thi, fou, fir2, sec2, thi2, fou2 = get_4_segments(h.__long__())
 
                 #检查是否有相同的段落
                 #if len(wl) < 5: #小于20个汉字, 不判断句子重复  #2.22再次修改: 不做长度限制做重复判断; 真正判断相关观点时再判断; 广告去除也需要短句子
                 #    continue
-                cursor.execute(query_sen_sql, (str(fir), str(sec), str(thi), str(fou)))
+                print fir, sec, thi, fou, fir2, sec2, thi2, fou2
+                cursor.execute(query_sen_sql, (str(fir), str(sec), str(thi), str(fou), str(fir2), str(sec2), str(thi2), str(fou2)))
                 rows = cursor.fetchall()  #所有可能相同的段落
                 for r in rows:
                     #距离过大或者是同一篇新闻
-                    if h.hamming_distance_with_val(long(r[2])) > same_t or (nid in same_dict.keys() and r[0] in same_dict[nid]):
+                    if h.hamming_distance_with_val(long(r[1])) > same_t or (nid in same_dict.keys() and r[0] in same_dict[nid]):
                         continue
+                    same_sql = "select sentence from news_sentence_hash where nid=%s and hash_val=%s"
+                    cursor.execute(same_sql, (r[0], r[1]))
+                    rs = cursor.fetchall()
+                    for r2 in rs:
+                        sen = r2[0].decode('utf-8')
+                        cursor.execute(insert_same_sentence, (nid, r[0], str_no_html, sen, t))
+
+                    '''
                     sen = r[1].decode('utf-8')
                     sen_without_html = filter_tags(sen)
                     if len(str_no_html) > len(sen_without_html) * 1.5 or len(sen_without_html) > len(str_no_html) * 1.5:
@@ -214,7 +186,6 @@ def cal_process(nid_set, same_t=3):
                     if l3 < max(l1, l2) * 0.6:  #相同比例要达到0.6
                         continue
 
-                    '''
                     #先检查两篇新闻是否是相同的, 若相同则忽略。 同样利用simhash计算
                     nid1 = r[0]
                     sql = "select * from news_simhash_map where (nid = %s and same_nid = %s) or (nid = %s and same_nid = %s) "
@@ -231,10 +202,10 @@ def cal_process(nid_set, same_t=3):
                 #将所有段落入库
                 cursor.execute(insert_sentence_hash, (nid, str_no_html, n, h.__str__(), fir, sec, thi, fou, t))
                 conn.commit()
-            if i % 100 == 0:
-                t1 = datetime.datetime.now()
-                logger.info('{0} finished! Latest 100 news takes {1}s'.format(i, (t1 - t0).total_seconds()))
-                t0 = t1
+            #if i % 100 == 0:
+                #t1 = datetime.datetime.now()
+                #logger.info('{0} finished! Latest 100 news takes {1}s'.format(i, (t1 - t0).total_seconds()))
+                #t0 = t1
         cursor.close()
         conn.close()
         del nid_sents_dict
