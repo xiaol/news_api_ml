@@ -193,9 +193,9 @@ def cal_process(nid_set, same_t=3):
 
                     #先检查两篇新闻是否是相同的, 若相同则忽略。 同样利用simhash计算
                     nid1 = r[0]
-                    if sim_hash.is_news_same(nid, nid1, 4):
-                        same_news.append(nid1)
-                        continue
+                    #if sim_hash.is_news_same(nid, nid1, 4):
+                    #    same_news.append(nid1)
+                    #    continue
                     cursor.execute(insert_same_sentence, (nid, nid1, str_no_html, sen, t))
                 conn.commit()
             if i % 100 == 0:
