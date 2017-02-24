@@ -134,7 +134,9 @@ def get_relate_same_news(nid_set):
 def cal_process(nid_set, same_t=3):
     logger.info('there are {} news to calulate'.format(len(nid_set)))
     nid_sents_dict = get_nids_sentences(nid_set)
+    print 'cccccc   ' + str(len(nid_sents_dict))
     same_dict = get_relate_same_news(nid_set)
+    print 'related news  ' + str(len(same_dict))
     try:
         i = 0
         #t0 = datetime.datetime.now()
