@@ -134,15 +134,12 @@ def get_relate_same_news(nid_set):
 def cal_process(nid_set, same_t=3):
     logger.info('there are {} news to calulate'.format(len(nid_set)))
     nid_sents_dict = get_nids_sentences(nid_set)
-    print 'cccccc   ' + str(len(nid_sents_dict))
     same_dict = get_relate_same_news(nid_set)
-    print 'related news  ' + str(len(same_dict))
     try:
         i = 0
         #t0 = datetime.datetime.now()
         for item in nid_sents_dict.items(): #每条新闻
             i += 1
-            print '----- ' + str(i)
             n = 0
             nid = item[0]
             sents = item[1]
@@ -152,6 +149,8 @@ def cal_process(nid_set, same_t=3):
                 n += 1
                 print n
                 str_no_html, wl = filter_html_stopwords_pos(s, True, True, True, False)
+                if len(str_no_html.decode('utf-8')) == 1: #去除一个字的句子,因为有很多是特殊字符
+                    continue
                 h = sim_hash.simhash(wl)
                 fir, sec, thi, fou, fir2, sec2, thi2, fou2 = get_4_segments(h.__long__())
 
@@ -162,29 +161,20 @@ def cal_process(nid_set, same_t=3):
                 conn, cursor = get_postgredb()
                 cursor.execute(query_sen_sql, (str(fir), str(sec), str(thi), str(fou), str(fir2), str(sec2), str(thi2), str(fou2)))
                 rows = cursor.fetchall()  #所有可能相同的段落
-                print 'query_sen_sql finished.'
+                print '000000000000'
                 for r in rows:
                     #距离过大或者是同一篇新闻
                     if h.hamming_distance_with_val(long(r[1])) > same_t or (nid in same_dict.keys() and r[0] in same_dict[nid]):
                         continue
+                    print '11111111'
                     same_sql = "select sentence from news_sentence_hash where nid=%s and hash_val=%s"
-                    cursor.execute(same_sql, (r[0], r[1].decode('utf-8')))
+                    cursor.execute(same_sql, (r[0], r[1]))
                     rs = cursor.fetchall()
+                    print '22222222'
                     for r2 in rs:
                         sen = r2[0].decode('utf-8')
                         sen_without_html = filter_tags(sen)
                         if len(sen) == 1 or len(sen_without_html) > len(str_no_html)*1.5 or len(str_no_html) > len(sen_without_html)*1.5:
-                            continue
-                        print ' sentence len = ' + str(len(r2[0]))
-                        wl1 = jieba.cut(str_no_html)
-                        wl2 = jieba.cut(sen_without_html)
-                        set1 = set(wl1)
-                        set2 = set(wl2)
-                        set_same = set1 & set2
-                        l1 = float(len(set1))
-                        l2 = float(len(set2))
-                        l3 = float(len(set_same))
-                        if l3 < max(l1, l2) * 0.6:  #相同比例要达到0.6
                             continue
                         cursor.execute(insert_same_sentence, (nid, r[0], str_no_html, sen, t))
                         print cursor.mogrify(insert_same_sentence, (nid, r[0], str_no_html, sen_without_html, t))
