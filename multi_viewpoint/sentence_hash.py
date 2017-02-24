@@ -147,7 +147,6 @@ def cal_process(nid_set, same_t=3):
             t = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             for s in sents:  #每个句子
                 n += 1
-                print n
                 str_no_html, wl = filter_html_stopwords_pos(s, True, True, True, False)
                 if len(str_no_html) == 1: #去除一个字的句子,因为有很多是特殊字符
                     continue
