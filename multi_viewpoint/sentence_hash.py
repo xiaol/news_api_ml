@@ -149,7 +149,7 @@ def cal_process(nid_set, same_t=3):
                 n += 1
                 print n
                 str_no_html, wl = filter_html_stopwords_pos(s, True, True, True, False)
-                if len(str_no_html.decode('utf-8')) == 1: #去除一个字的句子,因为有很多是特殊字符
+                if len(str_no_html) == 1: #去除一个字的句子,因为有很多是特殊字符
                     continue
                 h = sim_hash.simhash(wl)
                 fir, sec, thi, fou, fir2, sec2, thi2, fou2 = get_4_segments(h.__long__())
