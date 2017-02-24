@@ -138,7 +138,6 @@ def cal_process(nid_set, same_t=3):
     try:
         i = 0
         #t0 = datetime.datetime.now()
-        conn, cursor = get_postgredb()
         for item in nid_sents_dict.items(): #每条新闻
             i += 1
             n = 0
@@ -157,6 +156,7 @@ def cal_process(nid_set, same_t=3):
                 #if len(wl) < 5: #小于20个汉字, 不判断句子重复  #2.22再次修改: 不做长度限制做重复判断; 真正判断相关观点时再判断; 广告去除也需要短句子
                 #    continue
                 print fir, sec, thi, fou, fir2, sec2, thi2, fou2
+                conn, cursor = get_postgredb()
                 cursor.execute(query_sen_sql, (str(fir), str(sec), str(thi), str(fou), str(fir2), str(sec2), str(thi2), str(fou2)))
                 rows = cursor.fetchall()  #所有可能相同的段落
                 print 'query_sen_sql finished.'
@@ -204,16 +204,14 @@ def cal_process(nid_set, same_t=3):
                 #将所有段落入库
                 cursor.execute(insert_sentence_hash, (nid, str_no_html, n, h.__str__(), fir, sec, thi, fou, t, fir2, sec2, thi2, fou2))
                 conn.commit()
+                cursor.close()
+                conn.close()
             #if i % 100 == 0:
                 #t1 = datetime.datetime.now()
                 #logger.info('{0} finished! Latest 100 news takes {1}s'.format(i, (t1 - t0).total_seconds()))
                 #t0 = t1
-        cursor.close()
-        conn.close()
         del nid_sents_dict
     except:
-        cursor.close()
-        conn.close()
         logger.exception(traceback.format_exc())
 
 
