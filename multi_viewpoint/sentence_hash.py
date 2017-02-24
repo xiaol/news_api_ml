@@ -172,8 +172,11 @@ def cal_process(nid_set, same_t=3):
                     rs = cursor.fetchall()
                     for r2 in rs:
                         sen = r2[0].decode('utf-8')
+                        sen_without_html = filter_tags(sen)
+                        if len(sen_without_html) > len(str_no_html)*1.5 or len(str_no_html) > len(sen_without_html)*1.5:
+                            continue
                         cursor.execute(insert_same_sentence, (nid, r[0], str_no_html, sen, t))
-                        print cursor.mogrify(insert_same_sentence, (nid, r[0], str_no_html, sen, t))
+                        print cursor.mogrify(insert_same_sentence, (nid, r[0], str_no_html, sen_without_html, t))
 
                     '''
                     sen = r[1].decode('utf-8')

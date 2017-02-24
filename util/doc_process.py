@@ -243,13 +243,16 @@ def Cut(lines, cutlist=cutlist):  # 参数1：引用分句标志符；参数2：
             except:
                 pass
 
+    sentence_len = 0
     for i in lines:  # 对函数参数2中的每一字符逐个进行检查 （本函数中，如果将if和else对换一下位置，会更好懂）
-        if FindToken(cutlist, i):  # 如果当前字符是分句符号
+        if FindToken(cutlist, i) and sentence_len != 0:  # 如果当前字符是分句符号,并且不是一个句子的开头
             line.append(i)  # 将此字符放入临时列表中
             l.append(''.join(line))  # 并把当前临时列表的内容加入到句子列表中
             line = []  # 将符号列表清空，以便下次分句使用
+            sentence_len = 0
         else:  # 如果当前字符不是分句符号，则将该字符直接放入临时列表中
             line.append(i)
+            sentence_len += 1
     if len(line) != 0:
         l.append(''.join(line))
     return l
