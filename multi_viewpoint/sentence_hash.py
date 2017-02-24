@@ -55,7 +55,7 @@ def get_4_segments(hash_bits):
 insert_sentence_hash = "insert into news_sentence_hash (nid, sentence, sentence_id, hash_val, first_16, second_16, third_16, fourth_16, ctime, first2_16, second2_16, third2_16, fourth2_16) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
 #query_sen_sql = "select nid, sentence, hash_val from news_sentence_hash"
 #query_sen_sql = "select nid, sentence, hash_val from news_sentence_hash where first_16=%s or second_16=%s or third_16=%s or fourth_16=%s"
-query_sen_sql = "select nid, hash_val from news_sentence_hash where (first_16=%s or second_16=%s or third_16=%s or fourth_16=%s) and (first2_16=%s or second2_16=%s or third2_16=%s or fourth2_16=%s) "
+query_sen_sql = "select nid, hash_val from news_sentence_hash where (first_16=%s or second_16=%s or third_16=%s or fourth_16=%s) and (first2_16=%s or second2_16=%s or third2_16=%s or fourth2_16=%s) group by nid, hash_val"
 #insert_same_sentence = "insert into news_same_sentence_map (nid1, nid2, sentence1, sentence2, ctime) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')"
 insert_same_sentence = "insert into news_same_sentence_map (nid1, nid2, sentence1, sentence2, ctime) VALUES (%s, %s, %s, %s, %s)"
 s_nid_sql = "select distinct nid from news_sentence_hash "
@@ -145,10 +145,12 @@ def cal_process(nid_set, same_t=3):
             sents = item[1]
             logger.info('--- consume :{}'.format(nid))
             t = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            sen_num = len(sents)
+            conn, cursor = get_postgredb()
             for s in sents:  #每个句子
                 n += 1
                 str_no_html, wl = filter_html_stopwords_pos(s, True, True, True, False)
-                if len(str_no_html) == 1: #去除一个字的句子,因为有很多是特殊字符
+                if len(wl) == 0 or len(str_no_html) <= 2 or (sen_num > 100 and len(str_no_html)  < 10 and n > sen_num*0.3 and n < sen_num*0.7): #去除一个字的句子,因为有很多是特殊字符
                     continue
                 h = sim_hash.simhash(wl)
                 fir, sec, thi, fou, fir2, sec2, thi2, fou2 = get_4_segments(h.__long__())
@@ -156,27 +158,36 @@ def cal_process(nid_set, same_t=3):
                 #检查是否有相同的段落
                 #if len(wl) < 5: #小于20个汉字, 不判断句子重复  #2.22再次修改: 不做长度限制做重复判断; 真正判断相关观点时再判断; 广告去除也需要短句子
                 #    continue
-                print fir, sec, thi, fou, fir2, sec2, thi2, fou2
-                conn, cursor = get_postgredb()
                 cursor.execute(query_sen_sql, (str(fir), str(sec), str(thi), str(fou), str(fir2), str(sec2), str(thi2), str(fou2)))
+                #print cursor.mogrify(query_sen_sql, (str(fir), str(sec), str(thi), str(fou), str(fir2), str(sec2), str(thi2), str(fou2)))
                 rows = cursor.fetchall()  #所有可能相同的段落
-                print '000000000000'
+                if len(rows) == 0:
+                    continue
+
                 for r in rows:
                     #距离过大或者是同一篇新闻
-                    if h.hamming_distance_with_val(long(r[1])) > same_t or (nid in same_dict.keys() and r[0] in same_dict[nid]):
+                    if h.hamming_distance_with_val(long(r[1])) > same_t or (nid in same_dict.keys() and r[0] in same_dict[nid]) or nid == r[0]:
                         continue
-                    print '11111111'
                     same_sql = "select sentence from news_sentence_hash where nid=%s and hash_val=%s"
                     cursor.execute(same_sql, (r[0], r[1]))
                     rs = cursor.fetchall()
-                    print '22222222'
                     for r2 in rs:
                         sen = r2[0].decode('utf-8')
                         sen_without_html = filter_tags(sen)
                         if len(sen) == 1 or len(sen_without_html) > len(str_no_html)*1.5 or len(str_no_html) > len(sen_without_html)*1.5:
                             continue
+                        wl1 = jieba.cut(str_no_html)
+                        set1 = set(wl1)
+                        l1 = len(set1)
+                        wl2 = jieba.cut(sen_without_html)
+                        set2 = set(wl2)
+                        set_same = set1 & set2
+                        l2 = len(set2)
+                        l3 = len(set_same)
+                        if l3 < max(l1, l2) * 0.6:  #相同比例要达到0.6
+                            continue
                         cursor.execute(insert_same_sentence, (nid, r[0], str_no_html, sen, t))
-                        print cursor.mogrify(insert_same_sentence, (nid, r[0], str_no_html, sen_without_html, t))
+                        #print cursor.mogrify(insert_same_sentence, (nid, r[0], str_no_html, sen_without_html, t))
 
                     '''
                     sen = r[1].decode('utf-8')
@@ -211,8 +222,8 @@ def cal_process(nid_set, same_t=3):
                 #将所有段落入库
                 cursor.execute(insert_sentence_hash, (nid, str_no_html, n, h.__str__(), fir, sec, thi, fou, t, fir2, sec2, thi2, fou2))
                 conn.commit()
-                cursor.close()
-                conn.close()
+            cursor.close()
+            conn.close()
             print 'finished ' + str(nid)
             #if i % 100 == 0:
                 #t1 = datetime.datetime.now()
