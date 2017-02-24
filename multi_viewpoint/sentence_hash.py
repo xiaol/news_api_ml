@@ -224,7 +224,6 @@ def cal_process(nid_set, same_t=3):
                 conn.commit()
             cursor.close()
             conn.close()
-            print 'finished ' + str(nid)
             #if i % 100 == 0:
                 #t1 = datetime.datetime.now()
                 #logger.info('{0} finished! Latest 100 news takes {1}s'.format(i, (t1 - t0).total_seconds()))
@@ -236,8 +235,16 @@ def cal_process(nid_set, same_t=3):
 
 #供即时计算
 def coll_sentence_hash_time(nid_list):
-    nid_set = set(nid_list)
-    cal_process(nid_set)
+    #nid_set = set(nid_list)
+    # arr是被分割的list，n是每个chunk中含n元素。
+    small_list = []
+    small_list.append(nid_list[i:i + 20] for i in range(0, len(nid_list), 20))
+    pool = Pool(25)
+    for nid_set in small_list:
+        pool.apply_async(cal_process, args=(set(nid_set), ))
+
+    pool.close()
+    pool.join()
     logger.info("Congratulations! Finish to collect sentences.")
 
 
