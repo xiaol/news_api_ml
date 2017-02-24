@@ -237,7 +237,7 @@ def cal_process(nid_set, same_t=3):
 def coll_sentence_hash_time(nid_list):
     #nid_set = set(nid_list)
     # arr是被分割的list，n是每个chunk中含n元素。
-    small_list = [nid_list[i:i + 2] for i in range(0, len(nid_list), 2)]
+    small_list = [nid_list[i:i + 20] for i in range(0, len(nid_list), 20)]
     pool = Pool(25)
     for nid_set in small_list:
         pool.apply_async(cal_process, args=(set(nid_set), ))
