@@ -175,6 +175,16 @@ def cal_process(nid_set, same_t=3):
                         sen_without_html = filter_tags(sen)
                         if len(sen_without_html) > len(str_no_html)*1.5 or len(str_no_html) > len(sen_without_html)*1.5:
                             continue
+                        wl1 = jieba.cut(str_no_html)
+                        wl2 = jieba.cut(sen_without_html)
+                        set1 = set(wl1)
+                        set2 = set(wl2)
+                        set_same = set1 & set2
+                        l1 = float(len(set1))
+                        l2 = float(len(set2))
+                        l3 = float(len(set_same))
+                        if l3 < max(l1, l2) * 0.6:  #相同比例要达到0.6
+                            continue
                         cursor.execute(insert_same_sentence, (nid, r[0], str_no_html, sen, t))
                         print cursor.mogrify(insert_same_sentence, (nid, r[0], str_no_html, sen_without_html, t))
 
