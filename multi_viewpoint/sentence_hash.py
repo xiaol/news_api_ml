@@ -173,6 +173,7 @@ def cal_process(nid_set, same_t=3):
                     for r2 in rs:
                         sen = r2[0].decode('utf-8')
                         cursor.execute(insert_same_sentence, (nid, r[0], str_no_html, sen, t))
+                        print cursor.mogrify()
 
                     '''
                     sen = r[1].decode('utf-8')
@@ -209,7 +210,7 @@ def cal_process(nid_set, same_t=3):
                 conn.commit()
                 cursor.close()
                 conn.close()
-                print 'finished ' + str(nid)
+            print 'finished ' + str(nid)
             #if i % 100 == 0:
                 #t1 = datetime.datetime.now()
                 #logger.info('{0} finished! Latest 100 news takes {1}s'.format(i, (t1 - t0).total_seconds()))
