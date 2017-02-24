@@ -159,6 +159,7 @@ def cal_process(nid_set, same_t=3):
                 print fir, sec, thi, fou, fir2, sec2, thi2, fou2
                 cursor.execute(query_sen_sql, (str(fir), str(sec), str(thi), str(fou), str(fir2), str(sec2), str(thi2), str(fou2)))
                 rows = cursor.fetchall()  #所有可能相同的段落
+                print 'query_sen_sql finished.'
                 for r in rows:
                     #距离过大或者是同一篇新闻
                     if h.hamming_distance_with_val(long(r[1])) > same_t or (nid in same_dict.keys() and r[0] in same_dict[nid]):
