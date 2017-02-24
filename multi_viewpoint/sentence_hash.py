@@ -140,6 +140,7 @@ def cal_process(nid_set, same_t=3):
         #t0 = datetime.datetime.now()
         for item in nid_sents_dict.items(): #每条新闻
             i += 1
+            print '----- ' + str(i)
             n = 0
             nid = item[0]
             sents = item[1]
@@ -206,6 +207,7 @@ def cal_process(nid_set, same_t=3):
                 conn.commit()
                 cursor.close()
                 conn.close()
+                print 'finished ' + str(nid)
             #if i % 100 == 0:
                 #t1 = datetime.datetime.now()
                 #logger.info('{0} finished! Latest 100 news takes {1}s'.format(i, (t1 - t0).total_seconds()))
