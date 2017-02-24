@@ -165,7 +165,7 @@ def cal_process(nid_set, same_t=3):
                     if h.hamming_distance_with_val(long(r[1])) > same_t or (nid in same_dict.keys() and r[0] in same_dict[nid]):
                         continue
                     same_sql = "select sentence from news_sentence_hash where nid=%s and hash_val=%s"
-                    cursor.execute(same_sql, (r[0], r[1]))
+                    cursor.execute(same_sql, (r[0], r[1].decode('utf-8')))
                     rs = cursor.fetchall()
                     for r2 in rs:
                         sen = r2[0].decode('utf-8')
