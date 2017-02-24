@@ -173,8 +173,9 @@ def cal_process(nid_set, same_t=3):
                     for r2 in rs:
                         sen = r2[0].decode('utf-8')
                         sen_without_html = filter_tags(sen)
-                        if len(sen_without_html) > len(str_no_html)*1.5 or len(str_no_html) > len(sen_without_html)*1.5:
+                        if len(r2[0]) == 1 or len(sen_without_html) > len(str_no_html)*1.5 or len(str_no_html) > len(sen_without_html)*1.5:
                             continue
+                        print ' sentence len = ' + str(len(r2[0]))
                         wl1 = jieba.cut(str_no_html)
                         wl2 = jieba.cut(sen_without_html)
                         set1 = set(wl1)
