@@ -213,7 +213,7 @@ def cal_process(nid_set, same_t=3):
                         l3 = len(set_same)
                         if l3 < max(l1, l2) * 0.6:  #相同比例要达到0.6
                             continue
-                        nids_for_ads.add(nid)
+                        nids_for_ads.add(r[0])
                         same_sentence_sql_para.append((nid, r[0], str_no_html, sen, t))
                         #cursor.execute(insert_same_sentence, (nid, r[0], str_no_html, sen, t))
                         #print cursor.mogrify(insert_same_sentence, (nid, r[0], str_no_html, sen_without_html, t))
