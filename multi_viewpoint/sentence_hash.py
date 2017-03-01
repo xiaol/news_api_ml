@@ -132,8 +132,8 @@ def get_relate_same_news(nid_set):
 #@brief: 检查句子是否是广告   如果已经被判定是广告,则不再判断有无重复
 ################################################################################
 check_ads_sql = "select ads_sentence, hash_val, special_pname from news_ads_sentence where " \
-                "(first_16=%s or second_16=%s or third_16=%s or four_16) and" \
-                "(first2_16=%s or second2_16=%s or third2_16=%s or four2_16) "
+                "(first_16=%s or second_16=%s or third_16=%s or four_16=%s) and" \
+                "(first2_16=%s or second2_16=%s or third2_16=%s or four2_16=%s) "
 def is_sentence_ads(hash_val, fir_16, sec_16, thi_16, fou_16, fir2_16, sec2_16, thi2_16, fou2_16):
     conn, cursor = get_postgredb()
     cursor.execute(check_ads_sql, (fir_16, sec_16, thi_16, fou_16, fir2_16, sec2_16, thi2_16, fou2_16))
