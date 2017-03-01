@@ -129,6 +129,23 @@ def get_relate_same_news(nid_set):
 
 
 ################################################################################
+#@brief: 检查句子是否是广告   如果已经被判定是广告,则不再判断有无重复
+################################################################################
+check_ads_sql = "select ads_sentence, hash_val, special_pname from news_ads_sentence where " \
+                "(first_16=%s or second_16=%s or third_16=%s or four_16) and" \
+                "(first2_16=%s or second2_16=%s or third2_16=%s or four2_16) "
+def is_sentence_ads(hash_val, fir_16, sec_16, thi_16, fou_16, fir2_16, sec2_16, thi2_16, fou2_16):
+    conn, cursor = get_postgredb()
+    cursor.execute(check_ads_sql, (fir_16, sec_16, thi_16, fou_16, fir2_16, sec2_16, thi2_16, fou2_16))
+    rows = cursor.fetchall()
+    for r in rows:
+        if hash_val.hamming_distance_with_val(long(r[1])) <= 3:
+            return True
+    return False
+
+
+
+################################################################################
 #@brief: 计算子进程
 ################################################################################
 def cal_process(nid_set, same_t=3):
@@ -154,6 +171,10 @@ def cal_process(nid_set, same_t=3):
                     continue
                 h = sim_hash.simhash(wl)
                 fir, sec, thi, fou, fir2, sec2, thi2, fou2 = get_4_segments(h.__long__())
+                if is_sentence_ads(h, fir, sec, thi, fou, fir2, sec2, thi2, fou2):  #在广告db内
+                    #  删除广告句子
+                    logger.info('find ads of {0}  : {1} '.format(nid, str_no_html))
+                    continue
 
                 #检查是否有相同的段落
                 #if len(wl) < 5: #小于20个汉字, 不判断句子重复  #2.22再次修改: 不做长度限制做重复判断; 真正判断相关观点时再判断; 广告去除也需要短句子
@@ -164,7 +185,11 @@ def cal_process(nid_set, same_t=3):
                 if len(rows) == 0:
                     continue
 
+                same_sentence_sql_para = []
+                nids_for_ads = set()
                 for r in rows:
+                    if len(nids_for_ads) >= 15:
+                        break
                     #距离过大或者是同一篇新闻
                     if h.hamming_distance_with_val(long(r[1])) > same_t or (nid in same_dict.keys() and r[0] in same_dict[nid]) or nid == r[0]:
                         continue
@@ -186,38 +211,23 @@ def cal_process(nid_set, same_t=3):
                         l3 = len(set_same)
                         if l3 < max(l1, l2) * 0.6:  #相同比例要达到0.6
                             continue
-                        cursor.execute(insert_same_sentence, (nid, r[0], str_no_html, sen, t))
+                        nids_for_ads.add(nid)
+                        same_sentence_sql_para.append((nid, r[0], str_no_html, sen, t))
+                        #cursor.execute(insert_same_sentence, (nid, r[0], str_no_html, sen, t))
                         #print cursor.mogrify(insert_same_sentence, (nid, r[0], str_no_html, sen_without_html, t))
-
-                    '''
-                    sen = r[1].decode('utf-8')
-                    sen_without_html = filter_tags(sen)
-                    if len(str_no_html) > len(sen_without_html) * 1.5 or len(sen_without_html) > len(str_no_html) * 1.5:
-                        continue
-                    #除了检查hash值,还要检查相同词组
-                    wl1 = jieba.cut(str_no_html)
-                    wl2 = jieba.cut(sen_without_html)
-                    set1 = set(wl1)
-                    set2 = set(wl2)
-                    set_same = set1 & set2
-                    l1 = float(len(set1))
-                    l2 = float(len(set2))
-                    l3 = float(len(set_same))
-                    if l3 < max(l1, l2) * 0.6:  #相同比例要达到0.6
-                        continue
-
-                    #先检查两篇新闻是否是相同的, 若相同则忽略。 同样利用simhash计算
-                    nid1 = r[0]
-                    sql = "select * from news_simhash_map where (nid = %s and same_nid = %s) or (nid = %s and same_nid = %s) "
-                    cursor.execute(sql, (nid, nid1, nid1, nid))
-                    if len(cursor.fetchall()) > 0:
-                        continue
-                    if sim_hash.is_news_same(nid, nid1, 3):
-                        in_sql = 'insert into news_simhash_map (nid, same_nid) values(%s, %s)'
-                        cursor.execute(in_sql, (nid, nid1))
-                        continue
-                    cursor.execute(insert_same_sentence, (nid, nid1, str_no_html, sen, t))
-                    '''
+                is_new_ads = False
+                if len(nids_for_ads) >= 10:
+                    get_pname = "select pname from newslist_v2 where nid in %s"
+                    cursor.execute(get_pname, (tuple(nids_for_ads), ))
+                    pnames = cursor.fetchall()
+                    if len(pnames) == 1 or len(pnames) > 5:   #同源广告 或者 多个源的广告
+                        ads_insert = "insert into news_ads_sentence (ads_sentence, hash_val, ctime, first_16, second_16, third_16, four_16, first2_16, second2_16, third2_16, four2_16)" \
+                                     "values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                        cursor.execute(ads_insert, (str_no_html, h.__str__(), t, fir, sec, thi, fou, fir2, sec2, thi2, fou2))
+                        is_new_ads = True
+                        logger.info('find new ads : {}'.format(str_no_html))
+                if not is_new_ads:
+                    cursor.executemany(insert_same_sentence, same_sentence_sql_para)
 
                 #将所有段落入库
                 cursor.execute(insert_sentence_hash, (nid, str_no_html, n, h.__str__(), fir, sec, thi, fou, t, fir2, sec2, thi2, fou2))
