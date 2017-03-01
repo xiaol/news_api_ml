@@ -47,7 +47,7 @@ def get_4_segments(hash_bits):
     sec2 = hash_bits & 0b00111100000000111100000000000000001111000000000000111100000000
     thi2 = hash_bits & 0b00000011110000000011110000000000000000111100000000000011110000
     fou2 = hash_bits & 0b00000000001111000000001111000000000000000011110000000000001111
-    return fir, sec, thi, fou, fir2, sec2, thi2, fou2
+    return str(fir), str(sec), str(thi), str(fou), str(fir2), str(sec2), str(thi2), str(fou2)
 
 
 
@@ -140,7 +140,9 @@ def is_sentence_ads(hash_val, fir_16, sec_16, thi_16, fou_16, fir2_16, sec2_16, 
     rows = cursor.fetchall()
     for r in rows:
         if hash_val.hamming_distance_with_val(long(r[1])) <= 3:
+            conn.close()
             return True
+    conn.close()
     return False
 
 
