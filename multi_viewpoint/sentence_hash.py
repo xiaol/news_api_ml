@@ -242,15 +242,12 @@ def cal_process(nid_set, same_t=3):
                         #先处理同源潜在广告
                         if len(pname_set) == 1:  #同源, 再根据此段落后面段落包含链接的比例决定该句子是否是广告
                             nid_links = nid_para_links_dict[nid]
-                            if para_num == len(nid_links) - 1:  #同源, 最后一段的句子,认为是广告
+                            sum_own_links = 0  #有链接的段落数
+                            for kk in xrange(para_num, len(nid_links)):
+                                if len(nid_links[kk]):
+                                    sum_own_links += 1
+                            if sum_own_links > (len(nid_links) - para_num) * 0.8: #后面的链接很多,认为是广告
                                 is_new_ads = True
-                            else:
-                                sum_own_links = 0  #有链接的段落数
-                                for kk in xrange(para_num, len(nid_links)):
-                                    if len(nid_links[kk]):
-                                        sum_own_links += 1
-                                if sum_own_links > (len(nid_links) - para_num) * 0.8: #后面的链接很多,认为是广告
-                                    is_new_ads = True
 
                         if len(pname_set) > 8 and len(chid_set) < 4:   #来自多个源, 看是否集中在几个频道,如果是,则认为是广告
                             #需要判断这些新闻入库时间不集中在3天内,否则可能不是广告
