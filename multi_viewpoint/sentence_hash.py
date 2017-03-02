@@ -227,7 +227,8 @@ def cal_process(nid_set, same_t=3):
                             #cursor.execute(insert_same_sentence, (nid, r[0], str_no_html, sen, t))
                             #print cursor.mogrify(insert_same_sentence, (nid, r[0], str_no_html, sen_without_html, t))
                     is_new_ads = False
-                    if len(nids_for_ads) >= 20:
+                    ignore_next_time = False   #不是广告,但需要忽略计算重复
+                    if len(nids_for_ads) >= 15:
                         get_pname = "select pname, chid from newslist_v2 where nid in %s"
                         cursor.execute(get_pname, (tuple(nids_for_ads), ))
                         rows2 = cursor.fetchall()
@@ -249,8 +250,10 @@ def cal_process(nid_set, same_t=3):
                                 if sum_own_links > (len(nid_links) - para_num) * 0.8: #后面的链接很多,认为是广告
                                     is_new_ads = True
 
-                        if len(pname_set) > 10 and len(nids_for_ads) > 50 and len(chid_set) < 4:   #来自多个源, 看是否集中在几个频道,如果是,则认为是广告
+                        if len(pname_set) > 8 and len(chid_set) < 4:   #来自多个源, 看是否集中在几个频道,如果是,则认为是广告
                             is_new_ads = True
+                        else:
+                            ignore_next_time = True
                     nids_str = ','.join(nids_for_ads)
                     ads_insert = "insert into news_ads_sentence (ads_sentence, hash_val, ctime, first_16, second_16, third_16, four_16, first2_16, second2_16, third2_16, four2_16, nids, state)" \
                                  "values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
@@ -259,7 +262,7 @@ def cal_process(nid_set, same_t=3):
                         logger.info('find new ads : {0}'.format(str_no_html.encode("utf-8")))
                     else:
                         #if len(same_sentence_sql_para) < 5:  #检测出过多的相同句子,又不是广告, 可能是误判, 不处理
-                        if len(same_sentence_sql_para) > 5:  #相同的句子过多,认为是误判, 加入广告数据库,但state=1,即不是真广告,这样可以在下次碰到时减少计算
+                        if ignore_next_time:  #相同的句子过多,认为是误判, 加入广告数据库,但state=1,即不是真广告,这样可以在下次碰到时减少计算
                             cursor.execute(ads_insert, (str_no_html, h.__str__(), t, fir, sec, thi, fou, fir2, sec2, thi2, fou2, nids_str, 1))
                         else:
                             cursor.executemany(insert_same_sentence, same_sentence_sql_para)
