@@ -175,7 +175,7 @@ def cal_process(nid_set, same_t=3):
                 fir, sec, thi, fou, fir2, sec2, thi2, fou2 = get_4_segments(h.__long__())
                 if is_sentence_ads(h, fir, sec, thi, fou, fir2, sec2, thi2, fou2):  #在广告db内
                     #  删除广告句子
-                    logger.info('find ads of {0}  : {1} '.format(nid, str_no_html))
+                    logger.info('find ads of {0}  : {1} '.format(nid, str_no_html.encode("utf-8")))
                     continue
 
                 #检查是否有相同的段落
@@ -227,7 +227,7 @@ def cal_process(nid_set, same_t=3):
                                      "values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
                         cursor.execute(ads_insert, (str_no_html, h.__str__(), t, fir, sec, thi, fou, fir2, sec2, thi2, fou2))
                         is_new_ads = True
-                        logger.info('find new ads : {}'.format(str_no_html))
+                        logger.info('find new ads : {}'.format(str_no_html.encode("utf-8")))
                 if not is_new_ads:
                     cursor.executemany(insert_same_sentence, same_sentence_sql_para)
 
