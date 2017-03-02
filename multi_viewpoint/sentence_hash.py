@@ -9,8 +9,10 @@ from util.doc_process import get_postgredb
 from util.doc_process import Cut
 from util.doc_process import filter_html_stopwords_pos
 from util.doc_process import filter_tags
+from util.doc_process import get_paragraph_text
 from util.doc_process import filter_url
 from util.doc_process import get_sentences_on_nid
+from bs4 import BeautifulSoup
 
 from sim_hash import sim_hash
 import datetime
@@ -85,17 +87,28 @@ def get_nids_sentences(nid_set):
     cursor.execute(get_sent_sql, (nid_tuple, ))
     rows = cursor.fetchall()
     nid_sentences_dict = {}
+    nid_para_links_dict = {}
     for r in rows:
         if r[3] != 0: #已被下线
             logger.info('{} has been offline.'.format(r[0]))
             continue
         nid = r[0]
-        nid_sentences_dict[nid] = []
+        nid_sentences_dict[nid] = {}
+        nid_para_links_dict[nid] = {}
         content_list = r[2]
+        pi = 0
         for content in content_list:
                 if "txt" in content.keys():
+                    pi += 1
                     #str_no_tags = filter_tags(content['txt'])
-                    nid_sentences_dict[nid].extend(Cut(filter_tags(content['txt'])))
+                    #nid_sentences_dict[nid].extend(Cut(filter_tags(content['txt'])))
+                    soup = BeautifulSoup(content['txt'], 'lxml')
+                    pi_sents = []
+                    for link in soup.find_all('a'):
+                        pi_sents.append(link)  #记录每一段的链接
+                    nid_sentences_dict[nid][pi] = Cut(soup.text)
+                    nid_para_links_dict[nid][pi] = pi_sents
+                    #nid_sentences_dict[nid].extend(Cut(get_paragraph_text(content['txt'])))
                     #for i in sents:
                         #if len(i) > 20:  #20个汉字, i 是unicode, len代表汉字个数
                     #    nid_sentences_dict[nid].append(i) #计算所有段落。 计算重复句子时再筛选掉字数少的句子; 去除广告时,对字数不做要求
@@ -103,7 +116,7 @@ def get_nids_sentences(nid_set):
                         #if len(wl) > 5:   #文本词数量<5, 不计算hash
                         #    nid_sentences_dict[nid].append(wl)
     conn.close()
-    return nid_sentences_dict
+    return nid_sentences_dict, nid_para_links_dict
 
 
 ################################################################################
@@ -152,96 +165,112 @@ def is_sentence_ads(hash_val, fir_16, sec_16, thi_16, fou_16, fir2_16, sec2_16, 
 ################################################################################
 def cal_process(nid_set, same_t=3):
     logger.info('there are {} news to calulate'.format(len(nid_set)))
-    nid_sents_dict = get_nids_sentences(nid_set)
+    nid_sents_dict, nid_para_links_dict = get_nids_sentences(nid_set)
     same_dict = get_relate_same_news(nid_set)
     try:
-        i = 0
-        #t0 = datetime.datetime.now()
         for item in nid_sents_dict.items(): #每条新闻
-            i += 1
             n = 0
             nid = item[0]
-            sents = item[1]
             logger.info('--- consume :{}'.format(nid))
             t = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            sen_num = len(sents)
-            conn, cursor = get_postgredb()
-            for s in sents:  #每个句子
-                n += 1
-                str_no_html, wl = filter_html_stopwords_pos(s, True, True, True, False)
-                if len(wl) == 0 or len(str_no_html) <= 2 or (sen_num > 100 and len(str_no_html)  < 10 and n > sen_num*0.3 and n < sen_num*0.7): #去除一个字的句子,因为有很多是特殊字符
-                    continue
-                h = sim_hash.simhash(wl)
-                fir, sec, thi, fou, fir2, sec2, thi2, fou2 = get_4_segments(h.__long__())
-                if is_sentence_ads(h, fir, sec, thi, fou, fir2, sec2, thi2, fou2):  #在广告db内
-                    #  删除广告句子
-                    logger.info('find ads of {0}  : {1} '.format(nid, str_no_html.encode("utf-8")))
-                    continue
-
-                #检查是否有相同的段落
-                #if len(wl) < 5: #小于20个汉字, 不判断句子重复  #2.22再次修改: 不做长度限制做重复判断; 真正判断相关观点时再判断; 广告去除也需要短句子
-                #    continue
-                cursor.execute(query_sen_sql, (str(fir), str(sec), str(thi), str(fou), str(fir2), str(sec2), str(thi2), str(fou2)))
-                #print cursor.mogrify(query_sen_sql, (str(fir), str(sec), str(thi), str(fou), str(fir2), str(sec2), str(thi2), str(fou2)))
-                rows = cursor.fetchall()  #所有可能相同的段落
-                if len(rows) == 0:
-                    continue
-
-                same_sentence_sql_para = []
-                nids_for_ads = set()
-                for r in rows:
-                    if len(nids_for_ads) >= 15:
-                        break
-                    #距离过大或者是同一篇新闻
-                    if h.hamming_distance_with_val(long(r[1])) > same_t or (nid in same_dict.keys() and r[0] in same_dict[nid]) or nid == r[0]:
+            #sents = []
+            para_sent_dict = item[1]
+            #for para in para_sent_list:
+            #for pn in xrange(0, len(para_sent_dict)):
+            for pa in para_sent_dict.items():
+                para_num = pa[0]
+                sents = pa[1]
+                conn, cursor = get_postgredb()
+                for s in sents:  #每个句子
+                    n += 1
+                    str_no_html, wl = filter_html_stopwords_pos(s, True, True, True, False)
+                    print str_no_html
+                    if len(wl) == 0 or len(str_no_html) <= 2: #去除一个字的句子,因为有很多是特殊字符
                         continue
-                    same_sql = "select sentence from news_sentence_hash where nid=%s and hash_val=%s"
-                    cursor.execute(same_sql, (r[0], r[1]))
-                    rs = cursor.fetchall()
-                    for r2 in rs:
-                        sen = r2[0].decode('utf-8')
-                        sen_without_html = filter_tags(sen)
-                        if len(sen) == 1 or len(sen_without_html) > len(str_no_html)*1.5 or len(str_no_html) > len(sen_without_html)*1.5:
+                    h = sim_hash.simhash(wl)
+                    fir, sec, thi, fou, fir2, sec2, thi2, fou2 = get_4_segments(h.__long__())
+                    if is_sentence_ads(h, fir, sec, thi, fou, fir2, sec2, thi2, fou2):  #在广告db内
+                        #  删除广告句子
+                        logger.info('find ads of {0}  : {1} '.format(nid, str_no_html.encode("utf-8")))
+                        continue
+                    cursor.execute(query_sen_sql, (str(fir), str(sec), str(thi), str(fou), str(fir2), str(sec2), str(thi2), str(fou2)))
+                    #print cursor.mogrify(query_sen_sql, (str(fir), str(sec), str(thi), str(fou), str(fir2), str(sec2), str(thi2), str(fou2)))
+                    rows = cursor.fetchall()  #所有可能相同的段落
+                    if len(rows) == 0:
+                        continue
+
+                    same_sentence_sql_para = []
+                    nids_for_ads = set()
+                    for r in rows:
+                        if len(nids_for_ads) >= 15:
+                            break
+                        #距离过大或者是同一篇新闻
+                        if h.hamming_distance_with_val(long(r[1])) > same_t or (nid in same_dict.keys() and r[0] in same_dict[nid]) or nid == r[0]:
                             continue
-                        wl1 = jieba.cut(str_no_html)
-                        set1 = set(wl1)
-                        l1 = len(set1)
-                        wl2 = jieba.cut(sen_without_html)
-                        set2 = set(wl2)
-                        set_same = set1 & set2
-                        l2 = len(set2)
-                        l3 = len(set_same)
-                        if l3 < max(l1, l2) * 0.6:  #相同比例要达到0.6
-                            continue
-                        nids_for_ads.add(str(r[0]))
-                        same_sentence_sql_para.append((nid, r[0], str_no_html, sen, t))
-                        #cursor.execute(insert_same_sentence, (nid, r[0], str_no_html, sen, t))
-                        #print cursor.mogrify(insert_same_sentence, (nid, r[0], str_no_html, sen_without_html, t))
-                is_new_ads = False
-                if len(nids_for_ads) >= 20:
-                    get_pname = "select pname from newslist_v2 where nid in %s"
-                    cursor.execute(get_pname, (tuple(nids_for_ads), ))
-                    pnames = cursor.fetchall()
-                    if len(pnames) == 1 or len(pnames) > 10:   #同源广告 或者 多个源的广告
-                        nids_str = '.'.join(nids_for_ads)
+                        same_sql = "select sentence from news_sentence_hash where nid=%s and hash_val=%s"
+                        cursor.execute(same_sql, (r[0], r[1]))
+                        rs = cursor.fetchall()
+                        for r2 in rs:
+                            sen = r2[0].decode('utf-8')
+                            sen_without_html = filter_tags(sen)
+                            if len(sen) == 1 or len(sen_without_html) > len(str_no_html)*1.5 or len(str_no_html) > len(sen_without_html)*1.5:
+                                continue
+                            wl1 = jieba.cut(str_no_html)
+                            set1 = set(wl1)
+                            l1 = len(set1)
+                            wl2 = jieba.cut(sen_without_html)
+                            set2 = set(wl2)
+                            set_same = set1 & set2
+                            l2 = len(set2)
+                            l3 = len(set_same)
+                            if l3 < max(l1, l2) * 0.6:  #相同比例要达到0.6
+                                continue
+                            nids_for_ads.add(str(r[0]))
+                            same_sentence_sql_para.append((nid, r[0], str_no_html, sen, t))
+                            #cursor.execute(insert_same_sentence, (nid, r[0], str_no_html, sen, t))
+                            #print cursor.mogrify(insert_same_sentence, (nid, r[0], str_no_html, sen_without_html, t))
+                    is_new_ads = False
+                    if len(nids_for_ads) >= 20:
+                        get_pname = "select pname, chid from newslist_v2 where nid in %s"
+                        cursor.execute(get_pname, (tuple(nids_for_ads), ))
+                        rows2 = cursor.fetchall()
+                        pname_set = set()
+                        chid_set = set()
+                        for rk in rows2:
+                            pname_set.add(rk[0])
+                            chid_set.add(rk[1])
+                        #先处理同源潜在广告
+                        if len(pname_set) == 1:  #同源, 再根据此段落后面段落包含链接的比例决定该句子是否是广告
+                            nid_links = nid_para_links_dict[nid]
+                            if para_num == len(nid_links) - 1:  #同源, 最后一段的句子,认为是广告
+                                is_new_ads = True
+                            else:
+                                sum_own_links = 0  #有链接的段落数
+                                for kk in xrange(para_num, len(nid_links)):
+                                    if len(nid_links[kk]):
+                                        sum_own_links += 1
+                                if sum_own_links > (len(nid_links) - para_num) * 0.8: #后面的链接很多,认为是广告
+                                    is_new_ads = True
+
+                        if len(pname_set) > 10 and len(nids_for_ads) > 50 and len(chid_set) < 4:   #来自多个源, 看是否集中在几个频道,如果是,则认为是广告
+                            is_new_ads = True
+                    if is_new_ads:
+                        nids_str = ','.join(nids_for_ads)
                         ads_insert = "insert into news_ads_sentence (ads_sentence, hash_val, ctime, first_16, second_16, third_16, four_16, first2_16, second2_16, third2_16, four2_16, nids)" \
                                      "values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
                         cursor.execute(ads_insert, (str_no_html, h.__str__(), t, fir, sec, thi, fou, fir2, sec2, thi2, fou2, nids_str))
-                        is_new_ads = True
                         logger.info('find new ads : {0}'.format(str_no_html.encode("utf-8")))
-                if not is_new_ads:
-                    cursor.executemany(insert_same_sentence, same_sentence_sql_para)
+                    else:
+                        cursor.executemany(insert_same_sentence, same_sentence_sql_para)
 
-                #将所有段落入库
-                cursor.execute(insert_sentence_hash, (nid, str_no_html, n, h.__str__(), fir, sec, thi, fou, t, fir2, sec2, thi2, fou2))
-                conn.commit()
-            cursor.close()
-            conn.close()
-            #if i % 100 == 0:
-                #t1 = datetime.datetime.now()
-                #logger.info('{0} finished! Latest 100 news takes {1}s'.format(i, (t1 - t0).total_seconds()))
-                #t0 = t1
+                    #将所有段落入库
+                    cursor.execute(insert_sentence_hash, (nid, str_no_html, n, h.__str__(), fir, sec, thi, fou, t, fir2, sec2, thi2, fou2))
+                    conn.commit()
+                cursor.close()
+                conn.close()
+
         del nid_sents_dict
+        del nid_para_links_dict
     except:
         logger.exception(traceback.format_exc())
 
