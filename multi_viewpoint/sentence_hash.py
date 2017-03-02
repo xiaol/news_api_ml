@@ -228,15 +228,17 @@ def cal_process(nid_set, same_t=3):
                             #print cursor.mogrify(insert_same_sentence, (nid, r[0], str_no_html, sen_without_html, t))
                     is_new_ads = False
                     ignore_next_time = False   #不是广告,但需要忽略计算重复
-                    if len(nids_for_ads) >= 15:
-                        get_pname = "select pname, chid from newslist_v2 where nid in %s"
+                    if len(nids_for_ads) >= 20:
+                        get_pname = "select pname, chid, ctime from newslist_v2 where nid in %s"
                         cursor.execute(get_pname, (tuple(nids_for_ads), ))
                         rows2 = cursor.fetchall()
                         pname_set = set()
                         chid_set = set()
+                        ctime_list = []
                         for rk in rows2:
                             pname_set.add(rk[0])
                             chid_set.add(rk[1])
+                            ctime_list.append(rk[2])
                         #先处理同源潜在广告
                         if len(pname_set) == 1:  #同源, 再根据此段落后面段落包含链接的比例决定该句子是否是广告
                             nid_links = nid_para_links_dict[nid]
@@ -251,7 +253,16 @@ def cal_process(nid_set, same_t=3):
                                     is_new_ads = True
 
                         if len(pname_set) > 8 and len(chid_set) < 4:   #来自多个源, 看是否集中在几个频道,如果是,则认为是广告
-                            is_new_ads = True
+                            #需要判断这些新闻入库时间不集中在3天内,否则可能不是广告
+                            min_time = ctime_list[0]
+                            max_time = ctime_list[0]
+                            for kkk in xrange(1, len(ctime_list)):
+                                if ctime_list[kkk] > max_time:
+                                    max_time = ctime_list[kkk]
+                                if ctime_list[kkk] < min_time:
+                                    min_time = ctime_list[kkk]
+                            if (max_time - min_time).days > 3:  #不是三天内的热点新闻
+                                is_new_ads = True
                         else:
                             ignore_next_time = True
                     nids_str = ','.join(nids_for_ads)
