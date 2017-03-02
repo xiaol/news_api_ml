@@ -223,11 +223,12 @@ def cal_process(nid_set, same_t=3):
                     cursor.execute(get_pname, (tuple(nids_for_ads), ))
                     pnames = cursor.fetchall()
                     if len(pnames) == 1 or len(pnames) > 5:   #同源广告 或者 多个源的广告
-                        ads_insert = "insert into news_ads_sentence (ads_sentence, hash_val, ctime, first_16, second_16, third_16, four_16, first2_16, second2_16, third2_16, four2_16)" \
-                                     "values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-                        cursor.execute(ads_insert, (str_no_html, h.__str__(), t, fir, sec, thi, fou, fir2, sec2, thi2, fou2))
+                        nids_str = '.'.join(nids_for_ads)
+                        ads_insert = "insert into news_ads_sentence (ads_sentence, hash_val, ctime, first_16, second_16, third_16, four_16, first2_16, second2_16, third2_16, four2_16, nids)" \
+                                     "values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                        cursor.execute(ads_insert, (str_no_html, h.__str__(), t, fir, sec, thi, fou, fir2, sec2, thi2, fou2, nids_str))
                         is_new_ads = True
-                        logger.info('find new ads : {}'.format(str_no_html.encode("utf-8")))
+                        logger.info('find new ads : {0}'.format(str_no_html.encode("utf-8")))
                 if not is_new_ads:
                     cursor.executemany(insert_same_sentence, same_sentence_sql_para)
 
