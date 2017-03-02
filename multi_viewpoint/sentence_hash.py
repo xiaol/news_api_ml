@@ -9,8 +9,6 @@ from util.doc_process import get_postgredb
 from util.doc_process import Cut
 from util.doc_process import filter_html_stopwords_pos
 from util.doc_process import filter_tags
-from util.doc_process import get_paragraph_text
-from util.doc_process import filter_url
 from util.doc_process import get_sentences_on_nid
 from bs4 import BeautifulSoup
 
