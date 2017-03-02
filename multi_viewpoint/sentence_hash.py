@@ -218,11 +218,11 @@ def cal_process(nid_set, same_t=3):
                         #cursor.execute(insert_same_sentence, (nid, r[0], str_no_html, sen, t))
                         #print cursor.mogrify(insert_same_sentence, (nid, r[0], str_no_html, sen_without_html, t))
                 is_new_ads = False
-                if len(nids_for_ads) >= 10:
+                if len(nids_for_ads) >= 20:
                     get_pname = "select pname from newslist_v2 where nid in %s"
                     cursor.execute(get_pname, (tuple(nids_for_ads), ))
                     pnames = cursor.fetchall()
-                    if len(pnames) == 1 or len(pnames) > 5:   #同源广告 或者 多个源的广告
+                    if len(pnames) == 1 or len(pnames) > 10:   #同源广告 或者 多个源的广告
                         nids_str = '.'.join(nids_for_ads)
                         ads_insert = "insert into news_ads_sentence (ads_sentence, hash_val, ctime, first_16, second_16, third_16, four_16, first2_16, second2_16, third2_16, four2_16, nids)" \
                                      "values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
