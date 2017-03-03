@@ -317,6 +317,7 @@ def cal_process(nid_set, same_t=3):
                             nn = same[1]  #nid
                             if nid_pname_dict[nid] != nid_pn[nn]:
                                 cursor.execute(multo_vp_insert_sql, same)
+                                logger.info('get multi viewpoint :{}'.format(str_no_html))
 
                     #将所有段落入库
                     cursor.execute(insert_sentence_hash, (nid, str_no_html, n, h.__str__(), fir, sec, thi, fou, t, fir2, sec2, thi2, fou2))
