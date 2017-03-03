@@ -316,7 +316,8 @@ def cal_process(nid_set, same_t=3):
                         for same in same_sentence_sql_para:
                             nn = same[1]  #nid
                             if nid_pname_dict[nid] != nid_pn[nn]:
-                                cursor.execute(multo_vp_insert_sql, same)
+                                #print cursor.mogrify(multo_vp_insert_sql, str(same))
+                                cursor.execute(multo_vp_insert_sql, str(same))
                                 logger.info('get multi viewpoint :{}'.format(str_no_html))
 
                     #将所有段落入库
