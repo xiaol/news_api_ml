@@ -10,6 +10,7 @@ import traceback
 import logging
 import datetime
 import os
+import requests
 
 real_dir_path = os.path.split(os.path.realpath(__file__))[0]
 
@@ -160,6 +161,7 @@ get_comment_num_sql = 'select nid, comment from newslist_v2 where nid in ({0}, {
 recommend_sql = "select nid, rtime from newsrecommendlist where rtime > now() - interval '1 day' and nid in (%s, %s)"
 del_sql = 'delete from newslist_v2 where nid={0}'
 offonline_sql = 'update newslist_v2 set state=1 where nid={0}'
+url = "120.27.162.110:9001/news_delete"
 def del_nid_of_fewer_comment(nid, n):
     try:
         conn, cursor = doc_process.get_postgredb()
@@ -175,8 +177,11 @@ def del_nid_of_fewer_comment(nid, n):
             else:
                 del_nid = n
                 stay_nid = nid
-            cursor.execute(offonline_sql.format(del_nid))
-            conn.commit()
+            #cursor.execute(offonline_sql.format(del_nid))
+            #conn.commit()
+            data = {}
+            data['nid'] = del_nid
+            response = requests.post(url, data=data)
             cursor.close()
             conn.close()
             logger.info('{0} has been recommended, so offline {1}'.format(stay_nid, del_nid))
@@ -192,8 +197,11 @@ def del_nid_of_fewer_comment(nid, n):
             off_n = 0 if rows[0][0] == nid else 1
         else:
             off_n = 0
-        cursor.execute(offonline_sql.format(rows[off_n][0]))
-        conn.commit()
+        data = {}
+        data['nid'] = rows[off_n][0]
+        response = requests.post(url, data=data)
+        #cursor.execute(offonline_sql.format(rows[off_n][0]))
+        #conn.commit()
         cursor.close()
         conn.close()
         logger.info('{0} has {1} comments and {2} has {3} comments, offline {4}'.format(rows[0][0], rows[0][1], rows[1][0], rows[1][1], rows[off_n][0]))
