@@ -314,7 +314,7 @@ def cal_process(nid_set, same_t=3):
                         else:
                             cursor.executemany(insert_same_sentence, same_sentence_sql_para)
                     #多放观点  1. 句子长度>30.  2 不同源
-                    if len(str_no_html) > 30:
+                    if len(str_no_html) > 30 and n > 2 and (n < sen_len-3):
                         for same in same_sentence_sql_para:
                             nn = same[1]  #nid
                             if nid_pname_dict[nid] != nid_pn[nn]:
