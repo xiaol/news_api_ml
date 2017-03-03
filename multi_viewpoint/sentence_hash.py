@@ -308,7 +308,7 @@ def cal_process(nid_set, same_t=3):
                     #多放观点  1. 句子长度>30.  2 不同源
                     if len(str_no_html) > 30:
                         for same in same_sentence_sql_para:
-                            nn = same[2]  #nid
+                            nn = same[1]  #nid
                             if nid_pname_dict[nid] != nid_pn[nn]:
                                 cursor.execute(multo_vp_insert_sql, same)
 
