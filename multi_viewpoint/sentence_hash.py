@@ -167,7 +167,11 @@ def is_sentence_ads(hash_val, fir_16, sec_16, thi_16, fou_16, fir2_16, sec2_16, 
     return False
 
 
-
+get_pname = "select pname, chid, ctime, nid from newslist_v2 where nid in %s"
+same_sql = "select sentence from news_sentence_hash where nid=%s and hash_val=%s"
+ads_insert = "insert into news_ads_sentence (ads_sentence, hash_val, ctime, first_16, second_16, third_16, four_16, first2_16, second2_16, third2_16, four2_16, nids, state, special_pname)" \
+             "values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+multo_vp_insert_sql = "insert news_multi_vp (nid1, sentence1, nid2, sentence2, ctime) values (%s, %s, %s, %s, %s)"
 ################################################################################
 #@brief: 计算子进程
 ################################################################################
@@ -215,7 +219,6 @@ def cal_process(nid_set, same_t=3):
                         #距离过大或者是同一篇新闻
                         if h.hamming_distance_with_val(long(r[1])) > same_t or (nid in same_dict.keys() and r[0] in same_dict[nid]) or nid == r[0]:
                             continue
-                        same_sql = "select sentence from news_sentence_hash where nid=%s and hash_val=%s"
                         cursor.execute(same_sql, (r[0], r[1]))
                         rs = cursor.fetchall()
                         for r2 in rs:
@@ -240,17 +243,18 @@ def cal_process(nid_set, same_t=3):
                     is_new_ads = False
                     not_ads_but_ignore = False   #不是广告,但需要忽略计算重复
                     PNAME_T = 3
-                    if len(nids_for_ads) >= 10:
-                        get_pname = "select pname, chid, ctime from newslist_v2 where nid in %s"
+                    nid_pn = {}
+                    pname_set = set()
+                    chid_set = set()
+                    ctime_list = []
+                    if len(nids_for_ads) >= 20:
                         cursor.execute(get_pname, (tuple(nids_for_ads), ))
                         rows2 = cursor.fetchall()
-                        pname_set = set()
-                        chid_set = set()
-                        ctime_list = []
                         for rk in rows2:
                             pname_set.add(rk[0])
                             chid_set.add(rk[1])
                             ctime_list.append(rk[2])
+                            nid_pn[rk[3]] = rk[0]
                         #先处理同源潜在广告
                         if len(pname_set) <= PNAME_T or (len(pname_set) > 5 and len(chid_set) < 4):
                             if n > sen_len * .2 and n < sen_len * .8:
@@ -288,8 +292,6 @@ def cal_process(nid_set, same_t=3):
                         else:
                             not_ads_but_ignore = True
                     nids_str = ','.join(nids_for_ads)
-                    ads_insert = "insert into news_ads_sentence (ads_sentence, hash_val, ctime, first_16, second_16, third_16, four_16, first2_16, second2_16, third2_16, four2_16, nids, state, special_pname)" \
-                                 "values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
                     if is_new_ads:
                         if len(pname_set) <= PNAME_T:
                             pname_str = ','.join(pname_set)
@@ -303,6 +305,12 @@ def cal_process(nid_set, same_t=3):
                             cursor.execute(ads_insert, (str_no_html, h.__str__(), t, fir, sec, thi, fou, fir2, sec2, thi2, fou2, nids_str, 1, "" ))
                         else:
                             cursor.executemany(insert_same_sentence, same_sentence_sql_para)
+                    #多放观点  1. 句子长度>30.  2 不同源
+                    if len(str_no_html) > 30:
+                        for same in same_sentence_sql_para:
+                            nn = same[2]  #nid
+                            if nid_pname_dict[nid] != nid_pn[nn]:
+                                cursor.execute(multo_vp_insert_sql, same)
 
                     #将所有段落入库
                     cursor.execute(insert_sentence_hash, (nid, str_no_html, n, h.__str__(), fir, sec, thi, fou, t, fir2, sec2, thi2, fou2))
