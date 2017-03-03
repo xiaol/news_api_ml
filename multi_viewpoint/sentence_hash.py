@@ -171,7 +171,7 @@ get_pname = "select pname, chid, ctime, nid from newslist_v2 where nid in %s"
 same_sql2 = "select sentence from news_sentence_hash where nid=%s and hash_val=%s"
 ads_insert = "insert into news_ads_sentence (ads_sentence, hash_val, ctime, first_16, second_16, third_16, four_16, first2_16, second2_16, third2_16, four2_16, nids, state, special_pname)" \
              "values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-multo_vp_insert_sql = "insert news_multi_vp (nid1, sentence1, nid2, sentence2, ctime) values (%s, %s, %s, %s, %s)"
+multo_vp_insert_sql = "insert into news_multi_vp (nid1, sentence1, nid2, sentence2, ctime) values (%s, %s, %s, %s, %s)"
 ################################################################################
 #@brief: 计算子进程
 ################################################################################
