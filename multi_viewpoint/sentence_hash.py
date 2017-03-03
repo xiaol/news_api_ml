@@ -78,7 +78,7 @@ def get_exist_nids():
 #      ...
 #    }
 ################################################################################
-get_sent_sql = "select nid, title, content, state from newslist_v2 where nid in %s"
+get_sent_sql = "select nid, title, content, state, pname from newslist_v2 where nid in %s"
 def get_nids_sentences(nid_set):
     nid_tuple = tuple(nid_set)
     conn, cursor = get_postgredb()
@@ -86,6 +86,7 @@ def get_nids_sentences(nid_set):
     rows = cursor.fetchall()
     nid_sentences_dict = {}
     nid_para_links_dict = {}
+    nid_pname_dict = {}
     for r in rows:
         if r[3] != 0: #已被下线
             logger.info('{} has been offline.'.format(r[0]))
@@ -93,6 +94,7 @@ def get_nids_sentences(nid_set):
         nid = r[0]
         nid_sentences_dict[nid] = {}
         nid_para_links_dict[nid] = {}
+        nid_pname_dict[nid] = r[4]
         content_list = r[2]
         pi = 0
         for content in content_list:
@@ -114,7 +116,7 @@ def get_nids_sentences(nid_set):
                         #if len(wl) > 5:   #文本词数量<5, 不计算hash
                         #    nid_sentences_dict[nid].append(wl)
     conn.close()
-    return nid_sentences_dict, nid_para_links_dict
+    return nid_sentences_dict, nid_para_links_dict, nid_pname_dict
 
 
 ################################################################################
@@ -145,14 +147,22 @@ def get_relate_same_news(nid_set):
 check_ads_sql = "select ads_sentence, hash_val, special_pname from news_ads_sentence where " \
                 "(first_16=%s or second_16=%s or third_16=%s or four_16=%s) and" \
                 "(first2_16=%s or second2_16=%s or third2_16=%s or four2_16=%s) "
-def is_sentence_ads(hash_val, fir_16, sec_16, thi_16, fou_16, fir2_16, sec2_16, thi2_16, fou2_16):
+def is_sentence_ads(hash_val, fir_16, sec_16, thi_16, fou_16, fir2_16, sec2_16, thi2_16, fou2_16, pname):
     conn, cursor = get_postgredb()
     cursor.execute(check_ads_sql, (fir_16, sec_16, thi_16, fou_16, fir2_16, sec2_16, thi2_16, fou2_16))
     rows = cursor.fetchall()
     for r in rows:
         if hash_val.hamming_distance_with_val(long(r[1])) <= 3:
-            conn.close()
-            return True
+            exist = False
+            if r[2]:
+                spnames = r[2].split(',')
+                if len(spnames) == 0 or (pname in spnames):
+                    exist = True
+            else:
+                exist = True
+            if exist:
+                conn.close()
+                return True
     conn.close()
     return False
 
@@ -163,7 +173,7 @@ def is_sentence_ads(hash_val, fir_16, sec_16, thi_16, fou_16, fir2_16, sec2_16, 
 ################################################################################
 def cal_process(nid_set, same_t=3):
     logger.info('there are {} news to calulate'.format(len(nid_set)))
-    nid_sents_dict, nid_para_links_dict = get_nids_sentences(nid_set)
+    nid_sents_dict, nid_para_links_dict, nid_pname_dict = get_nids_sentences(nid_set)
     same_dict = get_relate_same_news(nid_set)
     try:
         for item in nid_sents_dict.items(): #每条新闻
@@ -186,7 +196,7 @@ def cal_process(nid_set, same_t=3):
                         continue
                     h = sim_hash.simhash(wl)
                     fir, sec, thi, fou, fir2, sec2, thi2, fou2 = get_4_segments(h.__long__())
-                    if is_sentence_ads(h, fir, sec, thi, fou, fir2, sec2, thi2, fou2):  #在广告db内
+                    if is_sentence_ads(h, fir, sec, thi, fou, fir2, sec2, thi2, fou2, nid_pname_dict[nid]):  #在广告db内
                         #  删除广告句子
                         logger.info('find ads of {0}  : {1} '.format(nid, str_no_html.encode("utf-8")))
                         continue
@@ -227,7 +237,8 @@ def cal_process(nid_set, same_t=3):
                             #cursor.execute(insert_same_sentence, (nid, r[0], str_no_html, sen, t))
                             #print cursor.mogrify(insert_same_sentence, (nid, r[0], str_no_html, sen_without_html, t))
                     is_new_ads = False
-                    ignore_next_time = False   #不是广告,但需要忽略计算重复
+                    not_ads_but_ignore = False   #不是广告,但需要忽略计算重复
+                    PNAME_T = 3
                     if len(nids_for_ads) >= 10:
                         get_pname = "select pname, chid, ctime from newslist_v2 where nid in %s"
                         cursor.execute(get_pname, (tuple(nids_for_ads), ))
@@ -240,7 +251,9 @@ def cal_process(nid_set, same_t=3):
                             chid_set.add(rk[1])
                             ctime_list.append(rk[2])
                         #先处理同源潜在广告
-                        if len(pname_set) == 1:  #同源, 再根据此段落后面段落包含链接的比例决定该句子是否是广告
+                        if len(pname_set) <= PNAME_T:  #同源, 再根据此段落后面段落包含链接的比例决定该句子是否是广告
+                            is_new_ads = True
+                            '''
                             nid_links = nid_para_links_dict[nid]
                             sum_own_links = 0  #有链接的段落数
                             for kk in xrange(para_num, len(nid_links)):
@@ -248,8 +261,8 @@ def cal_process(nid_set, same_t=3):
                                     sum_own_links += 1
                             if sum_own_links > (len(nid_links) - para_num) * 0.8: #后面的链接很多,认为是广告
                                 is_new_ads = True
-
-                        if len(pname_set) > 8 and len(chid_set) < 4:   #来自多个源, 看是否集中在几个频道,如果是,则认为是广告
+                             '''
+                        elif len(pname_set) > 5 and len(chid_set) < 4:   #来自多个源, 看是否集中在几个频道,如果是,则认为是广告
                             #需要判断这些新闻入库时间不集中在3天内,否则可能不是广告
                             min_time = ctime_list[0]
                             max_time = ctime_list[0]
@@ -261,16 +274,20 @@ def cal_process(nid_set, same_t=3):
                             if (max_time - min_time).days > 2:  #不是三天内的热点新闻
                                 is_new_ads = True
                         else:
-                            ignore_next_time = True
+                            not_ads_but_ignore = True
                     nids_str = ','.join(nids_for_ads)
-                    ads_insert = "insert into news_ads_sentence (ads_sentence, hash_val, ctime, first_16, second_16, third_16, four_16, first2_16, second2_16, third2_16, four2_16, nids, state)" \
-                                 "values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                    ads_insert = "insert into news_ads_sentence (ads_sentence, hash_val, ctime, first_16, second_16, third_16, four_16, first2_16, second2_16, third2_16, four2_16, nids, state, special_pname)" \
+                                 "values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
                     if is_new_ads:
-                        cursor.execute(ads_insert, (str_no_html, h.__str__(), t, fir, sec, thi, fou, fir2, sec2, thi2, fou2, nids_str, 0))
+                        if len(pname_set) <= PNAME_T:
+                            pname_str = ','.join(pname_set)
+                        else:
+                            pname_str = ''
+                        cursor.execute(ads_insert, (str_no_html, h.__str__(), t, fir, sec, thi, fou, fir2, sec2, thi2, fou2, nids_str, 0, pname_str))
                         logger.info('find new ads : {0}'.format(str_no_html.encode("utf-8")))
                     else:
                         #if len(same_sentence_sql_para) < 5:  #检测出过多的相同句子,又不是广告, 可能是误判, 不处理
-                        if ignore_next_time:  #相同的句子过多,认为是误判, 加入广告数据库,但state=1,即不是真广告,这样可以在下次碰到时减少计算
+                        if not_ads_but_ignore:  #相同的句子过多,认为是误判, 加入广告数据库,但state=1,即不是真广告,这样可以在下次碰到时减少计算
                             cursor.execute(ads_insert, (str_no_html, h.__str__(), t, fir, sec, thi, fou, fir2, sec2, thi2, fou2, nids_str, 1))
                         else:
                             cursor.executemany(insert_same_sentence, same_sentence_sql_para)
