@@ -191,11 +191,14 @@ def cal_process(nid_set, same_t=3):
             para_sent_dict = item[1]
             #for para in para_sent_list:
             #for pn in xrange(0, len(para_sent_dict)):
+
+            sen_len = 0   #文章总句子数目
+            for pa in para_sent_dict.items(): #每个段落
+                sen_len += len(pa[1])
             for pa in para_sent_dict.items():
-                para_num = pa[0]
+                para_num = pa[0]  #段落号
                 sents = pa[1]
                 conn, cursor = get_postgredb()
-                sen_len = len(sents)
                 for s in sents:  #每个句子
                     n += 1
                     str_no_html, wl = filter_html_stopwords_pos(s, False, True, True, False)
