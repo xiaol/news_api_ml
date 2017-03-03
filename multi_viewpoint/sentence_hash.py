@@ -199,8 +199,8 @@ def cal_process(nid_set, same_t=3):
                     same_sentence_sql_para = []
                     nids_for_ads = set()
                     for r in rows:
-                        if len(nids_for_ads) >= 15:
-                            break
+                        #if len(nids_for_ads) >= 15:
+                            #break
                         #距离过大或者是同一篇新闻
                         if h.hamming_distance_with_val(long(r[1])) > same_t or (nid in same_dict.keys() and r[0] in same_dict[nid]) or nid == r[0]:
                             continue
@@ -228,7 +228,7 @@ def cal_process(nid_set, same_t=3):
                             #print cursor.mogrify(insert_same_sentence, (nid, r[0], str_no_html, sen_without_html, t))
                     is_new_ads = False
                     ignore_next_time = False   #不是广告,但需要忽略计算重复
-                    if len(nids_for_ads) >= 20:
+                    if len(nids_for_ads) >= 10:
                         get_pname = "select pname, chid, ctime from newslist_v2 where nid in %s"
                         cursor.execute(get_pname, (tuple(nids_for_ads), ))
                         rows2 = cursor.fetchall()
@@ -258,7 +258,7 @@ def cal_process(nid_set, same_t=3):
                                     max_time = ctime_list[kkk]
                                 if ctime_list[kkk] < min_time:
                                     min_time = ctime_list[kkk]
-                            if (max_time - min_time).days > 3:  #不是三天内的热点新闻
+                            if (max_time - min_time).days > 2:  #不是三天内的热点新闻
                                 is_new_ads = True
                         else:
                             ignore_next_time = True
