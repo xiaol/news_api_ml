@@ -189,6 +189,7 @@ def cal_process(nid_set, same_t=3):
                 para_num = pa[0]
                 sents = pa[1]
                 conn, cursor = get_postgredb()
+                sen_len = len(sents)
                 for s in sents:  #每个句子
                     n += 1
                     str_no_html, wl = filter_html_stopwords_pos(s, False, True, True, False)
@@ -251,16 +252,17 @@ def cal_process(nid_set, same_t=3):
                             chid_set.add(rk[1])
                             ctime_list.append(rk[2])
                         #先处理同源潜在广告
-                        if len(pname_set) <= PNAME_T or (len(pname_set) > 5 and len(chid_set) < 4):  #同源, 再根据此段落后面段落包含链接的比例决定该句子是否是广告
-                            min_time = ctime_list[0]
-                            max_time = ctime_list[0]
-                            for kkk in xrange(1, len(ctime_list)):
-                                if ctime_list[kkk] > max_time:
-                                    max_time = ctime_list[kkk]
-                                if ctime_list[kkk] < min_time:
-                                    min_time = ctime_list[kkk]
-                            if (max_time - min_time).days > 2:  #不是三天内的热点新闻
-                                is_new_ads = True
+                        if len(pname_set) <= PNAME_T or (len(pname_set) > 5 and len(chid_set) < 4):
+                            if n > sen_len * .2 and n < sen_len * .8:
+                                min_time = ctime_list[0]
+                                max_time = ctime_list[0]
+                                for kkk in xrange(1, len(ctime_list)):
+                                    if ctime_list[kkk] > max_time:
+                                        max_time = ctime_list[kkk]
+                                    if ctime_list[kkk] < min_time:
+                                        min_time = ctime_list[kkk]
+                                if (max_time - min_time).days > 2:  #不是三天内的热点新闻
+                                    is_new_ads = True
                             '''
                             nid_links = nid_para_links_dict[nid]
                             sum_own_links = 0  #有链接的段落数
