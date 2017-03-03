@@ -282,13 +282,13 @@ def cal_process(nid_set, same_t=3):
                         if len(pname_set) <= PNAME_T:
                             pname_str = ','.join(pname_set)
                         else:
-                            pname_str = ''
+                            pname_str = ""
                         cursor.execute(ads_insert, (str_no_html, h.__str__(), t, fir, sec, thi, fou, fir2, sec2, thi2, fou2, nids_str, 0, pname_str))
                         logger.info('find new ads : {0}'.format(str_no_html.encode("utf-8")))
                     else:
                         #if len(same_sentence_sql_para) < 5:  #检测出过多的相同句子,又不是广告, 可能是误判, 不处理
                         if not_ads_but_ignore:  #相同的句子过多,认为是误判, 加入广告数据库,但state=1,即不是真广告,这样可以在下次碰到时减少计算
-                            cursor.execute(ads_insert, (str_no_html, h.__str__(), t, fir, sec, thi, fou, fir2, sec2, thi2, fou2, nids_str, 1, ''))
+                            cursor.execute(ads_insert, (str_no_html, h.__str__(), t, fir, sec, thi, fou, fir2, sec2, thi2, fou2, nids_str, 1, "" ))
                         else:
                             cursor.executemany(insert_same_sentence, same_sentence_sql_para)
 
