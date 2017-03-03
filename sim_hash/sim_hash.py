@@ -161,7 +161,7 @@ get_comment_num_sql = 'select nid, comment from newslist_v2 where nid in ({0}, {
 recommend_sql = "select nid, rtime from newsrecommendlist where rtime > now() - interval '1 day' and nid in (%s, %s)"
 del_sql = 'delete from newslist_v2 where nid={0}'
 offonline_sql = 'update newslist_v2 set state=1 where nid={0}'
-url = "http://120.27.162.110:9001/news_delete"
+url = "http://114.55.142.40:9001/news_delete"
 def del_nid_of_fewer_comment(nid, n):
     try:
         conn, cursor = doc_process.get_postgredb()
