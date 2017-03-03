@@ -232,6 +232,8 @@ def cal_process(nid_set, same_t=3):
                     same_sentence_sql_para = []
                     nids_for_ads = set()
                     for r in rows:
+                        if sim_hash.is_news_same(nid, r[0], 4)
+                            continue
                         #if len(nids_for_ads) >= 15:
                             #break
                         #距离过大或者是同一篇新闻
