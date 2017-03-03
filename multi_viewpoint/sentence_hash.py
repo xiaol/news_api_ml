@@ -247,7 +247,7 @@ def cal_process(nid_set, same_t=3):
                     pname_set = set()
                     chid_set = set()
                     ctime_list = []
-                    cursor.execute(get_pname, (tuple(nids_for_ads), ))
+                    cursor.execute(get_pname, tuple(nids_for_ads))
                     rows2 = cursor.fetchall()
                     for rk in rows2:
                         pname_set.add(rk[0])
