@@ -213,27 +213,9 @@ def cal_process(nid_set, same_t=3):
                     if len(rows) == 0:
                         continue
 
-                    '''
-                    #去除已经下线了的
-                    nid_for_filter = set()
-                    nid_hash = []
-                    for r in rows:
-                        nid_for_filter.add(r[0])
-                        nid_hash.append((r[0], r[1]))
-                    filter_offline_sql = "select nid from newslist_v2 where nid in %s and state=0"
-                    cursor.execute(filter_offline_sql, (tuple(nid_for_filter), ))
-                    rrr = cursor.fetchall()
-                    nid_hash_list = []
-                    for aa in nid_hash:
-                        if aa in rrr:
-                            nid_hash_list.append((aa[0], aa[1]))
-                    '''
-
                     same_sentence_sql_para = []
                     nids_for_ads = set()
                     for r in rows:
-                        if sim_hash.is_news_same(nid, r[0], 4):
-                            continue
                         #if len(nids_for_ads) >= 15:
                             #break
                         #距离过大或者是同一篇新闻

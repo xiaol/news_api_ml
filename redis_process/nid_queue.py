@@ -29,7 +29,6 @@ def produce_nid(nid):
     redis_inst.lpush(lda_queue, nid)
     redis_inst.lpush(kmeans_queue, nid)
     redis_inst.lpush(simhash_queue, nid)
-    redis_inst.lpush(sentence_simhash_queue, nid)
     redis_inst.lpush(ads_queue, nid)
 
 
@@ -91,6 +90,8 @@ def consume_nid_simhash(num=1):
         t1 = datetime.datetime.now()
         if n >=num or (t1 - t0).total_seconds() > 10:
             sim_hash.cal_and_check_news_hash(nid_list)
+            for i in nid_list:
+                redis_inst.lpush(sentence_simhash_queue, i)
             n = 0
             del nid_list[:]
             t0 = datetime.datetime.now()
