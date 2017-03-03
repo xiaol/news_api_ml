@@ -253,7 +253,7 @@ def cal_process(nid_set, same_t=3):
                     chid_set = set()
                     ctime_list = []
                     #print cursor.mogrify(get_pname, (tuple(nids_for_ads),))
-                    cursor.execute(get_pname, tuple(nids_for_ads))
+                    cursor.execute(get_pname, (tuple(nids_for_ads),))
                     rows2 = cursor.fetchall()
                     for rk in rows2:
                         pname_set.add(rk[0])
