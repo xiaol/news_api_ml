@@ -247,14 +247,14 @@ def cal_process(nid_set, same_t=3):
                     pname_set = set()
                     chid_set = set()
                     ctime_list = []
+                    cursor.execute(get_pname, (tuple(nids_for_ads), ))
+                    rows2 = cursor.fetchall()
+                    for rk in rows2:
+                        pname_set.add(rk[0])
+                        chid_set.add(rk[1])
+                        ctime_list.append(rk[2])
+                        nid_pn[rk[3]] = rk[0]
                     if len(nids_for_ads) >= 20:
-                        cursor.execute(get_pname, (tuple(nids_for_ads), ))
-                        rows2 = cursor.fetchall()
-                        for rk in rows2:
-                            pname_set.add(rk[0])
-                            chid_set.add(rk[1])
-                            ctime_list.append(rk[2])
-                            nid_pn[rk[3]] = rk[0]
                         #先处理同源潜在广告
                         if len(pname_set) <= PNAME_T or (len(pname_set) > 5 and len(chid_set) < 4):
                             if n > sen_len * .2 and n < sen_len * .8:
