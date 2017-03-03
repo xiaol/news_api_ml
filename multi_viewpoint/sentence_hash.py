@@ -240,6 +240,11 @@ def cal_process(nid_set, same_t=3):
                             same_sentence_sql_para.append((nid, r[0], str_no_html, sen, t))
                             #cursor.execute(insert_same_sentence, (nid, r[0], str_no_html, sen, t))
                             #print cursor.mogrify(insert_same_sentence, (nid, r[0], str_no_html, sen_without_html, t))
+                    if len(nids_for_ads) == 0:
+                        cursor.execute(insert_sentence_hash, (nid, str_no_html, n, h.__str__(), fir, sec, thi, fou, t, fir2, sec2, thi2, fou2))
+                        conn.commit()
+                        continue
+
                     is_new_ads = False
                     not_ads_but_ignore = False   #不是广告,但需要忽略计算重复
                     PNAME_T = 3
@@ -247,6 +252,7 @@ def cal_process(nid_set, same_t=3):
                     pname_set = set()
                     chid_set = set()
                     ctime_list = []
+                    #print cursor.mogrify(get_pname, (tuple(nids_for_ads),))
                     cursor.execute(get_pname, tuple(nids_for_ads))
                     rows2 = cursor.fetchall()
                     for rk in rows2:
