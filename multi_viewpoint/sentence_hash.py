@@ -56,8 +56,8 @@ insert_sentence_hash = "insert into news_sentence_hash (nid, sentence, sentence_
 #query_sen_sql = "select nid, sentence, hash_val from news_sentence_hash"
 #query_sen_sql = "select nid, sentence, hash_val from news_sentence_hash where first_16=%s or second_16=%s or third_16=%s or fourth_16=%s"
 query_sen_sql = "select ns.nid, ns.hash_val from news_sentence_hash ns inner join newslist_v2 nl on ns.nid=nl.nid where (first_16=%s or second_16=%s or third_16=%s or fourth_16=%s) and" \
-                " (first2_16=%s or second2_16=%s or third2_16=%s or fourth2_16=%s) group by ns.nid, ns.hash_val and " \
-                "nl.state=0"
+                " (first2_16=%s or second2_16=%s or third2_16=%s or fourth2_16=%s) and " \
+                "nl.state=0 group by ns.nid, ns.hash_val "
 #insert_same_sentence = "insert into news_same_sentence_map (nid1, nid2, sentence1, sentence2, ctime) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')"
 insert_same_sentence = "insert into news_same_sentence_map (nid1, nid2, sentence1, sentence2, ctime) VALUES (%s, %s, %s, %s, %s)"
 s_nid_sql = "select distinct nid from news_sentence_hash "
