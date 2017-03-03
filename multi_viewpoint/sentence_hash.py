@@ -168,7 +168,7 @@ def is_sentence_ads(hash_val, fir_16, sec_16, thi_16, fou_16, fir2_16, sec2_16, 
 
 
 get_pname = "select pname, chid, ctime, nid from newslist_v2 where nid in %s"
-same_sql = "select sentence from news_sentence_hash where nid=%s and hash_val=%s"
+same_sql2 = "select sentence from news_sentence_hash where nid=%s and hash_val=%s"
 ads_insert = "insert into news_ads_sentence (ads_sentence, hash_val, ctime, first_16, second_16, third_16, four_16, first2_16, second2_16, third2_16, four2_16, nids, state, special_pname)" \
              "values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
 multo_vp_insert_sql = "insert news_multi_vp (nid1, sentence1, nid2, sentence2, ctime) values (%s, %s, %s, %s, %s)"
@@ -219,7 +219,7 @@ def cal_process(nid_set, same_t=3):
                         #距离过大或者是同一篇新闻
                         if h.hamming_distance_with_val(long(r[1])) > same_t or (nid in same_dict.keys() and r[0] in same_dict[nid]) or nid == r[0]:
                             continue
-                        cursor.execute(same_sql, (r[0], r[1]))
+                        cursor.execute(same_sql2, (r[0], r[1]))
                         rs = cursor.fetchall()
                         for r2 in rs:
                             sen = r2[0].decode('utf-8')
