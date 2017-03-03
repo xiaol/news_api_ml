@@ -277,8 +277,6 @@ def cal_process(nid_set, same_t=3):
                                     if ctime_list[kkk] < min_time:
                                         min_time = ctime_list[kkk]
                                 if (max_time - min_time).days > 2:  #不是三天内的热点新闻
-                                    print (max_time - min_time).days
-                                    print str_no_html
                                     is_new_ads = True
                             '''
                             nid_links = nid_para_links_dict[nid]
