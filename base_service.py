@@ -16,6 +16,7 @@ class PushNewsIntoQueue(tornado.web.RequestHandler):
     def get(self):
         nid = self.get_argument('nid')
         #produce_consume_nid.push_nid_to_queue(nid)
+        print 'PushNewsIntoQueeu------'
         nid_queue.produce_nid(nid)
 
 

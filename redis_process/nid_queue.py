@@ -35,6 +35,7 @@ ads_queue = 'ads_queue'
 
 
 def produce_nid(nid):
+    print 'ppppppppppp'
     global redis_inst
     #redis_inst.lpush(nid_queue, nid)
     redis_inst.lpush(lda_queue, nid)
