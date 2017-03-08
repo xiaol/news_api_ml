@@ -13,6 +13,17 @@ from redis import Redis
 import traceback
 import json
 import datetime
+import logging
+import os
+
+real_dir_path = os.path.split(os.path.realpath(__file__))[0]
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+handler = logging.FileHandler(real_dir_path + '/../log/base_service/log.txt')
+handler.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 redis_inst = Redis(host='localhost', port=6379)
 nid_queue = 'nid_queue'
@@ -30,6 +41,7 @@ def produce_nid(nid):
     redis_inst.lpush(kmeans_queue, nid)
     redis_inst.lpush(simhash_queue, nid)
     redis_inst.lpush(ads_queue, nid)
+    logger.info("produce {}, push it to queues.".format(nid))
 
 
 '''
