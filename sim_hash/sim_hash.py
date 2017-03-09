@@ -133,7 +133,7 @@ def get_news_hash(nid_list):
 ################################################################################
 hash_sql = "select ns.nid, hash_val, ns.ctime from news_simhash ns inner join newslist_v2 nv on ns.nid=nv.nid where ns.ctime > now() - interval '{0} day' and nv.state=0"
 def get_news_interval(interval = 9999):
-    conn, cursor = doc_process.get_postgredb()
+    conn, cursor = doc_process.get_postgredb_query()
     cursor.execute(hash_sql.format(interval))
     rows = cursor.fetchall()
     nid_hv_list = []

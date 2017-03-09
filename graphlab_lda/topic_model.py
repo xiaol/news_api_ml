@@ -109,7 +109,7 @@ nid_sql = 'select a.title, a.content, c.cname \
 from (select * from newslist_v2 where nid=%s) a \
 inner join channellist_v2 c on a."chid"=c."id"'
 def get_words_on_nid(nid, ch_names):
-    conn, cursor = doc_process.get_postgredb()
+    conn, cursor = doc_process.get_postgredb_query()
     cursor.execute(nid_sql, [nid])
     row = cursor.fetchone()
     title = row[0]  #str类型
@@ -271,7 +271,7 @@ def coll_user_topics(uid, nids_info):
 
 user_click_sql = "select uid, nid, max(ctime) ctime from newsrecommendclick  where CURRENT_DATE - INTEGER '3' <= DATE(ctime) group by uid,nid"
 def get_user_topics():
-    conn, cursor = doc_process.get_postgredb()
+    conn, cursor = doc_process.get_postgredb_query()
     cursor.execute(user_click_sql)
     rows = cursor.fetchall()
     user_news_dict = {}
@@ -340,7 +340,7 @@ def predict_topic_nids(nid_list):
     print nid_list
     for nid in nid_list:
         try:
-            conn, cursor = doc_process.get_postgredb()
+            conn, cursor = doc_process.get_postgredb_query()
         except:
             traceback.print_exc()
             break
@@ -450,7 +450,7 @@ def predict_click(click_info):
         ctime = datetime.datetime.strptime(time_str, '%Y-%m-%d %H:%M:%S')
         valid_time = ctime + timedelta(days=30) #有效时间定为30天
         fail_time = valid_time.strftime('%Y-%m-%d %H:%M:%S')
-        conn, cursor = doc_process.get_postgredb()
+        conn, cursor = doc_process.get_postgredb_query()
         print nid
         print model_v
         cursor.execute(nt_sql.format(nid, model_v)) #获取nid可能的话题

@@ -15,10 +15,18 @@ import time
 # @param htmlstr HTML字符串.
 import psycopg2
 import traceback
+from bs4 import BeautifulSoup
 
 sentence_delimiters = ['?', '!', ';', '？', '！', '。', '；', '……', '…', '\n']
 question_delimiters = [u'?', u'？']
 news_text_nid_sql = "select nid, title, content from newslist_v2 where nid={0}"
+
+
+#使用BeautifulSoup提取内容
+#@output:
+def get_paragraph_text(para):
+    soup = BeautifulSoup(para, 'lxml')
+    return soup.text
 
 
 
@@ -120,6 +128,7 @@ POS = ['zg', 'uj', 'ul', 'e', 'd', 'uz', 'y']
 #去除html标签及停用词并筛选词性
 def filter_html_stopwords_pos(str, remove_num=False, remove_single_word=False, return_no_html=False, remove_html=True):
     #删除html标签
+    str = ''.join(str.split())
     if remove_html:
         txt_no_html = filter_tags(str)
     else:
@@ -183,6 +192,28 @@ def get_postgredb():
         try:
             time.sleep(2)
             connection = psycopg2.connect(database=POSTGRE_DBNAME, user=POSTGRE_USER, password=POSTGRE_PWD, host=POSTGRE_HOST,)
+            cursor = connection.cursor()
+            return connection, cursor
+        except:
+            traceback.print_exc()
+            raise
+
+
+#数据库查询从节点
+#POSTGRE_HOST_QUERY = '120.27.162.201'
+POSTGRE_HOST_QUERY = '10.47.54.32'
+POSTGRE_DBNAME_QUERY = 'a3'
+#POSTGRES_QUERY = "postgresql://postgres:ly@postgres&2015@120.27.162.201:5432/BDP"
+POSTGRES_QUERY = "postgresql://postgres:ly@postgres&2015@10.47.54.32:5432/BDP"
+def get_postgredb_query():
+    try:
+        connection = psycopg2.connect(database=POSTGRE_DBNAME_QUERY, user=POSTGRE_USER, password=POSTGRE_PWD, host=POSTGRE_HOST_QUERY,)
+        cursor = connection.cursor()
+        return connection, cursor
+    except:    #出现异常,再次连接
+        try:
+            time.sleep(2)
+            connection = psycopg2.connect(database=POSTGRE_DBNAME_QUERY, user=POSTGRE_USER, password=POSTGRE_PWD, host=POSTGRE_HOST_QUERY,)
             cursor = connection.cursor()
             return connection, cursor
         except:

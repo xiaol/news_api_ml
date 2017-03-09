@@ -6,6 +6,7 @@
 # @Software: PyCharm Community Edition
 #from util  import doc_process
 from util.doc_process import get_postgredb
+from util.doc_process import get_postgredb_query
 from util.doc_process import Cut
 from util.doc_process import filter_html_stopwords_pos
 from util.doc_process import filter_tags
@@ -62,7 +63,7 @@ query_sen_sql = "select ns.nid, ns.hash_val from news_sentence_hash ns inner joi
 insert_same_sentence = "insert into news_same_sentence_map (nid1, nid2, sentence1, sentence2, ctime) VALUES (%s, %s, %s, %s, %s)"
 s_nid_sql = "select distinct nid from news_sentence_hash "
 def get_exist_nids():
-    conn, cursor = get_postgredb()
+    conn, cursor = get_postgredb_query()
     cursor.execute(s_nid_sql)
     rows = cursor.fetchall()
     nid_set = set()
@@ -83,7 +84,7 @@ def get_exist_nids():
 get_sent_sql = "select nid, title, content, state, pname from newslist_v2 where nid in %s"
 def get_nids_sentences(nid_set):
     nid_tuple = tuple(nid_set)
-    conn, cursor = get_postgredb()
+    conn, cursor = get_postgredb_query()
     cursor.execute(get_sent_sql, (nid_tuple, ))
     rows = cursor.fetchall()
     nid_sentences_dict = {}
@@ -126,7 +127,7 @@ def get_nids_sentences(nid_set):
 ################################################################################
 same_sql = "select nid, same_nid from news_simhash_map where (nid in %s) or (same_nid in %s) "
 def get_relate_same_news(nid_set):
-    conn, cursor = get_postgredb()
+    conn, cursor = get_postgredb_query()
     nid_tuple = tuple(nid_set)
     cursor.execute(same_sql, (nid_tuple, nid_tuple))
     same_dict = {}
@@ -150,7 +151,7 @@ check_ads_sql = "select ads_sentence, hash_val, special_pname from news_ads_sent
                 "(first_16=%s or second_16=%s or third_16=%s or four_16=%s) and" \
                 "(first2_16=%s or second2_16=%s or third2_16=%s or four2_16=%s) "
 def is_sentence_ads(hash_val, fir_16, sec_16, thi_16, fou_16, fir2_16, sec2_16, thi2_16, fou2_16, pname):
-    conn, cursor = get_postgredb()
+    conn, cursor = get_postgredb_query()
     cursor.execute(check_ads_sql, (fir_16, sec_16, thi_16, fou_16, fir2_16, sec2_16, thi2_16, fou2_16))
     rows = cursor.fetchall()
     for r in rows:
@@ -364,7 +365,7 @@ def coll_sentence_hash():
     offset = 10000
     pool = Pool(25)
     while True:
-        conn, cursor = get_postgredb()
+        conn, cursor = get_postgredb_query()
         cursor.execute(cal_sql2, (ignore_cname, limit, offset))
         rows = cursor.fetchall()
         conn.close()

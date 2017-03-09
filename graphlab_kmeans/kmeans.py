@@ -112,7 +112,7 @@ chname_id_dict = {}
 def get_chname_id_dict():
     global chname_id_dict
     chname_id_sql = "select id, cname from channellist_v2"
-    conn, cursor = doc_process.get_postgredb()
+    conn, cursor = doc_process.get_postgredb_query()
     cursor.execute(chname_id_sql)
     rows = cursor.fetchall()
     for r in rows:
@@ -131,7 +131,7 @@ def kmeans_predict(nid_list):
         get_chname_id_dict()
     nid_info = {}
     for nid in nid_list:
-        conn, cursor = doc_process.get_postgredb()
+        conn, cursor = doc_process.get_postgredb_query()
         cursor.execute(nid_sql, [nid])
         row = cursor.fetchone()
         if not row:
@@ -216,7 +216,7 @@ def predict_click(click_info):
     ctime = datetime.datetime.strptime(time_str, '%Y-%m-%d %H:%M:%S')
     valid_time = ctime + timedelta(days=15) #有效时间定为30天
     fail_time = valid_time.strftime('%Y-%m-%d %H:%M:%S')
-    conn, cursor = doc_process.get_postgredb()
+    conn, cursor = doc_process.get_postgredb_query()
     cursor.execute(nt_sql.format(nid)) #获取nid可能的话题
     rows = cursor.fetchall()
     for r in rows:
