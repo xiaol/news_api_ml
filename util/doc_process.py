@@ -202,7 +202,7 @@ def get_postgredb():
 #数据库查询从节点
 #POSTGRE_HOST_QUERY = '120.27.162.201'
 POSTGRE_HOST_QUERY = '10.47.54.32'
-POSTGRE_DBNAME_QUERY = 'a3'
+POSTGRE_DBNAME_QUERY = 'BDP'
 #POSTGRES_QUERY = "postgresql://postgres:ly@postgres&2015@120.27.162.201:5432/BDP"
 POSTGRES_QUERY = "postgresql://postgres:ly@postgres&2015@10.47.54.32:5432/BDP"
 def get_postgredb_query():

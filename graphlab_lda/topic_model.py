@@ -12,27 +12,11 @@ import os
 import topic_model_doc_process
 from util import doc_process
 import traceback
-import logging
+from util import logger
 
 real_dir_path = os.path.split(os.path.realpath(__file__))[0]
-#gl.set_runtime_config('GRAPHLAB_DEFAULT_NUM_PYLAMBDA_WORKERS', 64)
-
-
-logger_9988 = logging.getLogger(__name__)
-logger_9988.setLevel(logging.INFO)
-handler_9988 = logging.FileHandler(real_dir_path + '/../log/lda/log_9988.txt')
-handler_9988.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-handler_9988.setFormatter(formatter)
-logger_9988.addHandler(handler_9988)
-
-
-logger_9990 = logging.getLogger(__name__)
-logger_9990.setLevel(logging.INFO)
-handler_9990 = logging.FileHandler(real_dir_path + '/../log/lda/log_9990.txt')
-handler_9990.setLevel(logging.INFO)
-handler_9990.setFormatter(formatter)
-logger_9990.addHandler(handler_9990)
+logger_9988 = logger.Logger('process9988', real_dir_path + '/../log/lda/log_9988.txt')
+logger_9990 = logger.Logger('process9990', real_dir_path + '/../log/lda/log_9990.txt')
 
 
 g_channel_model_dict = {}
