@@ -12,9 +12,28 @@ import os
 import topic_model_doc_process
 from util import doc_process
 import traceback
+import logging
 
 real_dir_path = os.path.split(os.path.realpath(__file__))[0]
 #gl.set_runtime_config('GRAPHLAB_DEFAULT_NUM_PYLAMBDA_WORKERS', 64)
+
+
+logger_9988 = logging.getLogger(__name__)
+logger_9988.setLevel(logging.INFO)
+handler_9988 = logging.FileHandler(real_dir_path + '/../log/lda_9988/log.txt')
+handler_9988.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler_9988.setFormatter(formatter)
+logger_9988.addHandler(handler_9988)
+
+
+logger_9990 = logging.getLogger(__name__)
+logger_9990.setLevel(logging.INFO)
+handler_9990 = logging.FileHandler(real_dir_path + '/../log/lda_9990/log.txt')
+handler_9990.setLevel(logging.INFO)
+handler_9990.setFormatter(formatter)
+logger_9990.addHandler(handler_9990)
+
 
 g_channel_model_dict = {}
 import datetime
@@ -87,7 +106,7 @@ def get_newest_model_dir():
 
 
 def load_models(models_dir):
-    print 'load_models()'
+    logger_9988.info("load_models ......")
     global g_channel_model_dict, model_v
     import os
     model_v = os.path.split(models_dir)[1]
@@ -95,8 +114,7 @@ def load_models(models_dir):
         g_channel_model_dict.clear()
     models_files = os.listdir(models_dir)
     for mf in models_files:
-        print '    load ' + mf
-        print models_dir
+        logger_9988.info("log {}".format(models_dir + '/' + mf))
         g_channel_model_dict[mf] = gl.load_model(models_dir + '/'+ mf)
 
 
@@ -211,11 +229,7 @@ user_topic_update_sql = "update usertopics set probability='{0}', create_time='{
 from datetime import timedelta
 def predict_user_topic_core(uid, nid, time_str):
     global g_channel_model_dict, model_v
-    print 'time ------------------'
-    t = datetime.datetime.now()
     ch_name, pred = lda_predict_core(nid)  #预测topic分布
-    t1 = datetime.datetime.now()
-    print (t1 - t).seconds
 
     if len(pred) == 0:
         return
@@ -257,8 +271,6 @@ def predict_user_topic_core(uid, nid, time_str):
         conn.close()
 
     t2 = datetime.datetime.now()
-    print '^^^^^^^^^'
-    print (t2 - t).seconds
 
 
 #from psycopg2.extras import Json
@@ -311,7 +323,8 @@ def get_nid_predict_chname(nid_list):
     try:
         from topic_model_doc_process import channel_for_topic_dict
         nid_chanl_dict = {}
-        print 'predict ---- 自媒体和点集 ' + str(len(nid_list))
+        logger_9988.info("predict ----自媒体和点集  {}".format(len(nid_list)))
+        #print 'predict ---- 自媒体和点集 ' + str(len(nid_list))
         url = "http://127.0.0.1:9993/ml/newsClassifyOnNids"
         data = {}
         data['nids'] = nid_list
@@ -323,11 +336,13 @@ def get_nid_predict_chname(nid_list):
                 if str(r['chid']) in channel_for_topic_dict.keys():
                     nid_chanl_dict[str(r['nid'])] = channel_for_topic_dict[str(r['chid'])]
         else:
-            print 'predict 自媒体失败'
+            logger_9988.info("predict 自媒体失败")
+            #print 'predict 自媒体失败'
 
         return nid_chanl_dict
     except :
-        traceback.print_exc()
+        logger_9988.error(traceback.format_exc())
+        #traceback.print_exc()
         return {}
 
 
@@ -342,8 +357,9 @@ def predict_topic_nids(nid_list):
         try:
             conn, cursor = doc_process.get_postgredb_query()
         except:
-            traceback.print_exc()
-            break
+            logger_9988.error(traceback.format_exc())
+            #traceback.print_exc()
+            continue
         cursor.execute(nid_sql, [nid])
         row = cursor.fetchone()
         title = row[0]
@@ -374,9 +390,11 @@ def predict_topic_nids(nid_list):
     chname_news_dict = {}
     for chname in channel_for_topic:
         nid_pred_dict = {}
-        print 'predict  ' + chname
+        logger_9988.info("predict   ".format(chname))
+        #print 'predict  ' + chname
         if chname not in g_channel_model_dict.keys():
-            print chname + 'is not in model'
+            logger_9988.info("{}  is not in model.".format(chname))
+            #print chname + 'is not in model'
             continue
         chname_news_dict[chname] = []
         for n in nid_info.items():
@@ -389,7 +407,8 @@ def predict_topic_nids(nid_list):
                 chname_news_dict[chname].append(n) #获取该频道的nid列表
 
         if len(chname_news_dict[chname]) == 0:
-            print '    num of ' + chname + 'is 0'
+            logger_9988.info('    num of {} is 0. '.format(chname))
+            #print '    num of ' + chname + 'is 0'
             continue
         doc_list = []
         for n in chname_news_dict[chname]:
@@ -403,7 +422,8 @@ def predict_topic_nids(nid_list):
                                                         output_type='probability',
                                                         num_burnin=30)
         t1 = datetime.datetime.now()
-        print '    predict ' + str(len(doc_list)) + ' takes ' + str((t1 - t0).seconds)
+        logger_9988.info("    predict {0} takes {1}".format(len(doc_list), (t1-t0).total_seconds()))
+        #print '    predict ' + str(len(doc_list)) + ' takes ' + str((t1 - t0).seconds)
         for m in xrange(0, pred.size()):
             num_dict = {}
             num = 0
@@ -421,7 +441,11 @@ def predict_topic_nids(nid_list):
                 k += 1
             nid_pred_dict[chname_news_dict[chname][m]] = to_save
 
-        conn, cursor = doc_process.get_postgredb()
+        try:
+            conn, cursor = doc_process.get_postgredb()
+        except:
+            logger_9988.error(traceback.format_exc())
+            continue
         for item in nid_pred_dict.items():
             n = item[0]
             extra_chanl = ''
