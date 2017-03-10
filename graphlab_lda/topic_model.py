@@ -114,8 +114,9 @@ def load_models(models_dir):
         g_channel_model_dict.clear()
     models_files = os.listdir(models_dir)
     for mf in models_files:
-        logger_9988.info("log {}".format(models_dir + '/' + mf))
+        logger_9988.info("   load {}".format(models_dir + '/' + mf))
         g_channel_model_dict[mf] = gl.load_model(models_dir + '/'+ mf)
+    logger_9988.info("load_models finished!")
 
 
 model_v = os.path.split(get_newest_model_dir())[1]
@@ -352,7 +353,8 @@ def predict_topic_nids(nid_list):
     from topic_model_doc_process import channel_for_topic, extra_channel_for_topic
 
     nid_info = {}
-    print nid_list
+    logger_9988.info(str(nid_list))
+    #print nid_list
     for nid in nid_list:
         try:
             conn, cursor = doc_process.get_postgredb_query()
