@@ -20,7 +20,7 @@ real_dir_path = os.path.split(os.path.realpath(__file__))[0]
 
 logger_9988 = logging.getLogger(__name__)
 logger_9988.setLevel(logging.INFO)
-handler_9988 = logging.FileHandler(real_dir_path + '/../log/lda_9988/log.txt')
+handler_9988 = logging.FileHandler(real_dir_path + '/../log/lda/log_9988.txt')
 handler_9988.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler_9988.setFormatter(formatter)
@@ -29,7 +29,7 @@ logger_9988.addHandler(handler_9988)
 
 logger_9990 = logging.getLogger(__name__)
 logger_9990.setLevel(logging.INFO)
-handler_9990 = logging.FileHandler(real_dir_path + '/../log/lda_9990/log.txt')
+handler_9990 = logging.FileHandler(real_dir_path + '/../log/lda/log_9990.txt')
 handler_9990.setLevel(logging.INFO)
 handler_9990.setFormatter(formatter)
 logger_9990.addHandler(handler_9990)
