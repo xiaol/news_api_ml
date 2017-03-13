@@ -179,7 +179,7 @@ multo_vp_insert_sql = "insert into news_multi_vp (nid1, sentence1, nid2, sentenc
 ################################################################################
 #@brief: 计算子进程
 ################################################################################
-def cal_process(nid_set, same_t=3, log = logger.Logger()):
+def cal_process(nid_set, log, same_t=3):
     log.info('there are {} news to calulate'.format(len(nid_set)))
     nid_sents_dict, nid_para_links_dict, nid_pname_dict = get_nids_sentences(nid_set)
     same_dict = get_relate_same_news(nid_set)
@@ -349,7 +349,7 @@ def coll_sentence_hash_time(nid_list):
     small_list = [nid_list[i:i + 20] for i in range(0, len(nid_list), 20)]
     pool = Pool(20)
     for nid_set in small_list:
-        pool.apply_async(cal_process, args=(set(nid_set), 3, logger_9965))
+        pool.apply_async(cal_process, args=(set(nid_set), logger_9965, 3))
 
     pool.close()
     pool.join()
@@ -385,7 +385,7 @@ def coll_sentence_hash():
         need_to_cal_set = all_set - exist_set
         if len(need_to_cal_set) == 0:
             continue
-        pool.apply_async(cal_process, args=(need_to_cal_set, 3, logger_9966))
+        pool.apply_async(cal_process, args=(need_to_cal_set, logger_9966, 3))
 
     pool.close()
     pool.join()
