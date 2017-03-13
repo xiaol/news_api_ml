@@ -24,8 +24,8 @@ import jieba
 from util import logger
 
 real_dir_path = os.path.split(os.path.realpath(__file__))[0]
-logger_9965 = logger.Logger(real_dir_path + '/../log/multi_vp/log_9965.txt')
-logger_9966 = logger.Logger(real_dir_path + '/../log/multi_vp/log_9966.txt')
+logger_9965 = logger.Logger('9965', real_dir_path + '/../log/multi_vp/log_9965.txt')
+logger_9966 = logger.Logger('9966', real_dir_path + '/../log/multi_vp/log_9966.txt')
 
 
 
