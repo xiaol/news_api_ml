@@ -184,8 +184,11 @@ def cal_process(nid_set, log=None, same_t=3):
     log.info('there are {} news to calulate'.format(len(nid_set)))
     nid_sents_dict, nid_para_links_dict, nid_pname_dict = get_nids_sentences(nid_set)
     same_dict = get_relate_same_news(nid_set)
+    kkk = 0
+    ttt = datetime.datetime.now()
     try:
         for item in nid_sents_dict.items(): #每条新闻
+            kkk += 1
             n = 0
             nid = item[0]
             log.info('--- consume :{}'.format(nid))
@@ -336,7 +339,10 @@ def cal_process(nid_set, log=None, same_t=3):
                     conn.commit()
                 cursor.close()
                 conn.close()
-
+            if kkk % 100 == 0:
+                ttt2 = datetime.datetime.now()
+                log.info('{0} finished! Last 100 takes {1} s'.format(kkk, (ttt2-ttt).total_seconds()))
+                ttt = ttt2
         del nid_sents_dict
         del nid_para_links_dict
     except:
@@ -371,7 +377,7 @@ def coll_sentence_hash():
     exist_set = get_exist_nids()
     limit = 10000
     offset = 10000
-    pool = Pool(1)
+    pool = Pool(30)
     while True:
         conn, cursor = get_postgredb_query()
         cursor.execute(cal_sql2, (ignore_cname, limit, offset))
