@@ -180,7 +180,7 @@ multo_vp_insert_sql = "insert into news_multi_vp (nid1, sentence1, nid2, sentenc
 #@brief: 计算子进程
 ################################################################################
 def cal_process(nid_set, log=None, same_t=3):
-    log = logger_9966
+    log = logger_9965
     log.info('there are {} news to calulate'.format(len(nid_set)))
     nid_sents_dict, nid_para_links_dict, nid_pname_dict = get_nids_sentences(nid_set)
     same_dict = get_relate_same_news(nid_set)
@@ -367,11 +367,11 @@ a."chid" =c."id" where a.state=0 LIMIT %s offset %s'
 ignore_cname = ("美女", "帅哥", "搞笑", "趣图")
 
 def coll_sentence_hash():
-    logger_9966.info("Begin to collect sentence...")
+    logger_9965.info("Begin to collect sentence...")
     exist_set = get_exist_nids()
     limit = 10000
     offset = 10000
-    pool = Pool(25)
+    pool = Pool(1)
     while True:
         conn, cursor = get_postgredb_query()
         cursor.execute(cal_sql2, (ignore_cname, limit, offset))
@@ -391,7 +391,7 @@ def coll_sentence_hash():
     pool.close()
     pool.join()
 
-    logger_9966.info("Congratulations! Finish to collect sentences.")
+    logger_9965.info("Congratulations! Finish to collect sentences.")
 
 
 
