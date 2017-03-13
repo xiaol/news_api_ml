@@ -21,15 +21,15 @@ import traceback
 from multiprocessing import Process
 from multiprocessing import Pool
 import jieba
+from util import logger
 
 real_dir_path = os.path.split(os.path.realpath(__file__))[0]
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-handler = logging.FileHandler(real_dir_path + '/../log/multi_vp/log.txt')
-handler.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+logger_9965 = logger.Logger(real_dir_path + '/../log/multi_vp/log_9965.txt')
+logger_9966 = logger.Logger(real_dir_path + '/../log/multi_vp/log_9966.txt')
+
+
+
+
 def get_nid_sentence(nid):
     get_sentences_on_nid(nid)
 
@@ -72,6 +72,7 @@ def get_exist_nids():
     conn.close()
     return nid_set
 
+
 ################################################################################
 #获取新闻句子,句子以分词list形式给出,方便后面直接算hash
 #@input ---- nid_set
@@ -92,7 +93,7 @@ def get_nids_sentences(nid_set):
     nid_pname_dict = {}
     for r in rows:
         if r[3] != 0: #已被下线
-            logger.info('{} has been offline.'.format(r[0]))
+            logger_9965.info('{} has been offline.'.format(r[0]))
             continue
         nid = r[0]
         nid_sentences_dict[nid] = {}
@@ -174,19 +175,19 @@ get_pname = "select pname, chid, ctime, nid from newslist_v2 where nid in %s"
 same_sql2 = "select sentence from news_sentence_hash where nid=%s and hash_val=%s"
 ads_insert = "insert into news_ads_sentence (ads_sentence, hash_val, ctime, first_16, second_16, third_16, four_16, first2_16, second2_16, third2_16, four2_16, nids, state, special_pname)" \
              "values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-multo_vp_insert_sql = "insert into news_multi_vp (nid1, sentence1, nid2, sentence2, ctime) values (%s, %s, %s, %s, %s)"
+multo_vp_insert_sql = "insert into news_multi_vp (nid1, sentence1, nid2, sentence2, ctime, ctime1, ctime2) values (%s, %s, %s, %s, %s, %s, %s)"
 ################################################################################
 #@brief: 计算子进程
 ################################################################################
-def cal_process(nid_set, same_t=3):
-    logger.info('there are {} news to calulate'.format(len(nid_set)))
+def cal_process(nid_set, same_t=3, log = logger.Logger()):
+    log.info('there are {} news to calulate'.format(len(nid_set)))
     nid_sents_dict, nid_para_links_dict, nid_pname_dict = get_nids_sentences(nid_set)
     same_dict = get_relate_same_news(nid_set)
     try:
         for item in nid_sents_dict.items(): #每条新闻
             n = 0
             nid = item[0]
-            logger.info('--- consume :{}'.format(nid))
+            log.info('--- consume :{}'.format(nid))
             t = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             #sents = []
             para_sent_dict = item[1]
@@ -209,7 +210,7 @@ def cal_process(nid_set, same_t=3):
                     fir, sec, thi, fou, fir2, sec2, thi2, fou2 = get_4_segments(h.__long__())
                     if is_sentence_ads(h, fir, sec, thi, fou, fir2, sec2, thi2, fou2, nid_pname_dict[nid]):  #在广告db内
                         #  删除广告句子
-                        logger.info('find ads of {0}  : {1} '.format(nid, str_no_html.encode("utf-8")))
+                        log.info('find ads of {0}  : {1} '.format(nid, str_no_html.encode("utf-8")))
                         continue
                     cursor.execute(query_sen_sql, (str(fir), str(sec), str(thi), str(fou), str(fir2), str(sec2), str(thi2), str(fou2)))
                     #print cursor.mogrify(query_sen_sql, (str(fir), str(sec), str(thi), str(fou), str(fir2), str(sec2), str(thi2), str(fou2)))
@@ -308,7 +309,7 @@ def cal_process(nid_set, same_t=3):
                         else:
                             pname_str = ""
                         cursor.execute(ads_insert, (str_no_html, h.__str__(), t, fir, sec, thi, fou, fir2, sec2, thi2, fou2, nids_str, 0, pname_str))
-                        logger.info('find new ads : {0}'.format(str_no_html.encode("utf-8")))
+                        log.info('find new ads : {0}'.format(str_no_html.encode("utf-8")))
                     else:
                         #if len(same_sentence_sql_para) < 5:  #检测出过多的相同句子,又不是广告, 可能是误判, 不处理
                         if not_ads_but_ignore:  #相同的句子过多,认为是误判, 加入广告数据库,但state=1,即不是真广告,这样可以在下次碰到时减少计算
@@ -320,8 +321,14 @@ def cal_process(nid_set, same_t=3):
                         for same in same_sentence_sql_para:
                             nn = same[1]  #nid
                             if nid_pname_dict[nid] != nid_pn[nn]:
-                                cursor.execute(multo_vp_insert_sql, (str(same[0]), same[2], str(same[1]), same[3], t) )
-                                logger.info('get multi viewpoint :{}'.format(str_no_html.encode('utf-8')))
+                                ctime_sql = "select nid, ctime from newslist_v2 where nid = %s or nid=%s"
+                                cursor.execute(ctime_sql, same[0], same[1])
+                                ctimes = cursor.fetchall()
+                                ctime_dict = {}
+                                for ct in ctimes:
+                                    ctime_dict[str(ct[0])] = ct[1]
+                                cursor.execute(multo_vp_insert_sql, (str(same[0]), same[2], str(same[1]), same[3], t, ctime_dict[str(same[0])], ctime_dict[str(same[1])]))
+                                log.info('get multi viewpoint :{}'.format(str_no_html.encode('utf-8')))
 
                     #将所有段落入库
                     cursor.execute(insert_sentence_hash, (nid, str_no_html, n, h.__str__(), fir, sec, thi, fou, t, fir2, sec2, thi2, fou2))
@@ -332,7 +339,7 @@ def cal_process(nid_set, same_t=3):
         del nid_sents_dict
         del nid_para_links_dict
     except:
-        logger.exception(traceback.format_exc())
+        log.exception(traceback.format_exc())
 
 
 #供即时计算
@@ -342,11 +349,11 @@ def coll_sentence_hash_time(nid_list):
     small_list = [nid_list[i:i + 20] for i in range(0, len(nid_list), 20)]
     pool = Pool(20)
     for nid_set in small_list:
-        pool.apply_async(cal_process, args=(set(nid_set), ))
+        pool.apply_async(cal_process, args=(set(nid_set), 3, logger_9965))
 
     pool.close()
     pool.join()
-    logger.info("Congratulations! Finish to collect sentences.")
+    logger_9965.info("Congratulations! Finish to collect sentences.")
 
 
 
@@ -359,7 +366,7 @@ a."chid" =c."id" where a.state=0 LIMIT %s offset %s'
 ignore_cname = ("美女", "帅哥", "搞笑", "趣图")
 
 def coll_sentence_hash():
-    logger.info("Begin to collect sentence...")
+    logger_9966.info("Begin to collect sentence...")
     exist_set = get_exist_nids()
     limit = 10000
     offset = 10000
@@ -378,13 +385,12 @@ def coll_sentence_hash():
         need_to_cal_set = all_set - exist_set
         if len(need_to_cal_set) == 0:
             continue
-        pool.apply_async(cal_process, args=(need_to_cal_set, ))
+        pool.apply_async(cal_process, args=(need_to_cal_set, 3, logger_9966))
 
     pool.close()
     pool.join()
 
-    logger.info("Congratulations! Finish to collect sentences.")
-
+    logger_9966.info("Congratulations! Finish to collect sentences.")
 
 
 

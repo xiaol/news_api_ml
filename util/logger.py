@@ -5,9 +5,6 @@
 # @File    : logger.py
 # @Software: PyCharm Community Edition
 import logging
-import sys
-import os
-
 
 class Logger:
     def __init__(self, logName, logFile, level=logging.INFO):

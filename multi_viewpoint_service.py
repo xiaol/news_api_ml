@@ -28,6 +28,12 @@ if __name__ == '__main__':
         #sentence_hash.coll_sentence_hash()
         from redis_process import nid_queue
         nid_queue.consume_nid_sentence_simhash(200)
+    if port == 9966:
+        http_server = tornado.httpserver.HTTPServer(Application())
+        http_server.listen(port)
+        #sentence_hash.coll_sentence_hash()
+        from multi_viewpoint import sentence_hash
+        sentence_hash.coll_sentence_hash()
 
     tornado.ioloop.IOLoop.instance().start()
 
