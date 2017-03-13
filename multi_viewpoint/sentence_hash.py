@@ -326,7 +326,7 @@ def cal_process(nid_set, log=None, same_t=3):
                             nn = same[1]  #nid
                             if nid_pname_dict[nid] != nid_pn[nn]:
                                 ctime_sql = "select nid, ctime from newslist_v2 where nid = %s or nid=%s"
-                                cursor.execute(ctime_sql, same[0], same[1])
+                                cursor.execute(ctime_sql, (same[0], same[1]))
                                 ctimes = cursor.fetchall()
                                 ctime_dict = {}
                                 for ct in ctimes:
