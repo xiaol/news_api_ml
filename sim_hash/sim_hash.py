@@ -213,7 +213,7 @@ def del_nid_of_fewer_comment(nid, n):
         response = requests.post(url, data=data)
         cursor.close()
         conn.close()
-        logger.info('{0} vs {1},  offline {3}'.format(nid, n, del_nid))
+        logger.info('{0} vs {1},  offline {2}'.format(nid, n, del_nid))
     except Exception as e:
         logger.error(traceback.format_exc())
 
