@@ -184,11 +184,11 @@ def cal_process(nid_set, log=None, same_t=3):
     log.info('there are {} news to calulate'.format(len(nid_set)))
     nid_sents_dict, nid_para_links_dict, nid_pname_dict = get_nids_sentences(nid_set)
     same_dict = get_relate_same_news(nid_set)
-    kkk = 0
+    kkkk = 0
     ttt = datetime.datetime.now()
     try:
         for item in nid_sents_dict.items(): #每条新闻
-            kkk += 1
+            kkkk += 1
             n = 0
             nid = item[0]
             log.info('--- consume :{}'.format(nid))
@@ -205,6 +205,7 @@ def cal_process(nid_set, log=None, same_t=3):
                 para_num = pa[0]  #段落号
                 sents = pa[1]
                 conn, cursor = get_postgredb()
+                conn_query, cursor_query = get_postgredb_query()
                 for s in sents:  #每个句子
                     n += 1
                     str_no_html, wl = filter_html_stopwords_pos(s, False, True, True, False)
@@ -216,9 +217,9 @@ def cal_process(nid_set, log=None, same_t=3):
                         #  删除广告句子
                         log.info('find ads of {0}  : {1} '.format(nid, str_no_html.encode("utf-8")))
                         continue
-                    cursor.execute(query_sen_sql, (str(fir), str(sec), str(thi), str(fou), str(fir2), str(sec2), str(thi2), str(fou2)))
+                    cursor_query.execute(query_sen_sql, (str(fir), str(sec), str(thi), str(fou), str(fir2), str(sec2), str(thi2), str(fou2)))
                     #print cursor.mogrify(query_sen_sql, (str(fir), str(sec), str(thi), str(fou), str(fir2), str(sec2), str(thi2), str(fou2)))
-                    rows = cursor.fetchall()  #所有可能相同的段落
+                    rows = cursor_query.fetchall()  #所有可能相同的段落
                     if len(rows) == 0:
                         continue
 
@@ -230,8 +231,8 @@ def cal_process(nid_set, log=None, same_t=3):
                         #距离过大或者是同一篇新闻
                         if h.hamming_distance_with_val(long(r[1])) > same_t or (nid in same_dict.keys() and r[0] in same_dict[nid]) or nid == r[0]:
                             continue
-                        cursor.execute(same_sql2, (r[0], r[1]))
-                        rs = cursor.fetchall()
+                        cursor_query.execute(same_sql2, (r[0], r[1]))
+                        rs = cursor_query.fetchall()
                         for r2 in rs:
                             sen = r2[0].decode('utf-8')
                             sen_without_html = filter_tags(sen)
@@ -264,8 +265,8 @@ def cal_process(nid_set, log=None, same_t=3):
                     chid_set = set()
                     ctime_list = []
                     #print cursor.mogrify(get_pname, (tuple(nids_for_ads),))
-                    cursor.execute(get_pname, (tuple(nids_for_ads),))
-                    rows2 = cursor.fetchall()
+                    cursor_query.execute(get_pname, (tuple(nids_for_ads),))
+                    rows2 = cursor_query.fetchall()
                     for rk in rows2:
                         pname_set.add(rk[0])
                         chid_set.add(rk[1])
@@ -326,8 +327,8 @@ def cal_process(nid_set, log=None, same_t=3):
                             nn = same[1]  #nid
                             if nid_pname_dict[nid] != nid_pn[nn]:
                                 ctime_sql = "select nid, ctime from newslist_v2 where nid = %s or nid=%s"
-                                cursor.execute(ctime_sql, (same[0], same[1]))
-                                ctimes = cursor.fetchall()
+                                cursor_query.execute(ctime_sql, (same[0], same[1]))
+                                ctimes = cursor_query.fetchall()
                                 ctime_dict = {}
                                 for ct in ctimes:
                                     ctime_dict[str(ct[0])] = ct[1]
@@ -339,9 +340,11 @@ def cal_process(nid_set, log=None, same_t=3):
                     conn.commit()
                 cursor.close()
                 conn.close()
-            if kkk % 100 == 0:
+                cursor_query.close()
+                conn_query.close()
+            if kkkk % 100 == 0:
                 ttt2 = datetime.datetime.now()
-                log.info('{0} finished! Last 100 takes {1} s'.format(kkk, (ttt2-ttt).total_seconds()))
+                log.info('{0} finished! Last 100 takes {1} s'.format(kkkk, (ttt2-ttt).total_seconds()))
                 ttt = ttt2
         del nid_sents_dict
         del nid_para_links_dict

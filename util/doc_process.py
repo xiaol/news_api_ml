@@ -227,7 +227,7 @@ from (select * from newslist_v2 where nid=%s) a \
 inner join channellist_v2 c on a."chid"=c."id"'
 #获取nid的段落的字符串。 去除了html,但是没有去除停用词和特殊词性的词
 def get_words_on_nid(nid):
-    conn, cursor = get_postgredb()
+    conn, cursor = get_postgredb_query()
     cursor.execute(nid_sql, [nid])
     rows = cursor.fetchall()
     word_list = []
@@ -293,7 +293,7 @@ def Cut(lines, cutlist=cutlist):  # 参数1：引用分句标志符；参数2：
 
 #获取文章段落
 def get_sentences_on_nid(nid):
-    conn, cursor = get_postgredb()
+    conn, cursor = get_postgredb_query()
     cursor.execute(news_text_nid_sql.format(nid))
     rows = cursor.fetchall()
     sentences = []

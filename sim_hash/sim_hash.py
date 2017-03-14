@@ -164,7 +164,7 @@ offonline_sql = 'update newslist_v2 set state=1 where nid={0}'
 url = "http://114.55.142.40:9001/news_delete"
 def del_nid_of_fewer_comment(nid, n):
     try:
-        conn, cursor = doc_process.get_postgredb()
+        conn, cursor = doc_process.get_postgredb_query()
         #先判断新闻是否已经被手工推荐。有则删除没有被手工推荐的新闻
         cursor.execute(recommend_sql, (nid, n))
         rs = cursor.fetchall()
