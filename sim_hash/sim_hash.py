@@ -170,7 +170,7 @@ def goal_to_del(contents, coment_num):
 ################################################################################
 #@brief : 删除重复的新闻
 ################################################################################
-get_comment_num_sql = 'select nid, comment, contents from newslist_v2 where nid in ({0}, {1})'
+get_comment_num_sql = 'select nid, comment, content from newslist_v2 where nid in ({0}, {1})'
 recommend_sql = "select nid, rtime from newsrecommendlist where rtime > now() - interval '1 day' and nid in (%s, %s)"
 del_sql = 'delete from newslist_v2 where nid={0}'
 offonline_sql = 'update newslist_v2 set state=1 where nid={0}'
