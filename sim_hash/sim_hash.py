@@ -154,10 +154,23 @@ def get_same_news(news_simhash, check_list, threshold = 3):
         logger.error(traceback.format_exc())
 
 
+#去除广告的原则
+#得分越小, 越需要删除
+def goal_to_del(contents, coment_num):
+    img_num = 0
+    para_num = 0
+    for con in contents:
+        para_num += 1
+        if 'img' in con.keys():
+            img_num += 1
+
+    return img_num + para_num + 0.3*coment_num
+
+
 ################################################################################
 #@brief : 删除重复的新闻
 ################################################################################
-get_comment_num_sql = 'select nid, comment from newslist_v2 where nid in ({0}, {1})'
+get_comment_num_sql = 'select nid, comment, contents from newslist_v2 where nid in ({0}, {1})'
 recommend_sql = "select nid, rtime from newsrecommendlist where rtime > now() - interval '1 day' and nid in (%s, %s)"
 del_sql = 'delete from newslist_v2 where nid={0}'
 offonline_sql = 'update newslist_v2 set state=1 where nid={0}'
@@ -189,22 +202,18 @@ def del_nid_of_fewer_comment(nid, n):
 
         cursor.execute(get_comment_num_sql.format(nid, n))
         rows = cursor.fetchall()
-        d1 = rows[0][1] #comment数量
-        d2 = rows[1][1]
-        if d1 > d2:
-            off_n = 1 #删除rows[1]
-        elif d1 == d2:  #如果相同,下线后入库的新闻
-            off_n = 0 if rows[0][0] == nid else 1
-        else:
-            off_n = 0
+        nid_goal = []
+        for r in rows:
+            nid_goal.append(r[0], goal_to_del(r[2], r[1]))
+        sorted_goal = sorted(nid_goal, key=lambda goal:goal[1])
+        del_nid = sorted_goal[0][0]
+
         data = {}
-        data['nid'] = rows[off_n][0]
+        data['nid'] = del_nid
         response = requests.post(url, data=data)
-        #cursor.execute(offonline_sql.format(rows[off_n][0]))
-        #conn.commit()
         cursor.close()
         conn.close()
-        logger.info('{0} has {1} comments and {2} has {3} comments, offline {4}'.format(rows[0][0], rows[0][1], rows[1][0], rows[1][1], rows[off_n][0]))
+        logger.info('{0} vs {1},  offline {3}'.format(nid, n, del_nid))
     except Exception as e:
         logger.error(traceback.format_exc())
 
