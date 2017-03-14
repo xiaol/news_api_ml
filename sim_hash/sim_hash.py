@@ -204,7 +204,7 @@ def del_nid_of_fewer_comment(nid, n):
         rows = cursor.fetchall()
         nid_goal = []
         for r in rows:
-            nid_goal.append(r[0], goal_to_del(r[2], r[1]))
+            nid_goal.append((r[0], goal_to_del(r[2], r[1])))
         sorted_goal = sorted(nid_goal, key=lambda goal:goal[1])
         del_nid = sorted_goal[0][0]
 
