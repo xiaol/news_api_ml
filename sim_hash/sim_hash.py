@@ -148,6 +148,7 @@ def cal_and_check_news_hash(nid_list):
             words_list = doc_process.get_words_on_nid(nid)
             h = simhash(words_list)
             check_list = get_news_interval(h, 1)
+            logger.info("    check: {}".format(check_list))
             same_list = get_same_news(h, check_list)
             if len(same_list) > 0: #已经存在相同的新闻
                 for n in same_list:
