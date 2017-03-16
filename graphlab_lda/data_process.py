@@ -62,21 +62,24 @@ class DocProcess(object):
                 continue
             #根据tfidf进行二次筛选
             total_list = doc_process.jieba_extract_keywords(' '.join(total_list), min(50, len(total_list)/5))
-            f.write(' '.join(total_list).encode('utf-8'))
-
+            f.write(' '.join(total_list).encode('utf-8') + '\n')
         conn.close()
 
     def coll_news_handler(self):
         logger.info("coll_news_handler begin ...!")
         t0 = datetime.datetime.now()
         import multiprocessing as mp
+        from util.doc_process import join_file
         procs = []
+        chnl_file = []
         for chanl in channel_for_topic:
+            chnl_file.append(os.path.join(self.save_dir, chanl))
             coll_proc = mp.Process(target=self.coll_news_proc, args=(chanl,))
             coll_proc.start()
             procs.append(coll_proc)
         for i in procs:
             i.join()
+        join_file(chnl_file, os.path.join(self.save_dir, '/data.txt'))
         t1 = datetime.datetime.now()
         logger.info("coll_news_handler finished!, it takes {}s".format((t1 - t0).total_seconds()))
 

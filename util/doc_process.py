@@ -305,5 +305,16 @@ def get_sentences_on_nid(nid):
 
     return sentences
 
+def join_file(in_filenames, out_filename):
+    out = open(out_filename, 'w+')
+
+    for f in in_filenames:
+        try:
+            in_file = open(f, 'r')
+            out.write(in_file.read())
+            in_file.close()
+        except IOError:
+            raise
+    out.close()
 
 
