@@ -8,6 +8,7 @@ import os
 import datetime
 from util import doc_process
 from util.logger import Logger
+import traceback
 
 real_dir_path = os.path.split(os.path.realpath(__file__))[0]
 logger = Logger('data_process', os.path.join(real_dir_path,  'log/data_process.txt'))
@@ -32,32 +33,35 @@ a."chid"=c."id" ORDER BY nid desc LIMIT %s'
 
 
 def coll_news_proc(save_dir, chnl, doc_num_per_chnl, doc_min_len):
-    logger.info('    start to collect {} ......'.format(chnl))
-    f = open(os.path.join(save_dir, chnl), 'w+') #定义频道文件
-    print '^^^^^^^^^^^^^^^^^^^^^^^^'
-    print os.path.join(save_dir, chnl)
-    conn, cursor = doc_process.get_postgredb_query()
-    cursor.execute(channle_sql, [chnl, doc_num_per_chnl])
-    rows = cursor.fetchall()
-    for row in rows:
-        title = row[0]
-        content_list = row[1]
-        txt = ''
-        for content in content_list:
-            if 'txt' in content.keys():
-                txt += content['txt'].encode('utf-8')
-        total_txt = title + txt
-        total_list = doc_process.filter_html_stopwords_pos(total_txt, remove_num=True, remove_single_word=True)
-        if len(total_list) < doc_min_len:  #字数太少则丢弃
-            continue
-        #根据tfidf进行二次筛选
-        total_list = doc_process.jieba_extract_keywords(' '.join(total_list), min(50, len(total_list)/5))
-        f.write(' '.join(total_list).encode('utf-8') + '\n')
-        del content_list
-        del total_list
-    f.close()
-    conn.close()
-    print 'fffffffff' + chnl
+    try:
+        logger.info('    start to collect {} ......'.format(chnl))
+        f = open(os.path.join(save_dir, chnl), 'w+') #定义频道文件
+        print '^^^^^^^^^^^^^^^^^^^^^^^^'
+        print os.path.join(save_dir, chnl)
+        conn, cursor = doc_process.get_postgredb_query()
+        cursor.execute(channle_sql, [chnl, doc_num_per_chnl])
+        rows = cursor.fetchall()
+        for row in rows:
+            title = row[0]
+            content_list = row[1]
+            txt = ''
+            for content in content_list:
+                if 'txt' in content.keys():
+                    txt += content['txt'].encode('utf-8')
+            total_txt = title + txt
+            total_list = doc_process.filter_html_stopwords_pos(total_txt, remove_num=True, remove_single_word=True)
+            if len(total_list) < doc_min_len:  #字数太少则丢弃
+                continue
+            #根据tfidf进行二次筛选
+            total_list = doc_process.jieba_extract_keywords(' '.join(total_list), min(50, len(total_list)/5))
+            f.write(' '.join(total_list).encode('utf-8') + '\n')
+            del content_list
+            del total_list
+        f.close()
+        conn.close()
+        print 'fffffffff' + chnl
+    except:
+        traceback.print_exc()
 
 doc_num_per_chnl = doc_num_per_chnl
 doc_min_len = doc_min_len
@@ -68,27 +72,31 @@ if not os.path.exists(save_dir):
 with open(save_dir + '/data.txt', 'w') as f: #定义总文件
     pass
 def coll_news_handler(save_dir, doc_num_per_chnl, doc_min_len):
-    logger.info("coll_news_handler begin ...!")
-    t0 = datetime.datetime.now()
-    import multiprocessing as mp
-    from multiprocessing import Pool
-    pool = Pool(20)
-    from util.doc_process import join_file
-    procs = []
-    chnl_file = []
-    for chanl in channel_for_topic:
-        chnl_file.append(os.path.join(save_dir, chanl))
-        pool.apply_async(coll_news_proc, args=(save_dir, chanl, doc_num_per_chnl, doc_min_len))
-        #coll_proc = mp.Process(target=self.coll_news_proc, args=(chanl,))
-        #coll_proc.start()
-        #procs.append(coll_proc)
-    pool.close()
-    pool.join()
-    #for i in procs:
-    #    i.join()
-    join_file(chnl_file, os.path.join(save_dir, '/data.txt'))
-    t1 = datetime.datetime.now()
-    logger.info("coll_news_handler finished!, it takes {}s".format((t1 - t0).total_seconds()))
+    try:
+        logger.info("coll_news_handler begin ...!")
+        t0 = datetime.datetime.now()
+        import multiprocessing as mp
+        from multiprocessing import Pool
+        pool = Pool(20)
+        from util.doc_process import join_file
+        procs = []
+        chnl_file = []
+        for chanl in channel_for_topic:
+            chnl_file.append(os.path.join(save_dir, chanl))
+            pool.apply_async(coll_news_proc, args=(save_dir, chanl, doc_num_per_chnl, doc_min_len))
+            #coll_proc = mp.Process(target=self.coll_news_proc, args=(chanl,))
+            #coll_proc.start()
+            #procs.append(coll_proc)
+        pool.close()
+        pool.join()
+        #for i in procs:
+        #    i.join()
+        join_file(chnl_file, os.path.join(save_dir, '/data.txt'))
+        t1 = datetime.datetime.now()
+        logger.info("coll_news_handler finished!, it takes {}s".format((t1 - t0).total_seconds()))
+    except:
+        pass
+
 
 class DocProcess(object):
     '''collect docs for training model'''
