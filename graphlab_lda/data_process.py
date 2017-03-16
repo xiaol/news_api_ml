@@ -28,7 +28,7 @@ channle_sql ='SELECT a.nid, a.title, a.content, c.cname \
 FROM newslist_v2 a \
 INNER JOIN (select * from channellist_v2 where "cname"=%s) c \
 ON \
-a."chid"=c."id" ORDER BY nid desc DESC LIMIT %s'
+a."chid"=c."id" ORDER BY nid desc LIMIT %s'
 
 
 class DocProcess(object):
