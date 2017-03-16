@@ -24,7 +24,7 @@ channel_for_topic = ['科技', '外媒', '社会', '财经', '体育', '汽车',
 excluded_chnl = ['美女', '视频', '趣图', '搞笑']
 
 
-channle_sql ='SELECT a.nid, a.title, a.content, c.cname \
+channle_sql ='SELECT a.title, a.content \
 FROM newslist_v2 a \
 INNER JOIN (select * from channellist_v2 where "cname"=%s) c \
 ON \
