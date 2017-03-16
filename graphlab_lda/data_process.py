@@ -95,7 +95,7 @@ def coll_news_handler(save_dir, doc_num_per_chnl, doc_min_len):
         t1 = datetime.datetime.now()
         logger.info("coll_news_handler finished!, it takes {}s".format((t1 - t0).total_seconds()))
     except:
-        pass
+        traceback.print_exc()
 
 
 class DocProcess(object):
