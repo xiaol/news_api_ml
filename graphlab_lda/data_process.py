@@ -33,7 +33,6 @@ a."chid"=c."id" ORDER BY nid desc LIMIT %s'
 
 def coll_news_proc(save_dir, chnl, doc_num_per_chnl, doc_min_len):
     logger.info('    start to collect {} ......'.format(chnl))
-    '''
     f = open(os.path.join(save_dir, chnl), 'w') #定义频道文件
     conn, cursor = doc_process.get_postgredb_query()
     cursor.execute(channle_sql, [chnl, doc_num_per_chnl])
@@ -56,7 +55,6 @@ def coll_news_proc(save_dir, chnl, doc_num_per_chnl, doc_min_len):
         del total_list
     f.close()
     conn.close()
-    '''
     print 'fffffffff' + chnl
 
 doc_num_per_chnl = doc_num_per_chnl
