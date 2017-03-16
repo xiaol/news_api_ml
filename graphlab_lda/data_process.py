@@ -68,6 +68,7 @@ class DocProcess(object):
 
     def coll_news_handler(self):
         logger.info("coll_news_handler begin ...!")
+        t0 = datetime.datetime.now()
         import multiprocessing as mp
         procs = []
         for chanl in channel_for_topic:
@@ -76,7 +77,8 @@ class DocProcess(object):
             procs.append(coll_proc)
         for i in procs:
             i.join()
-        logger.info("coll_news_handler finished!")
+        t1 = datetime.datetime.now()
+        logger.info("coll_news_handler finished!, it takes {}s".format((t1 - t0).total_seconds()))
 
 
 def coll_news():
