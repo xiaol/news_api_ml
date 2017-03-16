@@ -43,8 +43,8 @@ def get_news_hash(nid_list):
 #        threshold      ---  相同的判断阈值
 #@output: list  --- 相同的nid
 ################################################################################
-hash_sql = "select ns.nid, hash_val from news_simhash ns inner join newslist_v2 nv on ns.nid=nv.nid where ns.ctime > now() - interval '{0} day' and nv.state=0 " \
-           "and (first_16={1} or second_16={2} or third_16={3} or four_16={4}) and (first2_16={5} or second2_16={6} or third2_16={7} or four2_16={8}) "
+hash_sql = "select ns.nid, hash_val from news_simhash ns inner join newslist_v2 nv on ns.nid=nv.nid where (ns.ctime > now() - interval '{0} day') and nv.state=0 " \
+           "and (first_16='{1}' or second_16='{2}' or third_16='{3}' or fourth_16='{4}') and (first2_16='{5}' or second2_16='{6}' or third2_16='{7}' or fourth2_16='{8}') "
 def get_news_interval(h, interval = 9999):
     fir, sec, thi, fou, fir2, sec2, thi2, fou2 = get_4_segments(h.__long__())
     conn, cursor = doc_process.get_postgredb_query()
@@ -56,9 +56,6 @@ def get_news_interval(h, interval = 9999):
     conn.close()
     return nid_hv_list
 
-get_sim_sql = "select nid, hash_v from news_simhash where " \
-                "(first_16=%s or second_16=%s or third_16=%s or four_16=%s) and" \
-                "(first2_16=%s or second2_16=%s or third2_16=%s or four2_16=%s) "
 def get_same_news(news_simhash, check_list, threshold = 3):
     try:
         same_list = []
