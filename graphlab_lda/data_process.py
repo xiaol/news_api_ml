@@ -40,7 +40,7 @@ def coll_news_proc(save_dir, chnl, doc_num_per_chnl, doc_min_len):
         print '^^^^^^^^^^^^^^^^^^^^^^^^'
         print os.path.join(save_dir, chnl)
         conn, cursor = doc_process.get_postgredb_query()
-        cursor.execute(channle_sql, [chnl, doc_num_per_chnl])
+        cursor.execute(channle_sql, (chnl, doc_num_per_chnl))
         rows = cursor.fetchall()
         for row in rows:
             title = row[0]
