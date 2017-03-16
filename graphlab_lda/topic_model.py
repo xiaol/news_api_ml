@@ -13,10 +13,12 @@ import topic_model_doc_process
 from util import doc_process
 import traceback
 from util import logger
+from topic_model_doc_process import channel_for_topic
 
 real_dir_path = os.path.split(os.path.realpath(__file__))[0]
-logger_9988 = logger.Logger('process9988', real_dir_path + '/../log/lda/log_9988.txt')
-logger_9990 = logger.Logger('process9990', real_dir_path + '/../log/lda/log_9990.txt')
+logger_9987 = logger.Logger('process9987',  os.path.join(real_dir_path,  'log/log_9987.txt'))
+logger_9988 = logger.Logger('process9988',  os.path.join(real_dir_path,  'log/log_9988.txt'))
+logger_9990 = logger.Logger('process9990', os.path.join(real_dir_path,  'log/log_9990.txt'))
 
 
 g_channel_model_dict = {}
@@ -64,6 +66,7 @@ def create_model_proc(csv_file, model_save_dir=None):
 
 
 def create_models():
+    logger_9987.info("begin to create model ......")
     global model_dir
     model_create_time = datetime.datetime.now()
     time_str = model_create_time.strftime('%Y-%m-%d-%H-%M-%S')
@@ -71,7 +74,6 @@ def create_models():
     if not os.path.exists(model_path):
         os.mkdir(model_path)
 
-    from topic_model_doc_process import channel_for_topic
     for chanl in channel_for_topic:
         create_model_proc(chanl, model_path)
     print 'create models finished!!'
@@ -103,7 +105,6 @@ def load_models(models_dir):
     logger_9988.info("load_models finished!")
 
 
-model_v = os.path.split(get_newest_model_dir())[1]
 def load_newest_models():
     load_models(get_newest_model_dir())
 
@@ -367,6 +368,7 @@ def predict_topic_nids(nid_list):
 
     #主要用于处理自媒体和点集
     extra_chanl_nids = [n for n in nid_info.keys() if nid_info[n][0] in extra_channel_for_topic]
+    extra_nid_chname_dict = {}
     if len(extra_chanl_nids) != 0:
         extra_nid_chname_dict = get_nid_predict_chname(extra_chanl_nids)
 
@@ -376,7 +378,7 @@ def predict_topic_nids(nid_list):
     chname_news_dict = {}
     for chname in channel_for_topic:
         nid_pred_dict = {}
-        logger_9988.info("predict   ".format(chname))
+        logger_9988.info("predict   {}".format(chname))
         #print 'predict  ' + chname
         if chname not in g_channel_model_dict.keys():
             logger_9988.info("{}  is not in model.".format(chname))
