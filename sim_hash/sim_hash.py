@@ -11,100 +11,12 @@ import logging
 import datetime
 import os
 import requests
+from util.simhash import simhash, get_4_segments
+from util.logger import Logger
 
 real_dir_path = os.path.split(os.path.realpath(__file__))[0]
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-handler = logging.FileHandler(real_dir_path + '/../log/sim_hash/log.txt')
-handler.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
-
-class simhash():
-    def __init__(self, tokens='', hashbits=64):
-        self.hashbits = hashbits
-        self.hash = self.simhash(tokens)
-
-    def __str__(self):
-        return str(self.hash)
-
-    def __long__(self):
-        return long(self.hash)
-
-    def __float__(self):
-        return float(self.hash)
-
-    def simhash(self, tokens):
-        # Returns a Charikar simhash with appropriate bitlength
-        v = [0] * self.hashbits
-
-        for t in [self._string_hash(x) for x in tokens]:
-            bitmask = 0
-            for i in range(self.hashbits):
-                bitmask = 1 << i
-                # print(t,bitmask, t & bitmask)
-                if t & bitmask:
-                    v[i] += 1  # 查看当前bit位是否为1，是的话则将该位+1
-                else:
-                    v[i] += -1  # 否则得话，该位减1
-
-        fingerprint = 0
-        for i in range(self.hashbits):
-            if v[i] >= 0:
-                fingerprint += 1 << i
-                # 整个文档的fingerprint为最终各个位大于等于0的位的和
-        return fingerprint
-
-    #计算一个词的hash值。 一个汉字utf-8中使用三个字节表示
-    def _string_hash(self, v):
-        # A variable-length version of Python's builtin hash
-        if v == "":
-            return 0
-        else:
-            x = ord(v[0]) << 7   #第一个字节左移7位
-            m = 1000003
-            mask = 2 ** self.hashbits - 1
-            for c in v:
-                x = ((x * m) ^ ord(c)) & mask
-            x ^= len(v)
-            if x == -1:
-                x = -2
-            return x
-
-    #与另一个simhash类比较
-    def hamming_distance(self, other_hash):
-        x = (self.hash ^ other_hash.hash) & ((1 << self.hashbits) - 1)
-        tot = 0
-        while x:
-            tot += 1
-            x &= x - 1
-        return tot
-
-    #与一个hash值比较
-    def hamming_distance_with_val(self, other_hash_val):
-        x = (self.hash ^ other_hash_val) & ((1 << self.hashbits) - 1)
-        tot = 0
-        while x:
-            tot += 1
-            x &= x - 1
-        return tot
-
-    def similarity(self, other_hash):
-        '''
-        a = float(self.hash)
-        b = float(other_hash.hash)
-        if a > b: return b / a
-        return a / b
-        '''
-        b = self.hashbits
-        return float(b - self.hamming_distance(other_hash)) / b
-
-    def similarity_with_val(self, other_hash_val):
-        b = self.hashbits
-        return float(b - self.hamming_distance_with_val(other_hash_val)) / b
-
+logger = Logger('sim_hash', os.path.join(real_dir_path, 'log/log.txt'))
 
 ###########################################################################
 #@brief :计算新闻的hash值.
@@ -131,16 +43,22 @@ def get_news_hash(nid_list):
 #        threshold      ---  相同的判断阈值
 #@output: list  --- 相同的nid
 ################################################################################
-hash_sql = "select ns.nid, hash_val, ns.ctime from news_simhash ns inner join newslist_v2 nv on ns.nid=nv.nid where ns.ctime > now() - interval '{0} day' and nv.state=0"
-def get_news_interval(interval = 9999):
+hash_sql = "select ns.nid, hash_val from news_simhash ns inner join newslist_v2 nv on ns.nid=nv.nid where ns.ctime > now() - interval '{0} day' and nv.state=0 " \
+           "and (first_16={1} or second_16={2} or third_16={3} or four_16={4}) and (first2_16={5} or second2_16={6} or third2_16={7} or four2_16={8}) "
+def get_news_interval(h, interval = 9999):
+    fir, sec, thi, fou, fir2, sec2, thi2, fou2 = get_4_segments(h.__long__())
     conn, cursor = doc_process.get_postgredb_query()
-    cursor.execute(hash_sql.format(interval))
+    cursor.execute(hash_sql.format(interval, fir, sec, thi, fou, fir2, sec2, thi2, fou2))
     rows = cursor.fetchall()
     nid_hv_list = []
     for r in rows:
         nid_hv_list.append((r[0], r[1]))
+    conn.close()
     return nid_hv_list
 
+get_sim_sql = "select nid, hash_v from news_simhash where " \
+                "(first_16=%s or second_16=%s or third_16=%s or four_16=%s) and" \
+                "(first2_16=%s or second2_16=%s or third2_16=%s or four2_16=%s) "
 def get_same_news(news_simhash, check_list, threshold = 3):
     try:
         same_list = []
@@ -222,17 +140,18 @@ def del_nid_of_fewer_comment(nid, n):
 #@brief : 计算新闻hash值,并且检测是否是重复新闻。如果重复,则删除该新闻
 ################################################################################
 insert_same_sql = 'insert into news_simhash_map (nid, same_nid) VALUES ({0}, {1})'
-insert_news_simhash_sql = "insert into news_simhash (nid, hash_val, ctime) VALUES('{0}', '{1}', '{2}')"
+insert_news_simhash_sql = "insert into news_simhash (nid, hash_val, ctime, first_16, second_16, third_16, fourth_16, first2_16, second2_16, third2_16, fourth2_16) " \
+                          "VALUES('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}', '{9}', '{10}')"
 def cal_and_check_news_hash(nid_list):
     try:
         logger.info('begin to calculate simhash of {}'.format(' '.join(str(m) for m in nid_list)))
         t0 = datetime.datetime.now()
-        check_list = get_news_interval(2)
+        conn, cursor = doc_process.get_postgredb()
         for nid in nid_list:
             words_list = doc_process.get_words_on_nid(nid)
             h = simhash(words_list)
+            check_list = get_news_interval(h, 1)
             same_list = get_same_news(h, check_list)
-            conn, cursor = doc_process.get_postgredb()
             if len(same_list) > 0: #已经存在相同的新闻
                 for n in same_list:
                     if n != nid:
@@ -240,10 +159,11 @@ def cal_and_check_news_hash(nid_list):
                         del_nid_of_fewer_comment(nid, n)
             #else: #没有相同的新闻,将nid添加到news_hash
             t = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            cursor.execute(insert_news_simhash_sql.format(nid, h.__str__(), t))
-            conn.commit()
-            cursor.close()
-            conn.close()
+            fir, sec, thi, fou, fir2, sec2, thi2, fou2 = get_4_segments(h.__long__())
+            cursor.execute(insert_news_simhash_sql.format(nid, h.__str__(), t, fir, sec, thi, fou, fir2, sec2, thi2, fou2))
+        conn.commit()
+        cursor.close()
+        conn.close()
         t1 = datetime.datetime.now()
         logger.info('finish to calculate simhash. it takes {} s'.format(str((t1 - t0).total_seconds())))
     except:
