@@ -22,7 +22,6 @@ channel_for_topic = ['科技', '外媒', '社会', '财经', '体育', '汽车',
                      '娱乐', '养生', '育儿', '股票', '互联网', '美食', '健康', '影视', '军事', '历史',
                      '故事', '旅游', '美文', '萌宠', '游戏', '点集', '自媒体', '奇闻', '奇点']
 excluded_chnl = ['美女', '视频', '趣图', '搞笑']
-channel_for_topic = ['科技']
 
 
 channle_sql ='SELECT a.title, a.content \
@@ -46,6 +45,7 @@ class DocProcess(object):
 
     def coll_news_proc(self, chnl):
         logger.info('    start to collect {} ......'.format(chnl))
+        print '0000000'
         f = open(os.path.join(self.save_dir, chnl), 'w') #定义频道文件
         conn, cursor = doc_process.get_postgredb_query()
         cursor.execute(channle_sql, [chnl, self.doc_num_per_chnl])
@@ -76,16 +76,21 @@ class DocProcess(object):
         logger.info("coll_news_handler begin ...!")
         t0 = datetime.datetime.now()
         import multiprocessing as mp
+        from multiprocessing import Pool
+        pool = Pool(20)
         from util.doc_process import join_file
         procs = []
         chnl_file = []
         for chanl in channel_for_topic:
             chnl_file.append(os.path.join(self.save_dir, chanl))
-            coll_proc = mp.Process(target=self.coll_news_proc, args=(chanl,))
-            coll_proc.start()
-            procs.append(coll_proc)
-        for i in procs:
-            i.join()
+            pool.apply_async(self.coll_news_proc, args=(chanl,))
+            #coll_proc = mp.Process(target=self.coll_news_proc, args=(chanl,))
+            #coll_proc.start()
+            #procs.append(coll_proc)
+        pool.close()
+        pool.join()
+        #for i in procs:
+        #    i.join()
         join_file(chnl_file, os.path.join(self.save_dir, '/data.txt'))
         t1 = datetime.datetime.now()
         logger.info("coll_news_handler finished!, it takes {}s".format((t1 - t0).total_seconds()))
