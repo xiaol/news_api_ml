@@ -54,10 +54,41 @@ def coll_news_proc(save_dir, chnl, doc_num_per_chnl, doc_min_len):
         f.write(' '.join(total_list).encode('utf-8') + '\n')
         del content_list
         del total_list
+    f.close()
     conn.close()
     '''
     print 'fffffffff' + chnl
 
+doc_num_per_chnl = doc_num_per_chnl
+doc_min_len = doc_min_len
+str_time = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+save_dir = os.path.join(real_dir_path, 'data', str_time)
+if not os.path.exists(save_dir):
+    os.mkdir(save_dir)
+with open(save_dir + '/data.txt', 'w') as f: #定义总文件
+    pass
+def coll_news_handler(save_dir, doc_num_per_chnl, doc_min_len):
+    logger.info("coll_news_handler begin ...!")
+    t0 = datetime.datetime.now()
+    import multiprocessing as mp
+    from multiprocessing import Pool
+    pool = Pool(20)
+    from util.doc_process import join_file
+    procs = []
+    chnl_file = []
+    for chanl in channel_for_topic:
+        chnl_file.append(os.path.join(save_dir, chanl))
+        pool.apply_async(coll_news_proc, args=(save_dir, chanl, doc_num_per_chnl, doc_min_len))
+        #coll_proc = mp.Process(target=self.coll_news_proc, args=(chanl,))
+        #coll_proc.start()
+        #procs.append(coll_proc)
+    pool.close()
+    pool.join()
+    #for i in procs:
+    #    i.join()
+    join_file(chnl_file, os.path.join(save_dir, '/data.txt'))
+    t1 = datetime.datetime.now()
+    logger.info("coll_news_handler finished!, it takes {}s".format((t1 - t0).total_seconds()))
 
 class DocProcess(object):
     '''collect docs for training model'''
@@ -97,8 +128,7 @@ class DocProcess(object):
 
 
 def coll_news():
-    dp = DocProcess(doc_num_per_chnl, doc_min_len)
-    dp.coll_news_handler()
+    coll_news_handler(save_dir, doc_num_per_chnl, doc_min_len)
     print '-----------finish------'
 
 
