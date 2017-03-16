@@ -61,7 +61,9 @@ def get_same_news(news_simhash, check_list, threshold = 3):
         same_list = []
         for r in check_list:
             hv = r[1]
-            if news_simhash.hamming_distance_with_val(int(hv)) <= threshold:  #存在相同的新闻
+            dis = news_simhash.hamming_distance_with_val(int(hv))
+            logger.info("      dis = ".format(dis))
+            if dis <= threshold:  #存在相同的新闻
                 same_list.append(r[0])
                 break
         return same_list
@@ -147,8 +149,8 @@ def cal_and_check_news_hash(nid_list):
         for nid in nid_list:
             words_list = doc_process.get_words_on_nid(nid)
             h = simhash(words_list)
-            check_list = get_news_interval(h, 1)
-            logger.info("    check: {}".format(check_list))
+            check_list = get_news_interval(h, 2)
+            logger.info("  {}  check: {}".format(nid, check_list))
             same_list = get_same_news(h, check_list)
             if len(same_list) > 0: #已经存在相同的新闻
                 for n in same_list:
