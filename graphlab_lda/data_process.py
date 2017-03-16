@@ -80,7 +80,7 @@ def coll_news_handler(save_dir, doc_num_per_chnl, doc_min_len):
         t0 = datetime.datetime.now()
         import multiprocessing as mp
         from multiprocessing import Pool
-        pool = Pool(20)
+        pool = Pool(processes=20)
         from util.doc_process import join_file
         procs = []
         chnl_file = []
