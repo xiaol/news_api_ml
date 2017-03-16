@@ -36,6 +36,8 @@ def coll_news_proc(save_dir, chnl, doc_num_per_chnl, doc_min_len):
     try:
         logger.info('    start to collect {} ......'.format(chnl))
         f = open(os.path.join(save_dir, chnl), 'w+') #定义频道文件
+        f.write('aaaaaaaaaaa')
+        '''
         print '^^^^^^^^^^^^^^^^^^^^^^^^'
         print os.path.join(save_dir, chnl)
         conn, cursor = doc_process.get_postgredb_query()
@@ -57,8 +59,9 @@ def coll_news_proc(save_dir, chnl, doc_num_per_chnl, doc_min_len):
             f.write(' '.join(total_list).encode('utf-8') + '\n')
             del content_list
             del total_list
-        f.close()
         conn.close()
+        '''
+        f.close()
         print 'fffffffff' + chnl
     except:
         traceback.print_exc()
