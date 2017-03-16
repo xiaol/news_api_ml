@@ -31,6 +31,36 @@ ON \
 a."chid"=c."id" ORDER BY nid desc LIMIT %s'
 
 
+def coll_news_proc(save_dir, chnl, doc_num_per_chnl, doc_min_len):
+    logger.info('    start to collect {} ......'.format(chnl))
+    print '0000000'
+    f = open(os.path.join(save_dir, chnl), 'w') #定义频道文件
+    conn, cursor = doc_process.get_postgredb_query()
+    cursor.execute(channle_sql, [chnl, doc_num_per_chnl])
+    rows = cursor.fetchall()
+    print '00000000'
+    for row in rows:
+        title = row[0]
+        content_list = row[1]
+        txt = ''
+        print '11111111'
+        for content in content_list:
+            if 'txt' in content.keys():
+                txt += content['txt'].encode('utf-8')
+        total_txt = title + txt
+        print '22222222'
+        total_list = doc_process.filter_html_stopwords_pos(total_txt, remove_num=True, remove_single_word=True)
+        if len(total_list) < doc_min_len:  #字数太少则丢弃
+            continue
+        #根据tfidf进行二次筛选
+        total_list = doc_process.jieba_extract_keywords(' '.join(total_list), min(50, len(total_list)/5))
+        print '33333333'
+        f.write(' '.join(total_list).encode('utf-8') + '\n')
+        del content_list
+        del total_list
+    conn.close()
+
+
 class DocProcess(object):
     '''collect docs for training model'''
     def __init__(self, doc_num_per_chnl, doc_min_len):
@@ -43,34 +73,6 @@ class DocProcess(object):
         with open(self.save_dir + '/data.txt', 'w') as f: #定义总文件
             pass
 
-    def coll_news_proc(self, chnl):
-        logger.info('    start to collect {} ......'.format(chnl))
-        print '0000000'
-        f = open(os.path.join(self.save_dir, chnl), 'w') #定义频道文件
-        conn, cursor = doc_process.get_postgredb_query()
-        cursor.execute(channle_sql, [chnl, self.doc_num_per_chnl])
-        rows = cursor.fetchall()
-        print '00000000'
-        for row in rows:
-            title = row[0]
-            content_list = row[1]
-            txt = ''
-            print '11111111'
-            for content in content_list:
-                if 'txt' in content.keys():
-                    txt += content['txt'].encode('utf-8')
-            total_txt = title + txt
-            print '22222222'
-            total_list = doc_process.filter_html_stopwords_pos(total_txt, remove_num=True, remove_single_word=True)
-            if len(total_list) < self.doc_min_len:  #字数太少则丢弃
-                continue
-            #根据tfidf进行二次筛选
-            total_list = doc_process.jieba_extract_keywords(' '.join(total_list), min(50, len(total_list)/5))
-            print '33333333'
-            f.write(' '.join(total_list).encode('utf-8') + '\n')
-            del content_list
-            del total_list
-        conn.close()
 
     def coll_news_handler(self):
         logger.info("coll_news_handler begin ...!")
@@ -83,7 +85,7 @@ class DocProcess(object):
         chnl_file = []
         for chanl in channel_for_topic:
             chnl_file.append(os.path.join(self.save_dir, chanl))
-            pool.apply_async(self.coll_news_proc, args=(chanl,))
+            pool.apply_async(coll_news_proc, args=(self.save_dir, chanl, self.doc_num_per_chnl, self.doc_min_len))
             #coll_proc = mp.Process(target=self.coll_news_proc, args=(chanl,))
             #coll_proc.start()
             #procs.append(coll_proc)
