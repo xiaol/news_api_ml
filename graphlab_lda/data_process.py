@@ -13,7 +13,8 @@ real_dir_path = os.path.split(os.path.realpath(__file__))[0]
 logger = Logger('data_process', os.path.join(real_dir_path,  'log/data_process.txt'))
 time_str = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
 save_path = os.path.join(real_dir_path, time_str)
-doc_num_per_chnl = 50000
+doc_num_per_chnl = 10
+doc_min_len = 100
 
 
 #需要
@@ -78,6 +79,9 @@ class DocProcess(object):
         logger.info("coll_news_handler finished!")
 
 
+def coll_news():
+    dp = DocProcess(doc_num_per_chnl, doc_min_len)
+    dp.coll_news_handler()
 
 
 

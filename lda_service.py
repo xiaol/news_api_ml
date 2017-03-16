@@ -40,8 +40,7 @@ class PredictOnNid(tornado.web.RequestHandler):
 class PredictNewsTopic(tornado.web.RequestHandler):
     def get(self):
         nid = int(self.get_argument('nid'))
-        from graphlab_lda import redis_lda
-        nid_queue.produce_nid(nid)
+        #nid_queue.produce_nid(nid)  #由base_service完成
 
 #预测单次点击事件
 class PredictOneClick(tornado.web.RequestHandler):
@@ -173,6 +172,9 @@ if __name__ == '__main__':
         http_server = tornado.httpserver.HTTPServer(EmptyApp())
         http_server.listen(port) #同时提供手工处理端口
         nid_queue.consume_user_click()
+    elif port == 9985:
+        from graphlab_lda import data_process
+        data_process.coll_news()
 
     tornado.ioloop.IOLoop.instance().start()
 
