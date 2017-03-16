@@ -13,7 +13,7 @@ real_dir_path = os.path.split(os.path.realpath(__file__))[0]
 logger = Logger('data_process', os.path.join(real_dir_path,  'log/data_process.txt'))
 time_str = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
 save_path = os.path.join(real_dir_path, time_str)
-doc_num_per_chnl = 10
+doc_num_per_chnl = 5
 doc_min_len = 100
 
 
@@ -68,6 +68,8 @@ class DocProcess(object):
             total_list = doc_process.jieba_extract_keywords(' '.join(total_list), min(50, len(total_list)/5))
             print '33333333'
             f.write(' '.join(total_list).encode('utf-8') + '\n')
+            del content_list
+            del total_list
         conn.close()
 
     def coll_news_handler(self):
