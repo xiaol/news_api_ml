@@ -53,7 +53,6 @@ def coll_news_proc(save_dir, chnl, doc_num_per_chnl, doc_min_len):
             #根据tfidf进行二次筛选
             total_list = doc_process.jieba_extract_keywords(' '.join(total_list), min(50, len(total_list)/5))
             f.write(' '.join(total_list).encode('utf-8') + '\n')
-            f.write(total_txt + '\n')
             del content_list
         cursor.close()
         conn.close()
