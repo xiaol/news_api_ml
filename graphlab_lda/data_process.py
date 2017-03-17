@@ -31,6 +31,28 @@ INNER JOIN (select * from channellist_v2 where "cname"=%s) c \
 ON \
 a."chid"=c."id" ORDER BY nid desc LIMIT %s'
 
+news_word_sql = "select nid, title, content from newslist_v2 where nid in {}"
+
+def get_news_words(nid_list):
+    conn, cursor = doc_process.get_postgredb_query()
+    cursor.execute(news_word_sql.format(tuple(nid_list)))
+    rows = cursor.fetchall()
+    conn.close()
+    nid_words_dict = {}
+    for r in rows:
+        nid = r[0]
+        title = r[1]
+        paragraphs = r[2]
+        txt = ''
+        for para in paragraphs:
+            if 'txt' in para.keys():
+                txt += para['txt']
+        total_txt = title + txt.encode('utf-8')
+        word_list = doc_process.filter_html_stopwords_pos(total_txt, remove_num=True, remove_single_word=True)
+        nid_words_dict[nid] = ' '.join(word_list)
+    return nid_words_dict
+
+
 
 def coll_news_proc(save_dir, chnl, doc_num_per_chnl, doc_min_len):
     try:
@@ -38,6 +60,7 @@ def coll_news_proc(save_dir, chnl, doc_num_per_chnl, doc_min_len):
         f = open(os.path.join(save_dir, chnl), 'w+') #定义频道文件
         conn, cursor = doc_process.get_postgredb_query()
         cursor.execute(channle_sql, (chnl, doc_num_per_chnl))
+        logger.info('        finish to query {} '. format(chnl))
         rows = cursor.fetchall()
         for row in rows:
             title = row[0]
@@ -57,6 +80,7 @@ def coll_news_proc(save_dir, chnl, doc_num_per_chnl, doc_min_len):
         cursor.close()
         conn.close()
         f.close()
+        logger.info('    finished to collect {} ......'.format(chnl))
     except:
         logger.exception(traceback.format_exc())
 
@@ -67,8 +91,8 @@ class DocProcess(object):
     def __init__(self, doc_num_per_chnl, doc_min_len):
         self.doc_num_per_chnl = doc_num_per_chnl
         self.doc_min_len = doc_min_len
-        self.str_time = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-        self.save_dir = os.path.join(real_dir_path, 'data', self.str_time)
+        str_time = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+        self.save_dir = os.path.join(real_dir_path, 'data', str_time)
         self.data_file = os.path.join(self.save_dir, 'data.txt')
         if not os.path.exists(self.save_dir):
             os.mkdir(self.save_dir)
