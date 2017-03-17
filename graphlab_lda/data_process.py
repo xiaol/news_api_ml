@@ -13,8 +13,8 @@ import traceback
 real_dir_path = os.path.split(os.path.realpath(__file__))[0]
 logger = Logger('data_process', os.path.join(real_dir_path,  'log/data_process.txt'))
 time_str = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-save_path = os.path.join(real_dir_path, time_str)
-doc_num_per_chnl = 5
+save_path = ''
+doc_num_per_chnl = 50000
 doc_min_len = 100
 
 
@@ -53,47 +53,14 @@ def coll_news_proc(save_dir, chnl, doc_num_per_chnl, doc_min_len):
             #根据tfidf进行二次筛选
             total_list = doc_process.jieba_extract_keywords(' '.join(total_list), min(50, len(total_list)/5))
             f.write(' '.join(total_list).encode('utf-8') + '\n')
+            f.write(total_txt + '\n')
             del content_list
-            del total_list
         cursor.close()
         conn.close()
         f.close()
     except:
         logger.exception(traceback.format_exc())
 
-doc_num_per_chnl = doc_num_per_chnl
-doc_min_len = doc_min_len
-str_time = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-save_dir = os.path.join(real_dir_path, 'data', str_time)
-if not os.path.exists(save_dir):
-    os.mkdir(save_dir)
-with open(save_dir + '/data.txt', 'w') as f: #定义总文件
-    pass
-def coll_news_handler(save_dir, doc_num_per_chnl, doc_min_len):
-    try:
-        logger.info("coll_news_handler begin ...!")
-        t0 = datetime.datetime.now()
-        import multiprocessing as mp
-        from multiprocessing import Pool
-        pool = Pool(processes=20)
-        from util.doc_process import join_file
-        procs = []
-        chnl_file = []
-        for chanl in channel_for_topic:
-            chnl_file.append(os.path.join(save_dir, chanl))
-            pool.apply_async(coll_news_proc, args=(save_dir, chanl, doc_num_per_chnl, doc_min_len))
-            #coll_proc = mp.Process(target=self.coll_news_proc, args=(chanl,))
-            #coll_proc.start()
-            #procs.append(coll_proc)
-        pool.close()
-        pool.join()
-        #for i in procs:
-        #    i.join()
-        join_file(chnl_file, os.path.join(save_dir, '/data.txt'))
-        t1 = datetime.datetime.now()
-        logger.info("coll_news_handler finished!, it takes {}s".format((t1 - t0).total_seconds()))
-    except:
-        traceback.print_exc()
 
 
 class DocProcess(object):
@@ -103,17 +70,17 @@ class DocProcess(object):
         self.doc_min_len = doc_min_len
         self.str_time = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
         self.save_dir = os.path.join(real_dir_path, 'data', self.str_time)
+        self.data_file = os.path.join(self.save_dir, '/data.txt')
         if not os.path.exists(self.save_dir):
             os.mkdir(self.save_dir)
-        with open(self.save_dir + '/data.txt', 'w') as f: #定义总文件
+        with open(self.data_file, 'w') as f: #定义总文件
             pass
-
 
     def coll_news_handler(self):
         logger.info("coll_news_handler begin ...!")
         t0 = datetime.datetime.now()
         from multiprocessing import Pool
-        pool = Pool(20)
+        pool = Pool(30)
         from util.doc_process import join_file
         chnl_file = []
         for chanl in channel_for_topic:
@@ -121,13 +88,12 @@ class DocProcess(object):
             pool.apply_async(coll_news_proc, args=(self.save_dir, chanl, self.doc_num_per_chnl, self.doc_min_len))
         pool.close()
         pool.join()
-        join_file(chnl_file, os.path.join(self.save_dir, '/data.txt'))
+        join_file(chnl_file, self.data_file)
         t1 = datetime.datetime.now()
         logger.info("coll_news_handler finished!, it takes {}s".format((t1 - t0).total_seconds()))
 
 
 def coll_news():
-    #coll_news_handler(save_dir, doc_num_per_chnl, doc_min_len)
     dp = DocProcess(doc_num_per_chnl, doc_min_len)
     dp.coll_news_handler()
     print 'finished!!'
