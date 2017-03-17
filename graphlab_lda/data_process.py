@@ -69,7 +69,7 @@ class DocProcess(object):
         self.doc_min_len = doc_min_len
         self.str_time = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
         self.save_dir = os.path.join(real_dir_path, 'data', self.str_time)
-        self.data_file = os.path.join(self.save_dir, '/data.txt')
+        self.data_file = os.path.join(self.save_dir, 'data.txt')
         if not os.path.exists(self.save_dir):
             os.mkdir(self.save_dir)
         with open(self.data_file, 'w') as f: #定义总文件
