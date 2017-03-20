@@ -119,7 +119,8 @@ class TopicModel(object):
                 print 'topic words: '
                 ll = sf[topic_id]['words']
                 for w in ll:
-                    print ll
+                    print type(w)
+                    print w
                 print '    {}'.format(sf[topic_id]['words'])
         conn, cursor = get_postgredb()
         cursor.executemany(insert_sql, insert_list)
