@@ -175,7 +175,7 @@ if __name__ == '__main__':
     elif port == 9985:
         from graphlab_lda import data_process
         from graphlab_lda import topic_model_model
-        data_process.coll_news()
+        #data_process.coll_news()
         topic_model_model.create_topic_model()
 
     tornado.ioloop.IOLoop.instance().start()
