@@ -55,9 +55,9 @@ class TopicModel(object):
         for i in xrange(0, len(sf)):
             try:
                 keys_words_jsonb = json.dumps(sf[i]['words'])
-                ws = ','.join(sf[i]['words']).encode('utf-8')
+                #ws = ','.join(sf[i]['words']).encode('utf-8')
 
-                cursor.execute(save_model_sql, [self.version, str(i), ws])
+                cursor.execute(save_model_sql, [self.version, str(i), keys_words_jsonb])
                 conn.commit()
             except Exception:
                 print 'save model to db error'
