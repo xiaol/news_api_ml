@@ -116,7 +116,7 @@ class TopicModel(object):
                 insert_list.append((nids[n], self.version, topic_id, prop, str_time))
                 sf = self.model.get_topics(num_words=20,
                                            output_type='topic_words')
-                print '{} topic words: '
+                print 'topic words: '
                 print '    {}'.format(sf[topic_id]['words'])
         conn, cursor = get_postgredb()
         cursor.executemany(insert_sql, insert_list)
@@ -143,7 +143,7 @@ def load_topic_model(dir):
 def create_topic_model():
     try:
         global model_instance
-        data_path = '/root/workspace/news_api_ml/graphlab_lda/data/2017-03-17-15-02-05/data.txt'
+        data_path = '/root/workspace/news_api_ml/graphlab_lda/data/2017-03-17-15-02-05/体育'
         #data_path = os.path.join(get_newest_dir(data_dir), 'data.txt')
         model_instance = TopicModel(data_path, model_base_path)
         model_instance.create_and_save()
