@@ -49,7 +49,7 @@ class TopicModel(object):
         #tfidf_dict = tfidf_encoder.transform(docs_sframe)
         docs = gl.text_analytics.count_words(docs_sframe['X1'])
         docs = gl.text_analytics.trim_rare_words(docs, threshold=5, delimiters=None)
-        self.model = gl.topic_model.create(docs, num_iterations=100, num_burnin=100, num_topics=1000)
+        self.model = gl.topic_model.create(docs, num_iterations=100, num_burnin=100, num_topics=100000)
 
         sf = self.model.get_topics(num_words=20, output_type='topic_words')
         conn, cursor = get_postgredb()
@@ -160,11 +160,11 @@ def load_topic_model(dir):
 def create_topic_model():
     try:
         global model_instance
-        data_path = '/root/workspace/news_api_ml/graphlab_lda/data/2017-03-17-15-02-05/体育'
-        #data_path = os.path.join(get_newest_dir(data_dir), 'data.txt')
+        #data_path = '/root/workspace/news_api_ml/graphlab_lda/data/2017-03-17-15-02-05/体育'
+        data_path = os.path.join(get_newest_dir(data_dir), 'data.txt')
         model_instance = TopicModel(data_path, model_base_path)
-        #model_instance.create_and_save()
-        model_instance.create()
+        model_instance.create_and_save()
+        #model_instance.create()
 
         #mod_l = TopicModel()
         #mod_l.load(get_newest_dir(model_base_path))
