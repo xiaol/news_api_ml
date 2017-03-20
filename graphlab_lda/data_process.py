@@ -14,7 +14,7 @@ real_dir_path = os.path.split(os.path.realpath(__file__))[0]
 logger = Logger('data_process', os.path.join(real_dir_path,  'log/data_process.txt'))
 time_str = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
 save_path = ''
-doc_num_per_chnl = 50000
+doc_num_per_chnl = 5
 doc_min_len = 100
 
 
@@ -57,7 +57,7 @@ def get_news_words(nid_list):
 def coll_news_proc(save_dir, chnl, doc_num_per_chnl, doc_min_len):
     try:
         logger.info('    start to collect {} ......'.format(chnl))
-        f = open(os.path.join(save_dir, chnl), 'w+') #定义频道文件
+        f = open(os.path.join(save_dir, chnl), 'w') #定义频道文件
         conn, cursor = doc_process.get_postgredb_query()
         cursor.execute(channle_sql, (chnl, doc_num_per_chnl))
         logger.info('        finish to query {} '. format(chnl))
@@ -75,7 +75,10 @@ def coll_news_proc(save_dir, chnl, doc_num_per_chnl, doc_min_len):
                 continue
             #根据tfidf进行二次筛选
             total_list = doc_process.jieba_extract_keywords(' '.join(total_list), min(50, len(total_list)/5))
-            f.write(' '.join(total_list).encode('utf-8') + '\n')
+            for w in total_list:
+                f.write(w.encode('utf-8') + ' ')
+            f.write('\n')
+            #f.write(' '.join(total_list).encode('utf-8') + '\n')
             del content_list
         cursor.close()
         conn.close()
