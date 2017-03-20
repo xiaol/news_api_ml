@@ -117,6 +117,9 @@ class TopicModel(object):
                 sf = self.model.get_topics(num_words=20,
                                            output_type='topic_words')
                 print 'topic words: '
+                ll = sf[topic_id]['words']
+                for w in ll:
+                    print ll
                 print '    {}'.format(sf[topic_id]['words'])
         conn, cursor = get_postgredb()
         cursor.executemany(insert_sql, insert_list)
