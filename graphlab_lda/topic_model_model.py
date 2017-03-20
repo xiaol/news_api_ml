@@ -51,6 +51,7 @@ class TopicModel(object):
         self.model = gl.topic_model.create(docs, num_iterations=100, num_burnin=100, num_topics=1000)
 
         sf = self.model.get_topics(num_words=20, output_type='topic_words')
+        print 'topic num ========' + str(len(sf))
         conn, cursor = get_postgredb()
         for i in xrange(0, len(sf)):
             try:
@@ -154,8 +155,8 @@ def create_topic_model():
         global model_instance
         data_path = '/root/workspace/news_api_ml/graphlab_lda/data/2017-03-17-15-02-05/体育'
         #data_path = os.path.join(get_newest_dir(data_dir), 'data.txt')
-        #model_instance = TopicModel(data_path, model_base_path)
-        #model_instance.create_and_save()
+        model_instance = TopicModel(data_path, model_base_path)
+        model_instance.create_and_save()
 
         mod_l = TopicModel()
         mod_l.load(get_newest_dir(model_base_path))
