@@ -13,6 +13,7 @@
 
 import os
 import datetime
+import json
 import traceback
 from util.logger import Logger
 from data_process import DocProcess
@@ -53,8 +54,8 @@ class TopicModel(object):
         conn, cursor = get_postgredb()
         for i in xrange(0, len(sf)):
             try:
-                #keys_words_jsonb = json.dumps(sf[i]['words'])
-                cursor.execute(save_model_sql, [self.version, str(i), str(sf[i]['words'])])
+                keys_words_jsonb = json.dumps(sf[i]['words'])
+                cursor.execute(save_model_sql, [self.version, str(i), keys_words_jsonb])
                 conn.commit()
             except Exception:
                 print 'save model to db error'
