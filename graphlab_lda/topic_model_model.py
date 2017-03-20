@@ -156,12 +156,13 @@ def create_topic_model():
         data_path = '/root/workspace/news_api_ml/graphlab_lda/data/2017-03-17-15-02-05/体育'
         #data_path = os.path.join(get_newest_dir(data_dir), 'data.txt')
         model_instance = TopicModel(data_path, model_base_path)
-        model_instance.create_and_save()
+        #model_instance.create_and_save()
+        model_instance.create()
 
-        mod_l = TopicModel()
-        mod_l.load(get_newest_dir(model_base_path))
+        #mod_l = TopicModel()
+        #mod_l.load(get_newest_dir(model_base_path))
         nids = [5459927, 13274670]
-        mod_l.predict(nids)
+        model_instance.predict(nids)
         print 'create model finished!'
     except:
         print 'exception !!!!'
