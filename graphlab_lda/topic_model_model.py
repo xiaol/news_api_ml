@@ -134,7 +134,6 @@ class TopicModel(object):
                 for w in ll:
                     print type(w)
                     print w
-                print '    {}'.format(sf[topic_id]['words'])
         conn, cursor = get_postgredb()
         cursor.executemany(insert_sql, insert_list)
         conn.commit()
