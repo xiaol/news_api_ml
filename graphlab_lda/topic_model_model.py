@@ -48,7 +48,7 @@ class TopicModel(object):
         tfidf_encoder = tfidf_encoder.fit(docs_sframe)
         tfidf_dict = tfidf_encoder.transform(docs_sframe)
         #docs = gl.text_analytics.count_words(docs_sframe['X1'])
-        self.model = gl.topic_model.create(tfidf_dict, num_iterations=10, num_burnin=10, num_topics=100)
+        self.model = gl.topic_model.create(tfidf_dict, num_iterations=100, num_burnin=100, num_topics=100)
 
         sf = self.model.get_topics(num_words=20, output_type='topic_words')
         conn, cursor = get_postgredb()
