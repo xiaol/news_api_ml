@@ -112,6 +112,7 @@ class TopicModel(object):
         insert_list = []
         str_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         for n in xrange(len(nids)):
+            print '---------------' + str(nids[n])
             for m in xrange(len(props_list[n])):
                 topic_id = props_list[n][m][0]
                 prop = props_list[n][m][1]
