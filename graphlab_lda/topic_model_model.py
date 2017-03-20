@@ -44,11 +44,11 @@ class TopicModel(object):
     def create(self):
         logger_9987.info('TopicModel::create begin ...')
         docs_sframe = gl.SFrame.read_csv(self.data_path, header=False)
-        #tfidf_encoder = gl.feature_engineering.TFIDF('X1', min_document_frequency=5/docs_sframe['X1'].size())
-        #tfidf_encoder = tfidf_encoder.fit(docs_sframe)
-        #tfidf_dict = tfidf_encoder.transform(docs_sframe)
-        docs = gl.text_analytics.count_words(docs_sframe['X1'])
-        self.model = gl.topic_model.create(docs, num_iterations=10, num_burnin=10, num_topics=100)
+        tfidf_encoder = gl.feature_engineering.TFIDF('X1', min_document_frequency=5/docs_sframe['X1'].size())
+        tfidf_encoder = tfidf_encoder.fit(docs_sframe)
+        tfidf_dict = tfidf_encoder.transform(docs_sframe)
+        #docs = gl.text_analytics.count_words(docs_sframe['X1'])
+        self.model = gl.topic_model.create(tfidf_dict, num_iterations=10, num_burnin=10, num_topics=100)
 
         sf = self.model.get_topics(num_words=20, output_type='topic_words')
         conn, cursor = get_postgredb()
