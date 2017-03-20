@@ -27,6 +27,7 @@ data_dir = os.path.join(real_dir_path, 'data')
 model_base_path = os.path.join('/root/ossfs', 'topic_models')  #模型保存路径
 model_version = ''  #模型版本
 model_instance = None
+save_model_sql = "insert into topic_models_v2 (model_v, topic_id, topic_words) VALUES (%s, %s, %s)"
 insert_sql = "insert into news_topic_v2 (nid, model_v, topic_id, probability, ctime) values(%s, %s, %s, %s, %s)"
 
 class TopicModel(object):
@@ -47,6 +48,17 @@ class TopicModel(object):
         tfidf_dict = tfidf_encoder.transform(docs_sframe)
         #docs = gl.text_analytics.count_words(docs['X1'])
         self.model = gl.topic_model.create(tfidf_dict, num_iterations=10, num_burnin=10, num_topics=100)
+
+        sf = self.model.get_topics(num_words=20, output_type='topic_words')
+        conn, cursor = get_postgredb()
+        for i in xrange(0, len(sf)):
+            try:
+                #keys_words_jsonb = json.dumps(sf[i]['words'])
+                cursor.execute(save_model_sql, [self.version, str(i), str(sf[i]['words'])])
+                conn.commit()
+            except Exception:
+                print 'save model to db error'
+        conn.close()
         del docs_sframe
         del tfidf_dict
         logger_9987.info('TopicModel::create finished!')
