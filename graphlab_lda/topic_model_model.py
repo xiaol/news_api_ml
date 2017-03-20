@@ -48,10 +48,10 @@ class TopicModel(object):
         #tfidf_encoder = tfidf_encoder.fit(docs_sframe)
         #tfidf_dict = tfidf_encoder.transform(docs_sframe)
         docs = gl.text_analytics.count_words(docs_sframe['X1'])
+        docs = gl.text_analytics.trim_rare_words(docs, threshold=5, delimiters=None)
         self.model = gl.topic_model.create(docs, num_iterations=100, num_burnin=100, num_topics=1000)
 
         sf = self.model.get_topics(num_words=20, output_type='topic_words')
-        print 'topic num ========' + str(len(sf))
         conn, cursor = get_postgredb()
         for i in xrange(0, len(sf)):
             try:
@@ -70,7 +70,9 @@ class TopicModel(object):
 
     def create_and_save(self):
         self.create()
+        logger_9987.info('   topic model create finished!')
         self.model.save(self.save_path)
+        logger_9987.info('   topic model save finished!')
 
 
     def load(self, model_path):
