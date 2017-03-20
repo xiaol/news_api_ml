@@ -44,11 +44,11 @@ class TopicModel(object):
     def create(self):
         logger_9987.info('TopicModel::create begin ...')
         docs_sframe = gl.SFrame.read_csv(self.data_path, header=False)
-        tfidf_encoder = gl.feature_engineering.TFIDF('X1', min_document_frequency=5/docs_sframe['X1'].size())
-        tfidf_encoder = tfidf_encoder.fit(docs_sframe)
-        tfidf_dict = tfidf_encoder.transform(docs_sframe)
-        #docs = gl.text_analytics.count_words(docs_sframe['X1'])
-        self.model = gl.topic_model.create(tfidf_dict, num_iterations=100, num_burnin=100, num_topics=1000)
+        #tfidf_encoder = gl.feature_engineering.TFIDF('X1', min_document_frequency=5/docs_sframe['X1'].size())
+        #tfidf_encoder = tfidf_encoder.fit(docs_sframe)
+        #tfidf_dict = tfidf_encoder.transform(docs_sframe)
+        docs = gl.text_analytics.count_words(docs_sframe['X1'])
+        self.model = gl.topic_model.create(docs, num_iterations=100, num_burnin=100, num_topics=1000)
 
         sf = self.model.get_topics(num_words=20, output_type='topic_words')
         conn, cursor = get_postgredb()
@@ -89,10 +89,11 @@ class TopicModel(object):
             doc_list.append(item[1])
         ws = gl.SArray(doc_list)
         docs = gl.SFrame(data={'X1':ws})
-        tfidf_encoder = gl.feature_engineering.TFIDF('X1')
-        tfidf_encoder = tfidf_encoder.fit(docs)
-        tfidf_dict = tfidf_encoder.transform(docs)
-        pred = self.model.predict(tfidf_dict,
+        #tfidf_encoder = gl.feature_engineering.TFIDF('X1')
+        #tfidf_encoder = tfidf_encoder.fit(docs)
+        #tfidf_dict = tfidf_encoder.transform(docs)
+        docs = gl.text_analytics.count_words(docs['X1'])
+        pred = self.model.predict(docs,
                                   output_type='probability',
                                   num_burnin=30)
         #pred保存的是每个doc在所有主题上的概率值
