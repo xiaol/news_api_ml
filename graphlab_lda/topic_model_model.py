@@ -34,7 +34,8 @@ class TopicModel(object):
     def __init__(self, data_path=None, model_save_path=None):
         self.data_path = data_path
         self.version = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-        self.save_path = os.path.join(model_save_path, self.version)
+        if model_save_path:
+            self.save_path = os.path.join(model_save_path, self.version)
         self.model = None
 
 
@@ -57,6 +58,8 @@ class TopicModel(object):
 
 
     def load(self, model_path):
+        self.version = os.path.split(model_path)[-1]
+        print self.version
         self.model = gl.load_model(model_path)
 
 
