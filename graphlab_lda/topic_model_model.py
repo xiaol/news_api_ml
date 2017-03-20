@@ -75,6 +75,7 @@ class TopicModel(object):
         ws = gl.SArray(doc_list)
         docs = gl.SFrame(data={'X1':ws})
         tfidf_encoder = gl.feature_engineering.TFIDF('X1')
+        tfidf_encoder = tfidf_encoder.fit(docs)
         tfidf_dict = tfidf_encoder.transform(docs)
         pred = self.model.predict(tfidf_dict,
                                   output_type='probability',
