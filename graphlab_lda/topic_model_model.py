@@ -49,7 +49,7 @@ class TopicModel(object):
         #tfidf_dict = tfidf_encoder.transform(docs_sframe)
         docs = gl.text_analytics.count_words(docs_sframe['X1'])
         docs = gl.text_analytics.trim_rare_words(docs, threshold=5, delimiters=None)
-        self.model = gl.topic_model.create(docs, num_iterations=100, num_burnin=100, num_topics=100000)
+        self.model = gl.topic_model.create(docs, num_iterations=500, num_burnin=100, num_topics=12000)
 
         sf = self.model.get_topics(num_words=20, output_type='topic_words')
         conn, cursor = get_postgredb()
@@ -98,7 +98,7 @@ class TopicModel(object):
         docs = gl.text_analytics.count_words(docs['X1'])
         pred = self.model.predict(docs,
                                   output_type='probability',
-                                  num_burnin=50)
+                                  num_burnin=100)
         #pred保存的是每个doc在所有主题上的概率值
         props_list = [] #所有文档的主题-概率对儿
         for doc_index in xrange(len(pred)):  #取每个doc的分布
