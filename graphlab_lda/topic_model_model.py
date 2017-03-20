@@ -95,7 +95,7 @@ class TopicModel(object):
         docs = gl.text_analytics.count_words(docs['X1'])
         pred = self.model.predict(docs,
                                   output_type='probability',
-                                  num_burnin=30)
+                                  num_burnin=50)
         #pred保存的是每个doc在所有主题上的概率值
         props_list = [] #所有文档的主题-概率对儿
         for doc_index in xrange(len(pred)):  #取每个doc的分布
@@ -117,6 +117,7 @@ class TopicModel(object):
             for m in xrange(len(props_list[n])):
                 topic_id = props_list[n][m][0]
                 prop = props_list[n][m][1]
+                print 'iiiiiiiiiiiiii ' + str(topic_id) +  '  ' + str(prop)
                 insert_list.append((nids[n], self.version, topic_id, prop, str_time))
                 sf = self.model.get_topics(num_words=20,
                                            output_type='topic_words')
@@ -153,8 +154,8 @@ def create_topic_model():
         global model_instance
         data_path = '/root/workspace/news_api_ml/graphlab_lda/data/2017-03-17-15-02-05/体育'
         #data_path = os.path.join(get_newest_dir(data_dir), 'data.txt')
-        model_instance = TopicModel(data_path, model_base_path)
-        model_instance.create_and_save()
+        #model_instance = TopicModel(data_path, model_base_path)
+        #model_instance.create_and_save()
 
         mod_l = TopicModel()
         mod_l.load(get_newest_dir(model_base_path))
