@@ -31,7 +31,7 @@ model_instance = None
 
 class TopicModel(object):
     '''topic model class for train/load model'''
-    def __init__(self, data_path, model_save_path):
+    def __init__(self, data_path=None, model_save_path=None):
         self.data_path = data_path
         self.version = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
         self.save_path = os.path.join(model_save_path, self.version)
@@ -120,6 +120,9 @@ def get_newest_dir(dir):
     #return model_dir + ms_sort.pop()[0]
     return os.path.join(dir,  ms_sort.pop()[0])
 
+def load_topic_model(dir):
+    return gl.load_model(dir)
+
 def create_topic_model():
     try:
         global model_instance
@@ -127,6 +130,11 @@ def create_topic_model():
         #data_path = os.path.join(get_newest_dir(data_dir), 'data.txt')
         model_instance = TopicModel(data_path, model_base_path)
         model_instance.create_and_save()
+
+        mod_l = TopicModel()
+        mod_l = mod_l.load(get_newest_dir(model_base_path))
+        nids = [5459927, 13274670]
+        mod_l.predict(nids)
         print 'create model finished!'
     except:
         print 'exception !!!!'
