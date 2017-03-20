@@ -113,7 +113,7 @@ class TopicModel(object):
                     if sort_prop[i][1] > 0.1:
                         props.append(sort_prop[i])
                 else:
-                    if sort_prop[i][1] > 0.1 and sort_prop[i][1] > 0.5 * sort_prop[i-1][1]: #大于0.1并且与前一个概率差别不到一倍
+                    if sort_prop[i][1] > 0.1 and sort_prop[i][1] > 0.2 * sort_prop[i-1][1]: #大于0.1并且与前一个概率差别不到一倍
                         props.append(sort_prop[i])
 
             props_list.append(props)   # [ [(5, 0.3), (3, 0.2)..], ....  ]
