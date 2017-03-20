@@ -149,8 +149,8 @@ def load_topic_model(dir):
 def create_topic_model():
     try:
         global model_instance
-        #data_path = '/root/workspace/news_api_ml/graphlab_lda/data/2017-03-17-15-02-05/体育'
-        data_path = os.path.join(get_newest_dir(data_dir), 'data.txt')
+        data_path = '/root/workspace/news_api_ml/graphlab_lda/data/2017-03-17-15-02-05/体育'
+        #data_path = os.path.join(get_newest_dir(data_dir), 'data.txt')
         model_instance = TopicModel(data_path, model_base_path)
         model_instance.create_and_save()
 
