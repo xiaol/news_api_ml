@@ -27,7 +27,7 @@ data_dir = os.path.join(real_dir_path, 'data')
 model_base_path = os.path.join('/root/ossfs', 'topic_models')  #模型保存路径
 model_version = ''  #模型版本
 model_instance = None
-
+insert_sql = "insert into news_topic_v2 (nid, model_v, topic_id, probability, ctime) values(%s, %s, %s, %s, %s)"
 
 class TopicModel(object):
     '''topic model class for train/load model'''
@@ -94,19 +94,19 @@ class TopicModel(object):
                     props.append(sort_prop[i])
             props_list.append(props)   # [ [(5, 0.3), (3, 0.2)..], ....  ]
         #入库
-        insert_sql = []
+        insert_list = []
         str_time = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
         for n in xrange(len(nids)):
             for m in xrange(len(props_list[n])):
                 topic_id = props_list[n][m][0]
                 prop = props_list[n][m][1]
-                insert_sql.append((nids[n], self.version, topic_id, prop, str_time))
+                insert_list.append((nids[n], self.version, topic_id, prop, str_time))
                 sf = self.model.get_topics(num_words=20,
                                            output_type='topic_words')
                 print '{} topic words: '
                 print '    {}'.format(sf[topic_id]['words'])
         conn, cursor = get_postgredb()
-        cursor.executemany(insert_sql)
+        cursor.executemany(insert_sql, insert_list)
         conn.commit()
         conn.close()
         t1 = datetime.datetime.now()
