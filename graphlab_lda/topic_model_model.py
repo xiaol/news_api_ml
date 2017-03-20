@@ -135,7 +135,7 @@ def create_topic_model():
         model_instance.create_and_save()
 
         mod_l = TopicModel()
-        mod_l = mod_l.load(get_newest_dir(model_base_path))
+        mod_l.load(get_newest_dir(model_base_path))
         nids = [5459927, 13274670]
         mod_l.predict(nids)
         print 'create model finished!'
