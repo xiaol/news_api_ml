@@ -107,8 +107,13 @@ class TopicModel(object):
             sort_prop = sorted(index_val_dict.items(), key=lambda d: d[1], reverse=True)
             props = [] #本文档的主题-概率对儿 # [(5, 0.3), (3, 0.2), ...]
             for i in xrange(3):
-                if sort_prop[i][1] > 0.1:
-                    props.append(sort_prop[i])
+                if i == 0 :
+                    if sort_prop[i][1] > 0.1:
+                        props.append(sort_prop[i])
+                else:
+                    if sort_prop[i][1] > 0.1 and sort_prop[i][1] > 0.5 * sort_prop[i-1][1]: #大于0.1并且与前一个概率差别不到一倍
+                        props.append(sort_prop[i])
+
             props_list.append(props)   # [ [(5, 0.3), (3, 0.2)..], ....  ]
         #入库
         insert_list = []
@@ -161,7 +166,7 @@ def create_topic_model():
 
         #mod_l = TopicModel()
         #mod_l.load(get_newest_dir(model_base_path))
-        nids = [5459927, 13274670]
+        nids = [5459927, 13274670, 5243846]
         model_instance.predict(nids)
         print 'create model finished!'
     except:
