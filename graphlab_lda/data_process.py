@@ -122,7 +122,7 @@ class DocProcess(object):
 def coll_news():
     dp = DocProcess(doc_num_per_chnl, doc_min_len)
     dp.coll_news_handler()
-    print 'finished!!'
+    logger.info('collect news finished!')
 
 
 

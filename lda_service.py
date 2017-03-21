@@ -138,6 +138,37 @@ class Application(tornado.web.Application):
         settings = {}
         tornado.web.Application.__init__(self, handlers, **settings)
 
+class CollNews2(tornado.web.RequestHandler):
+    def get(self):
+        from graphlab_lda.data_process import coll_news
+        coll_news()
+
+
+class CreateSaveModel(tornado.web.RequestHandler):
+    def get(self):
+        from graphlab_lda.topic_model_model import create_topic_model
+        create_topic_model()
+
+
+class PredictNewsTopic2(tornado.web.RequestHandler):
+    def get(self):
+        nids = self.get_arguments('nid')
+        from graphlab_lda import topic_model_model
+        topic_model_model.predict_nids(nids)
+
+
+# 用于手工的一些接口
+class Application2(tornado.web.Application):
+    def __init__(self):
+        handlers = [
+            ("/topic_model/coll_news2", CollNews2),
+            ("/topic_model/create_models2", CreateSaveModel),
+            ("/topic_model/predict_on_nid2", PredictNewsTopic2),
+            ("/topic_model/get_user_topic2", CollectUserTopic),
+        ]
+        settings = {}
+        tornado.web.Application.__init__(self, handlers, **settings)
+
 
 #空白应用。 可以起到占用端口,防止某个服务被反复启动
 class EmptyApp(tornado.web.Application):
@@ -173,10 +204,8 @@ if __name__ == '__main__':
         http_server.listen(port) #同时提供手工处理端口
         nid_queue.consume_user_click()
     elif port == 9985:
-        from graphlab_lda import data_process
-        from graphlab_lda import topic_model_model
-        #data_process.coll_news()
-        topic_model_model.create_topic_model()
+        http_server = tornado.httpserver.HTTPServer(Application())
+        http_server.listen(port)
 
     tornado.ioloop.IOLoop.instance().start()
 

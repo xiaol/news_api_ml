@@ -29,6 +29,13 @@ def get_paragraph_text(para):
     return soup.text
 
 
+def is_num(str):
+    try:
+        float(str)
+        return True
+    except:
+        return False
+
 
 def filter_tags(htmlstr):
     # 先过滤CDATA
@@ -147,7 +154,7 @@ def filter_html_stopwords_pos(str, remove_num=False, remove_single_word=False, r
     if remove_num == True:
         while i < len(final_words):
             w = final_words[i]
-            if w.isdigit():
+            if is_num(w):
                 final_words.remove(w)
                 continue
             else:
