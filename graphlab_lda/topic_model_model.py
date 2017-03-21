@@ -148,7 +148,7 @@ def predict(model, nid_list):
             info_dict['model_v'] = model_version
             info_dict['topic_id'] = topic_id
             info_dict['probability'] = prop
-            info_dict['topic_words'] = sf[topic_id]['words']
+            info_dict['topic_words'] = json.dumps(sf[topic_id]['words'])
             res_dict_list.append(info_dict)
     conn, cursor = get_postgredb()
     cursor.executemany(insert_sql, insert_list)
