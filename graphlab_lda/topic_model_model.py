@@ -84,11 +84,13 @@ def create_topic_model():
 
 
 def load_topic_model(model_path):
+    logger_9987.info('load_topic_model begin ...')
     global model_instance
     if not model_instance:
         model_instance = TopicModel()
         model_instance.version = os.path.split(model_path)[-1]
         model_instance.model = gl.load_model(model_path)
+    logger_9987.info('load_topic_model finished!')
 
 
 def predict_nids(nid_list):
