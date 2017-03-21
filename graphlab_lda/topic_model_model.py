@@ -113,7 +113,7 @@ def predict(model, nid_list):
     docs = gl.text_analytics.count_words(docs['X1'])
     pred = model.model.predict(docs,
                               output_type='probability',
-                              num_burnin=100)
+                              num_burnin=50)
     #pred保存的是每个doc在所有主题上的概率值
     props_list = [] #所有文档的主题-概率对儿
     for doc_index in xrange(len(pred)):  #取每个doc的分布
