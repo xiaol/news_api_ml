@@ -130,31 +130,33 @@ def predict(model, nid_list):
     ws = gl.SArray(doc_list)
     docs = gl.SFrame(data={'X1':ws})
     docs = gl.text_analytics.count_words(docs['X1'])
+    logger_9988.info('    model.predict begin ...')
     pred = model.model.predict(docs,
                               output_type='probability',
                               num_burnin=50)
+    logger_9988.info('    model.predict finished!')
     #pred保存的是每个doc在所有主题上的概率值
     props_list = [] #所有文档的主题-概率对儿
     for doc_index in xrange(len(pred)):  #取每个doc的分布
         doc_props = pred[doc_index]
         index_val_dict = {}
         for k in xrange(len(doc_props)):
-            index_val_dict[k] = doc_props[k] #{ topic1:0.3, topic2:0.2, ...}
+            if doc_props[k] > 0.1:
+                index_val_dict[k] = doc_props[k] #{ topic1:0.3, topic2:0.2, ...}
         sort_prop = sorted(index_val_dict.items(), key=lambda d: d[1], reverse=True)
         props = [] #本文档的主题-概率对儿 # [(5, 0.3), (3, 0.2), ...]
-        for i in xrange(3):
-            if i == 0 :
-                if sort_prop[i][1] > 0.1:
-                    props.append(sort_prop[i])
+        for i in xrange(min(3, len(sort_prop))):
+            if i == 0:
+                props.append(sort_prop[i])
             else:
-                if sort_prop[i][1] > 0.1 and sort_prop[i][1] > 0.2 * sort_prop[i-1][1]: #大于0.1并且与前一个概率差别不到一倍
+                if sort_prop[i][1] > 0.2 * sort_prop[i-1][1]: #大于0.1并且与前一个概率差别不到一倍
                     props.append(sort_prop[i])
 
         props_list.append(props)   # [ [(5, 0.3), (3, 0.2)..], ....  ]
     #入库
     insert_list = []
     str_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    res_dict_list = []
+    #res_dict_list = []
     for n in xrange(len(nids)):
         for m in xrange(len(props_list[n])):
             topic_id = props_list[n][m][0]
@@ -162,20 +164,20 @@ def predict(model, nid_list):
             insert_list.append((nids[n], model.version, topic_id, prop, str_time))
             sf = model.model.get_topics(num_words=20,
                                        output_type='topic_words')
-            info_dict = {}
-            info_dict['nid'] = nids[n]
-            info_dict['model_v'] = model_version
-            info_dict['topic_id'] = topic_id
-            info_dict['probability'] = prop
-            info_dict['topic_words'] = sf[topic_id]['words']
-            res_dict_list.append(info_dict)
+            #info_dict = {}
+            #info_dict['nid'] = nids[n]
+            #info_dict['model_v'] = model_version
+            #info_dict['topic_id'] = topic_id
+            #info_dict['probability'] = prop
+            #info_dict['topic_words'] = sf[topic_id]['words']
+            #res_dict_list.append(info_dict)
     conn, cursor = get_postgredb()
     cursor.executemany(insert_sql, insert_list)
     conn.commit()
     conn.close()
     t1 = datetime.datetime.now()
     logger_9988.info('prediction takes {}s'.format((t1 - t0).total_seconds()))
-    return res_dict_list
+    #return res_dict_list
 
 
 # -------------------------------我是分割线, 下面是预测用户点击------------------
