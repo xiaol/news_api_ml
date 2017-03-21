@@ -24,9 +24,9 @@ from util.doc_process import get_postgredb
 from util.doc_process import get_postgredb_query
 
 real_dir_path = os.path.split(os.path.realpath(__file__))[0]
-logger_9987 = Logger('process9987',  os.path.join(real_dir_path,  'log/log_9987.txt'))
+#logger_9987 = Logger('process9987',  os.path.join(real_dir_path,  'log/log_9987.txt'))
 logger_9988 = Logger('process9988',  os.path.join(real_dir_path,  'log/log_9988.txt'))
-logger_9989 = Logger('process9989',  os.path.join(real_dir_path,  'log/log_9989.txt'))
+#logger_9989 = Logger('process9989',  os.path.join(real_dir_path,  'log/log_9989.txt'))
 
 data_dir = os.path.join(real_dir_path, 'data')
 model_base_path = os.path.join('/root/ossfs', 'topic_models')  #模型保存路径
@@ -46,7 +46,7 @@ class TopicModel(object):
 
 
     def create(self):
-        logger_9987.info('TopicModel::create begin ...')
+        #logger_9987.info('TopicModel::create begin ...')
         docs_sframe = gl.SFrame.read_csv(self.data_path, header=False)
         docs = gl.text_analytics.count_words(docs_sframe['X1'])
         docs = gl.text_analytics.trim_rare_words(docs, threshold=5, delimiters=None)
@@ -64,14 +64,14 @@ class TopicModel(object):
         conn.close()
         del docs_sframe
         del docs
-        logger_9987.info('TopicModel::create finished!')
+        #logger_9987.info('TopicModel::create finished!')
 
 
     def create_and_save(self):
         self.create()
-        logger_9987.info('   topic model create finished!')
+        #logger_9987.info('   topic model create finished!')
         self.model.save(self.save_path)
-        logger_9987.info('   topic model save finished!')
+        #logger_9987.info('   topic model save finished!')
 
 
 def create_topic_model():
@@ -84,7 +84,7 @@ def create_topic_model():
         #model_instance.create()
     except:
         print 'exception !!!!'
-        logger_9987.exception(traceback.format_exc())
+        #logger_9987.exception(traceback.format_exc())
 
 
 # -------------------------------我是分割线, 下面是预测新闻主题--------------------
@@ -156,14 +156,15 @@ def predict(model, nid_list):
     #入库
     insert_list = []
     str_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    logger_9988.info('    nid topics coll finished, begin to insert to db')
     #res_dict_list = []
     for n in xrange(len(nids)):
         for m in xrange(len(props_list[n])):
             topic_id = props_list[n][m][0]
             prop = props_list[n][m][1]
             insert_list.append((nids[n], model.version, topic_id, prop, str_time))
-            sf = model.model.get_topics(num_words=20,
-                                       output_type='topic_words')
+            #sf = model.model.get_topics(num_words=20,
+            #                           output_type='topic_words')
             #info_dict = {}
             #info_dict['nid'] = nids[n]
             #info_dict['model_v'] = model_version
@@ -172,7 +173,9 @@ def predict(model, nid_list):
             #info_dict['topic_words'] = sf[topic_id]['words']
             #res_dict_list.append(info_dict)
     conn, cursor = get_postgredb()
+    logger_9988.info('    begin to insert')
     cursor.executemany(insert_sql, insert_list)
+    logger_9988.info('    finish to insert')
     conn.commit()
     conn.close()
     t1 = datetime.datetime.now()
@@ -195,7 +198,7 @@ def predict_click(click_info, model_v = None):
         uid = click_info[0]
         nid = click_info[1]
         time_str = click_info[2]
-        logger_9989.info("consume click: uid={}, nid={}, time_str={}".format(uid, nid, time_str))
+        #logger_9989.info("consume click: uid={}, nid={}, time_str={}".format(uid, nid, time_str))
         ctime = datetime.datetime.strptime(time_str, '%Y-%m-%d %H:%M:%S')
         valid_time = ctime + timedelta(days=30) #有效时间定为30天
         fail_time = valid_time.strftime('%Y-%m-%d %H:%M:%S')
