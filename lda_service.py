@@ -204,7 +204,7 @@ if __name__ == '__main__':
         http_server.listen(port) #同时提供手工处理端口
         nid_queue.consume_user_click()
     elif port == 9985:
-        http_server = tornado.httpserver.HTTPServer(Application())
+        http_server = tornado.httpserver.HTTPServer(Application2())
         http_server.listen(port)
 
     tornado.ioloop.IOLoop.instance().start()
