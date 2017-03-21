@@ -14,7 +14,6 @@ from tornado import ioloop
 import traceback
 
 from graphlab_lda import topic_model_doc_process
-from graphlab_lda import topic_model
 #from graphlab_lda import redis_lda
 from redis_process import nid_queue
 
@@ -27,12 +26,14 @@ class CollNews(tornado.web.RequestHandler):
 
 class CreateModels(tornado.web.RequestHandler):
     def get(self):
+        from graphlab_lda import topic_model
         topic_model.create_models()
 
 
 class PredictOnNid(tornado.web.RequestHandler):
     def get(self):
         nid = int(self.get_argument('nid'))
+        from graphlab_lda import topic_model
         res = topic_model.lda_predict(nid)
         self.write(json.dumps(res))
 
@@ -49,6 +50,7 @@ class PredictOneClick(tornado.web.RequestHandler):
             uid = int(self.get_argument('uid'))
             nid = int(self.get_argument('nid'))
             ctime = self.get_argument('ctime')
+            from graphlab_lda import topic_model
             topic_model.predict_user_topic_core(uid, nid, ctime)
         except :
             traceback.print_exc()
@@ -72,6 +74,7 @@ class PredictOnNidAndSave(tornado.web.RequestHandler):
     def get(self):
         try:
             nid = int(self.get_argument('nid'))
+            from graphlab_lda import topic_model
             topic_model.lda_predict_and_save(nid)
         except:
             traceback.print_exc()
@@ -80,6 +83,7 @@ class PredictOnNidAndSave(tornado.web.RequestHandler):
 class LoadModels(tornado.web.RequestHandler):
     def get(self):
         models_dir = self.get_argument('dir')
+        from graphlab_lda import topic_model
         topic_model.load_models(models_dir)
 
 
@@ -87,12 +91,14 @@ class LoadModels(tornado.web.RequestHandler):
 class ProuceNewsTopicManual(tornado.web.RequestHandler):
     def get(self):
         num = self.get_argument('num')
+        from graphlab_lda import topic_model
         topic_model.produce_news_topic_manual(num)
 
 
 #根据用户的点击预测其感兴趣的话题,入库
 class CollectUserTopic(tornado.web.RequestHandler):
     def get(self):
+        from graphlab_lda import topic_model
         topic_model.get_user_topics()
 
 
