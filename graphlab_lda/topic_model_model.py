@@ -13,6 +13,7 @@
 
 import os
 import datetime
+from datetime import timedelta
 import json
 import traceback
 from util.logger import Logger
@@ -20,6 +21,7 @@ from data_process import DocProcess
 import graphlab as gl
 from data_process import get_news_words
 from util.doc_process import get_postgredb
+from util.doc_process import get_postgredb_query
 
 real_dir_path = os.path.split(os.path.realpath(__file__))[0]
 logger_9987 = Logger('process9987',  os.path.join(real_dir_path,  'log/log_9987.txt'))
@@ -83,6 +85,7 @@ def create_topic_model():
         logger_9987.exception(traceback.format_exc())
 
 
+# -------------------------------我是分割线, 下面是预测新闻主题--------------------
 def load_topic_model(model_path):
     logger_9987.info('load_topic_model begin ...')
     global model_instance
@@ -93,12 +96,24 @@ def load_topic_model(model_path):
     logger_9987.info('load_topic_model finished!')
 
 
+#获取一个文件夹下最新版的文件夹
+def get_newest_dir(dir):
+    #models_dir = real_dir_path + '/models'
+    models = os.listdir(dir)
+    ms = {}
+    for m in models:
+        ms[m] = m.replace('-', '')
+    ms_sort = sorted(ms.items(), key=lambda x:x[1])
+    #return model_dir + ms_sort.pop()[0]
+    return os.path.join(dir,  ms_sort.pop()[0])
+
+
 def predict_nids(nid_list):
     global model_instance
     if not model_instance:
-        #p = '/root/ossfs/topic_models/2017-03-20-17-33-53'
-        #load_topic_model(p)
-        load_topic_model(get_newest_dir(model_base_path))
+        p = '/root/ossfs/topic_models/2017-03-20-17-33-53'
+        load_topic_model(p)
+        #load_topic_model(get_newest_dir(model_base_path))
     return predict(model_instance, nid_list)
 
 def predict(model, nid_list):
@@ -161,17 +176,44 @@ def predict(model, nid_list):
     return res_dict_list
 
 
-#获取一个文件夹下最新版的文件夹
-def get_newest_dir(dir):
-    #models_dir = real_dir_path + '/models'
-    models = os.listdir(dir)
-    ms = {}
-    for m in models:
-        ms[m] = m.replace('-', '')
-    ms_sort = sorted(ms.items(), key=lambda x:x[1])
-    #return model_dir + ms_sort.pop()[0]
-    return os.path.join(dir,  ms_sort.pop()[0])
-
+# -------------------------------我是分割线, 下面是预测用户点击------------------
+nt_sql = "select topic_id, probability from news_topic_v2 where nid = {0} and model_v = {1}"
+ut_sql = "select probability from usertopics where uid = {0} and model_v = '{1}' and topic_id ='{2}' "
+user_topic_insert_sql = "insert into user_topics_v2 (uid, model_v, topic_id, probability, create_time, fail_time) " \
+                        "VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}')"
+ut_update_sql = "update user_topics_v2 set probability='{0}', create_time = '{1}', fail_time='{2}' where " \
+                "uid='{3}' and model_v = '{4}' and topic_id='{5}'"
+#预测用户点击行为
+def predict_click(model_v, click_info):
+    try:
+        uid = click_info[0]
+        nid = click_info[1]
+        time_str = click_info[2]
+        ctime = datetime.datetime.strptime(time_str, '%Y-%m-%d %H:%M:%S')
+        valid_time = ctime + timedelta(days=30) #有效时间定为30天
+        fail_time = valid_time.strftime('%Y-%m-%d %H:%M:%S')
+        conn, cursor = get_postgredb_query()
+        cursor.execute(nt_sql.format(nid, model_v)) #获取nid可能的话题
+        rows = cursor.fetchall()
+        for r in rows:
+            topic_id = r[0]
+            probability = r[1]
+            conn2, cursor2 = get_postgredb()
+            cursor2.execute(ut_sql.format(uid, model_v, topic_id))
+            rows2 = cursor2.fetchone()
+            if rows2: #该用户已经关注过该topic_id, 更新probability即可
+                print 'update'
+                new_prop = probability + rows2[0]
+                cursor2.execute(ut_update_sql.format(new_prop, time_str, fail_time, uid, model_v, topic_id))
+            else:
+                print 'insert'
+                cursor2.execute(user_topic_insert_sql.format(uid, model_v, topic_id, probability, time_str, fail_time))
+            conn2.commit()
+            conn2.close()
+        cursor.close()
+        conn.close()
+    except:
+        traceback.print_exc()
 
 
 

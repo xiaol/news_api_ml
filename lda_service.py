@@ -158,6 +158,15 @@ class PredictNewsTopic2(tornado.web.RequestHandler):
         res = topic_model_model.predict_nids(nids)
         self.write(json.dumps(res))
 
+class CollectUserTopic2(tornado.web.RequestHandler):
+    def get(self):
+        model_v = '2017-03-20-17-33-53'
+        uid = 11111
+        nid = 5459927
+        time_str = '2017-03-20 15:21:20'
+        click = [uid, nid, time_str]
+        from graphlab_lda import topic_model_model
+        topic_model_model.predict_click(model_v, click)
 
 
 # 用于手工的一些接口
@@ -167,7 +176,7 @@ class Application2(tornado.web.Application):
             ("/topic_model/coll_news2", CollNews2),
             ("/topic_model/create_models2", CreateSaveModel),
             ("/topic_model/predict_on_nid2", PredictNewsTopic2),
-            ("/topic_model/get_user_topic2", CollectUserTopic),
+            ("/topic_model/get_user_topic2", CollectUserTopic2),
         ]
         settings = {}
         tornado.web.Application.__init__(self, handlers, **settings)
