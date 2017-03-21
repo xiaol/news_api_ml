@@ -155,7 +155,9 @@ class PredictNewsTopic2(tornado.web.RequestHandler):
         nids = self.get_arguments('nid')  #返回的nid是
         nids = map(int, nids)
         from graphlab_lda import topic_model_model
-        topic_model_model.predict_nids(nids)
+        res = topic_model_model.predict_nids(nids)
+        return json.dumps(res)
+
 
 
 # 用于手工的一些接口
