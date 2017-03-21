@@ -6,6 +6,7 @@
 # @Software: PyCharm Community Edition
 
 from graphlab_lda import topic_model
+from graphlab_lda import topic_model_model
 from graphlab_kmeans import kmeans
 from sim_hash import sim_hash
 from multi_viewpoint import sentence_hash
@@ -67,7 +68,8 @@ def consume_nid_lda(num=1):
         n += 1
         t1 = datetime.datetime.now()
         if n >=num or (t1 - t0).total_seconds() > 10:
-            topic_model.predict_topic_nids(nid_list)
+            #topic_model.predict_topic_nids(nid_list)
+            topic_model_model.predict_nids(nid_list)
             n = 0
             del nid_list[:]
             t0 = datetime.datetime.now()
@@ -153,9 +155,9 @@ def consume_user_click():
             uid = data[0]
             nid = data[1]
             ctime = data[2]
-            print 'consum ' + str(uid) + ' ' + str(nid) + ' ' + 'begin'
             #for topic model
-            topic_model.predict_click((uid, nid, ctime))
+            #topic_model.predict_click((uid, nid, ctime))
+            topic_model_model.predict_click((uid, nid, ctime))
             #for kmeans
             kmeans.predict_click((uid, nid, ctime))
         except :
