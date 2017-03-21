@@ -156,6 +156,7 @@ def predict(model, nid_list):
     #入库
     insert_list = []
     str_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    logger_9988.info('    {}'.format(props_list))
     logger_9988.info('    nid topics coll finished, begin to insert to db')
     #res_dict_list = []
     for n in xrange(len(nids)):
