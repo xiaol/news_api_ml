@@ -156,7 +156,7 @@ class PredictNewsTopic2(tornado.web.RequestHandler):
         nids = map(int, nids)
         from graphlab_lda import topic_model_model
         res = topic_model_model.predict_nids(nids)
-        return json.dumps(res)
+        self.write(json.dumps(res))
 
 
 
