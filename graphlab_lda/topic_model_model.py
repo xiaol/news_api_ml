@@ -96,7 +96,9 @@ def load_topic_model(model_path):
 def predict_nids(nid_list):
     global model_instance
     if not model_instance:
-        load_topic_model(get_newest_dir(model_base_path))
+        p = '/root/ossfs/topic_models/2017-03-20-17-33-53'
+        #load_topic_model(get_newest_dir(model_base_path))
+        load_topic_model(p)
     return predict(model_instance, nid_list)
 
 def predict(model, nid_list):
@@ -156,7 +158,7 @@ def predict(model, nid_list):
     conn.close()
     t1 = datetime.datetime.now()
     logger_9987.info('prediction takes {}'.format((t1 - t0).total_seconds()))
-    return json.dumps(res_dict_list)
+    return res_dict_list
 
 
 #获取一个文件夹下最新版的文件夹
