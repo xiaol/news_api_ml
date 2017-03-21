@@ -203,7 +203,7 @@ if __name__ == '__main__':
     elif port == 9988:#消费新闻队列数据
         http_server = tornado.httpserver.HTTPServer(EmptyApp())
         http_server.listen(port) #同时提供手工处理端口
-        topic_model.load_newest_models()
+        #topic_model.load_newest_models()
         nid_queue.consume_nid_lda(200)
         #redis_lda.consume_nid(200)
     elif port == 9989: #用户点击事件入队列
