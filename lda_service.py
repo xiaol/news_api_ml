@@ -152,9 +152,13 @@ class CreateSaveModel(tornado.web.RequestHandler):
 
 class PredictNewsTopic2(tornado.web.RequestHandler):
     def get(self):
-        nids = self.get_arguments('nid')
+        nids = json.loads(self.get_arguments('nid'))
+        print type(nids)
+        print nids
         from graphlab_lda import topic_model_model
-        topic_model_model.predict_nids(nids)
+        from graphlab_lda import data_process
+        wods = data_process.get_news_words(nids)
+        #topic_model_model.predict_nids(nids)
 
 
 # 用于手工的一些接口
