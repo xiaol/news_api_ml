@@ -16,9 +16,9 @@ from util import logger
 from topic_model_doc_process import channel_for_topic
 
 real_dir_path = os.path.split(os.path.realpath(__file__))[0]
-logger_9987 = logger.Logger('process9987',  os.path.join(real_dir_path,  'log/log_9987.txt'))
-logger_9988 = logger.Logger('process9988',  os.path.join(real_dir_path,  'log/log_9988.txt'))
-logger_9990 = logger.Logger('process9990', os.path.join(real_dir_path,  'log/log_9990.txt'))
+logger_9987 = logger.Logger('process9987',  os.path.join(real_dir_path,  'log/log_9987_old.txt'))
+logger_9988 = logger.Logger('process9988',  os.path.join(real_dir_path,  'log/log_9988_old.txt'))
+logger_9990 = logger.Logger('process9990', os.path.join(real_dir_path,  'log/log_9990_old.txt'))
 
 
 g_channel_model_dict = {}
