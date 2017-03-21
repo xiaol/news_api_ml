@@ -157,7 +157,7 @@ def predict(model, nid_list):
     conn.commit()
     conn.close()
     t1 = datetime.datetime.now()
-    logger_9987.info('prediction takes {}'.format((t1 - t0).total_seconds()))
+    logger_9987.info('prediction takes {}s'.format((t1 - t0).total_seconds()))
     return res_dict_list
 
 
