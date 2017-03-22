@@ -13,7 +13,7 @@ from util.doc_process import filter_tags
 from util.doc_process import get_sentences_on_nid
 from bs4 import BeautifulSoup
 
-from sim_hash import sim_hash
+from util import simhash
 import datetime
 import os
 import logging
@@ -32,24 +32,6 @@ logger_9966 = logger.Logger('9966', real_dir_path + '/../log/multi_vp/log_9966.t
 
 def get_nid_sentence(nid):
     get_sentences_on_nid(nid)
-
-
-#从64位取字段,建立索引
-def get_4_segments(hash_bits):
-    #fir = h.__long__() & 0b11111100000000000000000000000000000000000000000000000011111111
-    #sec = h.__long__() & 0b00000011111111000000000000000000000000000000001111111100000000
-    #thi = h.__long__() & 0b00000000000000111111110000000000000000111111110000000000000000
-    #fou = h.__long__() & 0b00000000000000000000001111111111111111000000000000000000000000
-    fir = hash_bits & 0b11000000000000000000000000111111110000000000000000000000001111
-    sec = hash_bits & 0b00111100000000000000001111000000001111000000000000000011110000
-    thi = hash_bits & 0b00000011110000000011110000000000000000111100000000111100000000
-    fou = hash_bits & 0b00000000001111111100000000000000000000000011111111000000000000
-    fir2 = hash_bits & 0b11000000001111000000000000000011110000000000001111000000000000
-    sec2 = hash_bits & 0b00111100000000111100000000000000001111000000000000111100000000
-    thi2 = hash_bits & 0b00000011110000000011110000000000000000111100000000000011110000
-    fou2 = hash_bits & 0b00000000001111000000001111000000000000000011110000000000001111
-    return str(fir), str(sec), str(thi), str(fou), str(fir2), str(sec2), str(thi2), str(fou2)
-
 
 
 #insert_sentence_hash = "insert into news_sentence_hash (nid, sentence, hash_val, ctime) VALUES({0}, '{1}', '{2}', '{3}')"
@@ -211,8 +193,8 @@ def cal_process(nid_set, log=None, same_t=3):
                     str_no_html, wl = filter_html_stopwords_pos(s, False, True, True, False)
                     if len(wl) == 0 or len(str_no_html) <= 2: #去除一个字的句子,因为有很多是特殊字符
                         continue
-                    h = sim_hash.simhash(wl)
-                    fir, sec, thi, fou, fir2, sec2, thi2, fou2 = get_4_segments(h.__long__())
+                    h = simhash.simhash(wl)
+                    fir, sec, thi, fou, fir2, sec2, thi2, fou2 = simhash.get_4_segments(h.__long__())
                     if is_sentence_ads(h, fir, sec, thi, fou, fir2, sec2, thi2, fou2, nid_pname_dict[nid]):  #在广告db内
                         #  删除广告句子
                         log.info('find ads of {0}  : {1} '.format(nid, str_no_html.encode("utf-8")))
