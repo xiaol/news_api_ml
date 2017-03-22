@@ -207,7 +207,7 @@ def predict_clicks(clicks, model_v=None):
 
 # -------------------------------我是分割线, 下面是预测用户点击------------------
 nt_sql = "select topic_id, probability from news_topic_v2 where nid = {0} and model_v = '{1}'"
-ut_sql = "select probability from usertopics where uid = {0} and model_v = '{1}' and topic_id ='{2}' "
+ut_sql = "select probability from user_topics_v2 where uid = {0} and model_v = '{1}' and topic_id ='{2}' "
 user_topic_insert_sql = "insert into user_topics_v2 (uid, model_v, topic_id, probability, create_time, fail_time) " \
                         "VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}')"
 ut_update_sql = "update user_topics_v2 set probability='{0}', create_time = '{1}', fail_time='{2}' where " \
