@@ -219,9 +219,13 @@ def predict_click(click_info, model_v = None):
             model_v = os.path.split(get_newest_dir(model_base_path))[-1]
         uid = click_info[0]
         nid = click_info[1]
-        time_str = click_info[2]
+        if isinstance(click_info[2], basestring):
+            time_str = click_info[2]
+            ctime = datetime.datetime.strptime(time_str, '%Y-%m-%d %H:%M:%S')
+        else:
+            ctime = click_info[2]
+            time_str = ctime.strftime('%Y-%m-%d %H:%M:%S')
         logger_9990.info("consume click: uid={}, nid={}, time_str={}".format(uid, nid, time_str))
-        ctime = datetime.datetime.strptime(time_str, '%Y-%m-%d %H:%M:%S')
         valid_time = ctime + timedelta(days=30) #有效时间定为30天
         fail_time = valid_time.strftime('%Y-%m-%d %H:%M:%S')
         conn, cursor = get_postgredb_query()
