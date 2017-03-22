@@ -170,9 +170,13 @@ def get_old_clicks():
     while True:
         try:
             d = redis_inst.rpop(user_click_queue)[1]
+            print 'd = '
+            print d
             if not d:
                 break
             data = json.loads(d)
+            print 'data ='
+            print data
             uid = data[0]
             nid = data[1]
             ctime = data[2]
