@@ -26,7 +26,8 @@ from util.doc_process import get_postgredb_query
 real_dir_path = os.path.split(os.path.realpath(__file__))[0]
 #logger9987 = Logger('process9987',  os.path.join(real_dir_path,  'log/log_9987.txt'))
 logger_9988 = Logger('process9988',  os.path.join(real_dir_path,  'log/log_9988.txt'))
-#logger_9989 = Logger('process9989',  os.path.join(real_dir_path,  'log/log_9989.txt'))
+logger_9989 = Logger('process9989',  os.path.join(real_dir_path,  'log/log_9989.txt'))
+logger_9990 = Logger('process9990',  os.path.join(real_dir_path,  'log/log_9990.txt'))
 
 data_dir = os.path.join(real_dir_path, 'data')
 model_base_path = os.path.join('/root/ossfs', 'topic_models')  #模型保存路径
@@ -193,7 +194,7 @@ def predict_click(click_info, model_v = None):
         uid = click_info[0]
         nid = click_info[1]
         time_str = click_info[2]
-        #logger_9989.info("consume click: uid={}, nid={}, time_str={}".format(uid, nid, time_str))
+        logger_9990.info("consume click: uid={}, nid={}, time_str={}".format(uid, nid, time_str))
         ctime = datetime.datetime.strptime(time_str, '%Y-%m-%d %H:%M:%S')
         valid_time = ctime + timedelta(days=30) #有效时间定为30天
         fail_time = valid_time.strftime('%Y-%m-%d %H:%M:%S')
