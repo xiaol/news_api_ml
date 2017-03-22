@@ -237,9 +237,6 @@ def predict_click(click_info, model_v = None):
             conn2, cursor2 = get_postgredb()
             cursor2.execute(ut_sql.format(uid, model_v, topic_id))
             rows2 = cursor2.fetchone()
-            if uid == 9606585:
-                logger_9990.info('****9606585 ** {}'.format(ut_sql.format(uid, model_v, topic_id)))
-                logger_9990.info('**** len=  {}'.format(rows2))
             if rows2: #该用户已经关注过该topic_id, 更新probability即可
                 new_prop = probability + rows2[0]
                 logger_9990.info('update: uid={}, topic_id={}'.format(uid, topic_id))
