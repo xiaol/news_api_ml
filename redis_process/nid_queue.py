@@ -178,7 +178,6 @@ def get_old_clicks():
             ctime = data[2]
             clicks.append((uid, nid, ctime))
         except:
-            traceback.print_exc()
-            break
+            raise
     return clicks
 
