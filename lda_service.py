@@ -180,6 +180,7 @@ class DealOldClicks(tornado.web.RequestHandler):
             print '-------------deal old clicks begin!-------------'
             from redis_process import nid_queue
             clicks = nid_queue.get_old_clicks()
+            print '----------------len = {}----------------'.format(str(len(clicks)))
             nids = [c[1] for c in clicks]
             from graphlab_lda import topic_model_model
             topic_model_model.deal_old_nids(nids)
