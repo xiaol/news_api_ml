@@ -200,6 +200,11 @@ def predict(model, nid_list):
     #return res_dict_list
 
 
+#预测多个点击
+def predict_clicks(clicks, model_v=None):
+    for click in clicks:
+        predict_click(click, model_v)
+
 # -------------------------------我是分割线, 下面是预测用户点击------------------
 nt_sql = "select topic_id, probability from news_topic_v2 where nid = {0} and model_v = '{1}'"
 ut_sql = "select probability from usertopics where uid = {0} and model_v = '{1}' and topic_id ='{2}' "

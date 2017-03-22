@@ -174,6 +174,8 @@ class CollectUserTopic2(tornado.web.RequestHandler):
         from graphlab_lda import topic_model_model
         topic_model_model.predict_click(model_v, click)
 
+
+#处理队列中的点击
 class DealOldClicks(tornado.web.RequestHandler):
     def get(self):
         try:
@@ -185,12 +187,28 @@ class DealOldClicks(tornado.web.RequestHandler):
             from graphlab_lda import topic_model_model
             topic_model_model.deal_old_nids(nids)
             print '-------------deal old clicks predict nids finished!-------------'
-            topic_model_model.predict_click(clicks)
+            topic_model_model.predict_clicks(clicks)
             print '-------------deal old clicks finish!-------------'
         except:
             traceback.print_exc()
 
 
+#处理库中两天内的点击
+class DealOldClicks2(tornado.web.RequestHandler):
+    def get(self):
+        try:
+            print '-------------deal old clicks begin!-------------'
+            from graphlab_lda import topic_model_model
+            s = "select uid, nid, ctime from newsrecommendclick where ctime > now() - interval '2 day'"
+            from util import doc_process
+            conn, cursor = doc_process.get_postgredb_query()
+            cursor.execute(s)
+            rows = cursor.fetchall()
+            clicks = tuple(rows)
+            topic_model_model.predict_clicks(clicks)
+            print '-------------deal old clicks finish!-------------'
+        except:
+            traceback.print_exc()
 
 
 # 用于手工的一些接口
@@ -201,7 +219,8 @@ class Application2(tornado.web.Application):
             ("/topic_model/create_models2", CreateSaveModel),
             ("/topic_model/predict_on_nid2", PredictNewsTopic2),
             ("/topic_model/get_user_topic2", CollectUserTopic2),
-            ("/topic_model/deal_old_clicks", DealOldClicks)
+            ("/topic_model/deal_old_clicks", DealOldClicks),
+            ("/topic_model/deal_old_clicks2", DealOldClicks2),
         ]
         settings = {}
         tornado.web.Application.__init__(self, handlers, **settings)
