@@ -5,7 +5,7 @@
 # @File    : nid_queue.py
 # @Software: PyCharm Community Edition
 
-from graphlab_lda import topic_model
+#from graphlab_lda import topic_model
 from graphlab_lda import topic_model_model
 from graphlab_kmeans import kmeans
 from sim_hash import sim_hash
