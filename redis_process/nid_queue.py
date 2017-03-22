@@ -163,3 +163,23 @@ def consume_user_click():
         except :
             traceback.print_exc()
             continue
+
+def get_old_clicks():
+    global redis_inst
+    clicks = []
+    while True:
+        try:
+            d = redis_inst.pop(user_click_queue)[1]
+            if not d:
+                break
+            data = json.loads(d)
+            uid = data[0]
+            nid = data[1]
+            ctime = data[2]
+            clicks.append((uid, nid, ctime))
+
+        except:
+            traceback.print_exc()
+            continue
+    return clicks
+

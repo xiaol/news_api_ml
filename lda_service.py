@@ -174,6 +174,23 @@ class CollectUserTopic2(tornado.web.RequestHandler):
         from graphlab_lda import topic_model_model
         topic_model_model.predict_click(model_v, click)
 
+class DealOldClicks(tornado.web.RequestHandler):
+    def get(self):
+        try:
+            print '-------------deal old clicks begin!-------------'
+            from redis_process import nid_queue
+            clicks = nid_queue.get_old_clicks()
+            nids = [c[1] for c in clicks]
+            from graphlab_lda import topic_model_model
+            topic_model_model.deal_old_nids(nids)
+            print '-------------deal old clicks predict nids finished!-------------'
+            topic_model_model.predict_click(clicks)
+            print '-------------deal old clicks finish!-------------'
+        except:
+            traceback.print_exc()
+
+
+
 
 # 用于手工的一些接口
 class Application2(tornado.web.Application):
@@ -183,6 +200,7 @@ class Application2(tornado.web.Application):
             ("/topic_model/create_models2", CreateSaveModel),
             ("/topic_model/predict_on_nid2", PredictNewsTopic2),
             ("/topic_model/get_user_topic2", CollectUserTopic2),
+            ("/topic_model/deal_old_clicks", DealOldClicks)
         ]
         settings = {}
         tornado.web.Application.__init__(self, handlers, **settings)

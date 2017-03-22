@@ -111,6 +111,27 @@ def get_newest_dir(dir):
     return os.path.join(dir,  ms_sort.pop()[0])
 
 
+#处理部分久nid
+def deal_old_nids(nid_list):
+    try:
+        s = 'select nid from news_topic_v2 where nid in {}'
+        conn, cursor = get_postgredb_query()
+        cursor.execute(s, tuple(nid_list))
+        rows = cursor.fetchall()
+        nid_set = set(nid_list)
+        exist_set = set(rows)
+        to_deal_set = nid_set - exist_set
+        predict_nids(list(to_deal_set))
+        conn.close()
+    except:
+        conn.close()
+        raise
+
+
+
+
+
+
 def predict_nids(nid_list):
     global model_instance
     if not model_instance:
