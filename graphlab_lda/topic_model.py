@@ -16,9 +16,9 @@ from util import logger
 from topic_model_doc_process import channel_for_topic
 
 real_dir_path = os.path.split(os.path.realpath(__file__))[0]
-logger_9987 = logger.Logger('process9987',  os.path.join(real_dir_path,  'log/log_9987_old.txt'))
-logger_9988 = logger.Logger('process9988',  os.path.join(real_dir_path,  'log/log_9988_old.txt'))
-logger_9990 = logger.Logger('process9990', os.path.join(real_dir_path,  'log/log_9990_old.txt'))
+logger9987 = logger.Logger('process_9987',  os.path.join(real_dir_path,  'log/log_9987_old.txt'))
+logger9988 = logger.Logger('process_9988',  os.path.join(real_dir_path,  'log/log_9988_old.txt'))
+logger9990 = logger.Logger('process_9990', os.path.join(real_dir_path,  'log/log_9990_old.txt'))
 
 
 g_channel_model_dict = {}
@@ -66,7 +66,7 @@ def create_model_proc(csv_file, model_save_dir=None):
 
 
 def create_models():
-    logger_9987.info("begin to create model ......")
+    logger9987.info("begin to create model ......")
     global model_dir
     model_create_time = datetime.datetime.now()
     time_str = model_create_time.strftime('%Y-%m-%d-%H-%M-%S')
@@ -92,7 +92,7 @@ def get_newest_model_dir():
 
 
 def load_models(models_dir):
-    logger_9988.info("load_models ......")
+    logger9988.info("load_models ......")
     global g_channel_model_dict, model_v
     import os
     model_v = os.path.split(models_dir)[1]
@@ -100,9 +100,9 @@ def load_models(models_dir):
         g_channel_model_dict.clear()
     models_files = os.listdir(models_dir)
     for mf in models_files:
-        logger_9988.info("   load {}".format(models_dir + '/' + mf))
+        logger9988.info("   load {}".format(models_dir + '/' + mf))
         g_channel_model_dict[mf] = gl.load_model(models_dir + '/'+ mf)
-    logger_9988.info("load_models finished!")
+    logger9988.info("load_models finished!")
 
 
 def load_newest_models():
@@ -309,7 +309,7 @@ def get_nid_predict_chname(nid_list):
     try:
         from topic_model_doc_process import channel_for_topic_dict
         nid_chanl_dict = {}
-        logger_9988.info("predict ----自媒体和点集  {}".format(len(nid_list)))
+        logger9988.info("predict ----自媒体和点集  {}".format(len(nid_list)))
         #print 'predict ---- 自媒体和点集 ' + str(len(nid_list))
         url = "http://127.0.0.1:9993/ml/newsClassifyOnNids"
         data = {}
@@ -322,12 +322,12 @@ def get_nid_predict_chname(nid_list):
                 if str(r['chid']) in channel_for_topic_dict.keys():
                     nid_chanl_dict[str(r['nid'])] = channel_for_topic_dict[str(r['chid'])]
         else:
-            logger_9988.info("predict 自媒体失败")
+            logger9988.info("predict 自媒体失败")
             #print 'predict 自媒体失败'
 
         return nid_chanl_dict
     except :
-        logger_9988.error(traceback.format_exc())
+        logger9988.error(traceback.format_exc())
         #traceback.print_exc()
         return {}
 
@@ -338,13 +338,13 @@ def predict_topic_nids(nid_list):
     from topic_model_doc_process import channel_for_topic, extra_channel_for_topic
 
     nid_info = {}
-    logger_9988.info(str(nid_list))
+    logger9988.info(str(nid_list))
     #print nid_list
     for nid in nid_list:
         try:
             conn, cursor = doc_process.get_postgredb_query()
         except:
-            logger_9988.error(traceback.format_exc())
+            logger9988.error(traceback.format_exc())
             #traceback.print_exc()
             continue
         cursor.execute(nid_sql, [nid])
@@ -378,10 +378,10 @@ def predict_topic_nids(nid_list):
     chname_news_dict = {}
     for chname in channel_for_topic:
         nid_pred_dict = {}
-        logger_9988.info("predict   {}".format(chname))
+        logger9988.info("predict   {}".format(chname))
         #print 'predict  ' + chname
         if chname not in g_channel_model_dict.keys():
-            logger_9988.info("{}  is not in model.".format(chname))
+            logger9988.info("{}  is not in model.".format(chname))
             #print chname + 'is not in model'
             continue
         chname_news_dict[chname] = []
@@ -395,7 +395,7 @@ def predict_topic_nids(nid_list):
                 chname_news_dict[chname].append(n) #获取该频道的nid列表
 
         if len(chname_news_dict[chname]) == 0:
-            logger_9988.info('    num of {} is 0. '.format(chname))
+            logger9988.info('    num of {} is 0. '.format(chname))
             #print '    num of ' + chname + 'is 0'
             continue
         doc_list = []
@@ -410,7 +410,7 @@ def predict_topic_nids(nid_list):
                                                         output_type='probability',
                                                         num_burnin=30)
         t1 = datetime.datetime.now()
-        logger_9988.info("    predict {0} takes {1}".format(len(doc_list), (t1-t0).total_seconds()))
+        logger9988.info("    predict {0} takes {1}".format(len(doc_list), (t1-t0).total_seconds()))
         #print '    predict ' + str(len(doc_list)) + ' takes ' + str((t1 - t0).seconds)
         for m in xrange(0, pred.size()):
             num_dict = {}
@@ -432,7 +432,7 @@ def predict_topic_nids(nid_list):
         try:
             conn, cursor = doc_process.get_postgredb()
         except:
-            logger_9988.error(traceback.format_exc())
+            logger9988.error(traceback.format_exc())
             continue
         for item in nid_pred_dict.items():
             n = item[0]

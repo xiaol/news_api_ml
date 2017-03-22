@@ -24,7 +24,7 @@ from util.doc_process import get_postgredb
 from util.doc_process import get_postgredb_query
 
 real_dir_path = os.path.split(os.path.realpath(__file__))[0]
-#logger_9987 = Logger('process9987',  os.path.join(real_dir_path,  'log/log_9987.txt'))
+#logger9987 = Logger('process9987',  os.path.join(real_dir_path,  'log/log_9987.txt'))
 logger_9988 = Logger('process9988',  os.path.join(real_dir_path,  'log/log_9988.txt'))
 #logger_9989 = Logger('process9989',  os.path.join(real_dir_path,  'log/log_9989.txt'))
 
@@ -130,11 +130,9 @@ def predict(model, nid_list):
     ws = gl.SArray(doc_list)
     docs = gl.SFrame(data={'X1':ws})
     docs = gl.text_analytics.count_words(docs['X1'])
-    logger_9988.info('    model.predict begin ...')
     pred = model.model.predict(docs,
                               output_type='probability',
                               num_burnin=50)
-    logger_9988.info('    model.predict finished!')
     #pred保存的是每个doc在所有主题上的概率值
     props_list = [] #所有文档的主题-概率对儿
     for doc_index in xrange(len(pred)):  #取每个doc的分布
@@ -156,8 +154,6 @@ def predict(model, nid_list):
     #入库
     insert_list = []
     str_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    logger_9988.info('    {}'.format(props_list))
-    logger_9988.info('    nid topics coll finished, begin to insert to db')
     #res_dict_list = []
     for n in xrange(len(nids)):
         for m in xrange(len(props_list[n])):
@@ -174,9 +170,7 @@ def predict(model, nid_list):
             #info_dict['topic_words'] = sf[topic_id]['words']
             #res_dict_list.append(info_dict)
     conn, cursor = get_postgredb()
-    logger_9988.info('    begin to insert')
     cursor.executemany(insert_sql, insert_list)
-    logger_9988.info('    finish to insert')
     conn.commit()
     conn.close()
     t1 = datetime.datetime.now()
