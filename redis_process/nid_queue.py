@@ -169,7 +169,7 @@ def get_old_clicks():
     clicks = []
     while True:
         try:
-            d = redis_inst.pop(user_click_queue)[1]
+            d = redis_inst.rpop(user_click_queue)[1]
             if not d:
                 break
             data = json.loads(d)
@@ -180,6 +180,6 @@ def get_old_clicks():
 
         except:
             traceback.print_exc()
-            continue
+            break
     return clicks
 
