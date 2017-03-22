@@ -116,7 +116,7 @@ def deal_old_nids(nid_list):
     try:
         s = 'select nid from news_topic_v2 where nid in {}'
         conn, cursor = get_postgredb_query()
-        cursor.execute(s, tuple(nid_list))
+        cursor.execute(s.format(tuple(nid_list)))
         rows = cursor.fetchall()
         nid_set = set(nid_list)
         exist_set = set(rows)
