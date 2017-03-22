@@ -239,6 +239,7 @@ def predict_click(click_info, model_v = None):
             rows2 = cursor2.fetchone()
             if rows2: #该用户已经关注过该topic_id, 更新probability即可
                 new_prop = probability + rows2[0]
+                logger_9990.info('update: uid={}, topic_id={}'.format(uid, topic_id))
                 cursor2.execute(ut_update_sql.format(new_prop, time_str, fail_time, uid, model_v, topic_id))
             else:
                 cursor2.execute(user_topic_insert_sql.format(uid, model_v, topic_id, probability, time_str, fail_time))
