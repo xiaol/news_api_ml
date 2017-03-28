@@ -31,11 +31,12 @@ INNER JOIN (select * from channellist_v2 where "cname"=%s) c \
 ON \
 a."chid"=c."id" ORDER BY nid desc LIMIT %s'
 
-news_word_sql = "select nid, title, content from newslist_v2 where nid in {}"
+news_word_sql = "select nid, title, content from newslist_v2 where nid in ({})"
 
 def get_news_words(nid_list):
     conn, cursor = doc_process.get_postgredb_query()
-    cursor.execute(news_word_sql.format(tuple(nid_list)))
+    nids_str = ','.join([str(i) for i in nid_list])
+    cursor.execute(news_word_sql.format(nids_str))
     rows = cursor.fetchall()
     conn.close()
     nid_words_dict = {}
