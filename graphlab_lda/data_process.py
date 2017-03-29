@@ -124,8 +124,9 @@ class DocProcess(object):
         from util.doc_process import join_csv
         chnl_file = []
         for chanl in channel_for_topic:
-            chnl_file.append(os.path.join(self.save_dir, chanl+'.csv'))
-            pool.apply_async(coll_news_proc, args=(self.save_dir, chanl, self.doc_num_per_chnl, chnl_file))
+            path = os.path.join(self.save_dir, chanl+'.csv')
+            chnl_file.append(path)
+            pool.apply_async(coll_news_proc, args=(self.save_dir, chanl, self.doc_num_per_chnl, path))
         pool.close()
         pool.join()
         join_csv(chnl_file, self.data_file)
