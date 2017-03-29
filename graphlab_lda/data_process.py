@@ -64,6 +64,7 @@ def coll_news_proc(save_dir, chnl, doc_num_per_chnl, csv_path):
         cursor.execute(channle_sql, (chnl, doc_num_per_chnl))
         logger.info('        finish to query {} '. format(chnl))
         rows = cursor.fetchall()
+        print len(rows)
         df = pd.DataFrame(columns=('nid', 'doc'))
         for row in rows:
             title = row[0]
@@ -73,10 +74,9 @@ def coll_news_proc(save_dir, chnl, doc_num_per_chnl, csv_path):
                 if 'txt' in content.keys():
                     txt += content['txt'].encode('utf-8')
             total_txt = title + txt
-            data = {'nid':row[2], 'doc':total_txt}
+            data = {'nid':[row[2]], 'doc':[total_txt]}
             df_local = pd.DataFrame(data, columns=('nid', 'doc'))
             df = df.append(df_local, ignore_index=True)
-            df.to_csv(csv_path, index=False)
             '''
             total_list = doc_process.filter_html_stopwords_pos(total_txt, remove_num=True, remove_single_word=True)
             if len(total_list) < doc_min_len:  #字数太少则丢弃
@@ -89,6 +89,7 @@ def coll_news_proc(save_dir, chnl, doc_num_per_chnl, csv_path):
             #f.write(' '.join(total_list).encode('utf-8') + '\n')
             del content_list
             '''
+        df.to_csv(csv_path, index=False)
         cursor.close()
         conn.close()
         #f.close()
@@ -129,9 +130,12 @@ class DocProcess(object):
 
 
 def coll_news():
-    dp = DocProcess(doc_num_per_chnl, doc_min_len)
-    dp.coll_news_handler()
-    logger.info('collect news finished!')
+    try:
+        dp = DocProcess(doc_num_per_chnl, doc_min_len)
+        dp.coll_news_handler()
+        logger.info('collect news finished!')
+    except:
+        logger.error(traceback.format_exc())
 
 
 
