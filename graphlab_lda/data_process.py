@@ -17,6 +17,7 @@ time_str = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
 save_path = ''
 doc_num_per_chnl = 5
 doc_min_len = 100
+csv_columns = ('nid', 'doc')
 
 
 #需要
@@ -65,7 +66,7 @@ def coll_news_proc(save_dir, chnl, doc_num_per_chnl, csv_path):
         logger.info('        finish to query {} '. format(chnl))
         rows = cursor.fetchall()
         print len(rows)
-        df = pd.DataFrame(columns=('nid', 'doc'))
+        df = pd.DataFrame(columns=csv_columns)
         for row in rows:
             title = row[0]
             content_list = row[1]
@@ -75,7 +76,7 @@ def coll_news_proc(save_dir, chnl, doc_num_per_chnl, csv_path):
                     txt += content['txt'].encode('utf-8')
             total_txt = title + txt
             data = {'nid':[row[2]], 'doc':[total_txt]}
-            df_local = pd.DataFrame(data, columns=('nid', 'doc'))
+            df_local = pd.DataFrame(data, columns=csv_columns)
             df = df.append(df_local, ignore_index=True)
             '''
             total_list = doc_process.filter_html_stopwords_pos(total_txt, remove_num=True, remove_single_word=True)
@@ -129,7 +130,7 @@ class DocProcess(object):
             pool.apply_async(coll_news_proc, args=(self.save_dir, chanl, self.doc_num_per_chnl, path))
         pool.close()
         pool.join()
-        join_csv(chnl_file, self.data_file)
+        join_csv(chnl_file, self.data_file, csv_columns)
         t1 = datetime.datetime.now()
         logger.info("coll_news_handler finished!, it takes {}s".format((t1 - t0).total_seconds()))
 
