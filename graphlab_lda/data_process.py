@@ -89,12 +89,16 @@ def coll_news_proc(save_dir, chnl, doc_num_per_chnl, csv_path):
             #f.write(' '.join(total_list).encode('utf-8') + '\n')
             del content_list
             '''
+        print df.head()
+        print '-0--------'
+        print csv_path
         df.to_csv(csv_path, index=False)
         cursor.close()
         conn.close()
         #f.close()
         logger.info('    finished to collect {} ......'.format(chnl))
     except:
+        traceback.print_exc()
         logger.exception(traceback.format_exc())
 
 
@@ -133,6 +137,7 @@ def coll_news():
     try:
         dp = DocProcess(doc_num_per_chnl, doc_min_len)
         dp.coll_news_handler()
+        print 'collect news finished!'
         logger.info('collect news finished!')
     except:
         logger.error(traceback.format_exc())
