@@ -325,3 +325,14 @@ def join_file(in_filenames, out_filename):
     out.close()
 
 
+def join_csv(in_files, out_file):
+    import pandas as pd
+    df = pd.DataFrame()
+    for f in in_files:
+        d = pd.read_csv(f)
+        df = df.merge(d, how='outer')
+    df.to_csv(out_file, index=False)
+
+
+
+

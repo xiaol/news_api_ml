@@ -9,12 +9,13 @@ import datetime
 from util import doc_process
 from util.logger import Logger
 import traceback
+import pandas as pd
 
 real_dir_path = os.path.split(os.path.realpath(__file__))[0]
 logger = Logger('data_process', os.path.join(real_dir_path,  'log/data_process.txt'))
 time_str = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
 save_path = ''
-doc_num_per_chnl = 50000
+doc_num_per_chnl = 5
 doc_min_len = 100
 
 
@@ -25,7 +26,7 @@ channel_for_topic = ['科技', '外媒', '社会', '财经', '体育', '汽车',
 excluded_chnl = ['美女', '视频', '趣图', '搞笑']
 
 
-channle_sql ='SELECT a.title, a.content \
+channle_sql ='SELECT a.title, a.content, a.nid \
 FROM newslist_v2 a \
 INNER JOIN (select * from channellist_v2 where "cname"=%s) c \
 ON \
@@ -55,14 +56,15 @@ def get_news_words(nid_list):
 
 
 
-def coll_news_proc(save_dir, chnl, doc_num_per_chnl, doc_min_len):
+def coll_news_proc(save_dir, chnl, doc_num_per_chnl, csv_path):
     try:
         logger.info('    start to collect {} ......'.format(chnl))
-        f = open(os.path.join(save_dir, chnl), 'w') #定义频道文件
+        #f = open(os.path.join(save_dir, chnl), 'w') #定义频道文件
         conn, cursor = doc_process.get_postgredb_query()
         cursor.execute(channle_sql, (chnl, doc_num_per_chnl))
         logger.info('        finish to query {} '. format(chnl))
         rows = cursor.fetchall()
+        df = pd.DataFrame(columns=('nid', 'doc'))
         for row in rows:
             title = row[0]
             content_list = row[1]
@@ -71,6 +73,11 @@ def coll_news_proc(save_dir, chnl, doc_num_per_chnl, doc_min_len):
                 if 'txt' in content.keys():
                     txt += content['txt'].encode('utf-8')
             total_txt = title + txt
+            data = {'nid':row[2], 'doc':total_txt}
+            df_local = pd.DataFrame(data, columns=('nid', 'doc'))
+            df = df.append(df_local, ignore_index=True)
+            df.to_csv(csv_path, index=False)
+            '''
             total_list = doc_process.filter_html_stopwords_pos(total_txt, remove_num=True, remove_single_word=True)
             if len(total_list) < doc_min_len:  #字数太少则丢弃
                 continue
@@ -81,9 +88,10 @@ def coll_news_proc(save_dir, chnl, doc_num_per_chnl, doc_min_len):
             f.write('\n')
             #f.write(' '.join(total_list).encode('utf-8') + '\n')
             del content_list
+            '''
         cursor.close()
         conn.close()
-        f.close()
+        #f.close()
         logger.info('    finished to collect {} ......'.format(chnl))
     except:
         logger.exception(traceback.format_exc())
@@ -97,7 +105,7 @@ class DocProcess(object):
         self.doc_min_len = doc_min_len
         str_time = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
         self.save_dir = os.path.join(real_dir_path, 'data', str_time)
-        self.data_file = os.path.join(self.save_dir, 'data.txt')
+        self.data_file = os.path.join(self.save_dir, 'data.csv')
         if not os.path.exists(self.save_dir):
             os.mkdir(self.save_dir)
         with open(self.data_file, 'w') as f: #定义总文件
@@ -108,14 +116,14 @@ class DocProcess(object):
         t0 = datetime.datetime.now()
         from multiprocessing import Pool
         pool = Pool(30)
-        from util.doc_process import join_file
+        from util.doc_process import join_csv
         chnl_file = []
         for chanl in channel_for_topic:
-            chnl_file.append(os.path.join(self.save_dir, chanl))
-            pool.apply_async(coll_news_proc, args=(self.save_dir, chanl, self.doc_num_per_chnl, self.doc_min_len))
+            chnl_file.append(os.path.join(self.save_dir, chanl, '.csv'))
+            pool.apply_async(coll_news_proc, args=(self.save_dir, chanl, self.doc_num_per_chnl, chnl_file))
         pool.close()
         pool.join()
-        join_file(chnl_file, self.data_file)
+        join_csv(chnl_file, self.data_file)
         t1 = datetime.datetime.now()
         logger.info("coll_news_handler finished!, it takes {}s".format((t1 - t0).total_seconds()))
 
