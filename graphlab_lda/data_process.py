@@ -108,7 +108,9 @@ def coll_news_proc(save_dir, chnl, doc_num_per_chnl, csv_path):
 def doc_preprocess(csv_path, save_path):
     raw_df = pd.read_csv(csv_path)
     df = raw_df['doc'] # Series
-    df = df.apply(doc_process.txt_process)
+    df = df.apply(doc_process.cut_pos_ltp)
+    #tfidf 筛选
+    #from sklearn.feature_extraction.text import TfidfVectorizer
     df = pd.DataFrame({'nid': raw_df['nid'], 'doc': df}, columns=csv_columns)
     df.to_csv(save_path, index=False)
 
