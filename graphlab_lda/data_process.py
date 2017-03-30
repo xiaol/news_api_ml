@@ -105,7 +105,7 @@ def coll_news_proc(save_dir, chnl, doc_num_per_chnl, csv_path):
 def clear_doc(txt, features):
     wds = txt.split()
     logger.info('len is {}'.format(len(wds)))
-    wds = [w for w in wds if w in features]
+    wds = [w for w in wds if w.decode('utf-8') in features]
     logger.info('after len is {}'.format(len(wds)))
     return ' '.join(wds)
 
