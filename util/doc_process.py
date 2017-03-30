@@ -361,6 +361,6 @@ def cut_pos_ltp(doc):
     poses = poser.postag(words)
     ss = []
     for i, pos in enumerate(poses):
-        if pos in allow_pos_ltp:
+        if pos in allow_pos_ltp and len(words[i].decode('utf-8')) > 1:
             ss.append(words[i])
     return ' '.join(ss)

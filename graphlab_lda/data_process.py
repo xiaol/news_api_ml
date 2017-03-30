@@ -92,9 +92,6 @@ def coll_news_proc(save_dir, chnl, doc_num_per_chnl, csv_path):
             #f.write(' '.join(total_list).encode('utf-8') + '\n')
             del content_list
             '''
-        print df.head()
-        print '-0--------'
-        print csv_path
         df.to_csv(csv_path, index=False)
         cursor.close()
         conn.close()
@@ -105,12 +102,22 @@ def coll_news_proc(save_dir, chnl, doc_num_per_chnl, csv_path):
         logger.exception(traceback.format_exc())
 
 
+def clear_doc(txt, features):
+    wds = txt.split()
+    wds = [w for w in wds if wds in features]
+    return ' '.join(wds)
+
 def doc_preprocess(csv_path, save_path):
     raw_df = pd.read_csv(csv_path)
     df = raw_df['doc'] # Series
     df = df.apply(doc_process.cut_pos_ltp)
     #tfidf 筛选
-    #from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    tfidf_vec = TfidfVectorizer(max_df=0.1, min_df=0.00001)
+    tfidf = tfidf_vec.fit_transform(df)
+    features = tfidf_vec.get_feature_names()
+    print 'feature num = ' + str(len(features))
+    df = df.apply(clear_doc, args=(features,))
     df = pd.DataFrame({'nid': raw_df['nid'], 'doc': df}, columns=csv_columns)
     df.to_csv(save_path, index=False)
 
