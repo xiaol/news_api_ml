@@ -109,7 +109,7 @@ def doc_preprocess(csv_path, save_path):
     raw_df = pd.read_csv(csv_path)
     df = raw_df['doc'] # Series
     df = df.apply(doc_process.txt_process)
-    df = pd.DataFrame({'nid': raw_df['nid'], 'doc': df})
+    df = pd.DataFrame({'nid': raw_df['nid'], 'doc': df}, columns=csv_columns)
     df.to_csv(save_path, index=False)
 
 

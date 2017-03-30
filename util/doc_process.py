@@ -334,7 +334,8 @@ def join_csv(in_files, out_file, columns):
     df.to_csv(out_file, index=False)
 
 
-allow_pos = ('a', 'ad', 'an', 'f', 'g', 'n', 'nr', 'ns', 'nt', 't', 'v', 'vd', 'vn', 'z', 'i', 'j', 'l')
+allow_pos = ('a', 'ad', 'an','ag', 'al', 'f', 'g', 'n', 'nr', 'ns', 'nt', 'ng', 'nl','nz',
+             't', 's', 'v', 'vd', 'vg', 'vl', 'vi', 'vx', 'vf', 'vn', 'z', 'i', 'j', 'l', 'eng')
 def txt_process(doc, topK = 20):
     s = ''.join(doc.split())
     s = filter_tags(s)
@@ -344,3 +345,20 @@ def txt_process(doc, topK = 20):
     return ' '.join(tags).encode('utf-8')
 
 
+allow_pos_ltp = ('a', 'i', 'j', 'n', 'nd', 'nh', 'ni', 'nl', 'ns', 'nt', 'nz', 'v', 'ws')
+#使用哈工大pyltp分词, 过滤词性
+def txt_process_ltp(doc, topK = 20):
+    from pyltp import Segmentor, Postagger
+    segmentor = Segmentor()
+    # segmentor.load('/Users/a000/Downloads/ltp-models/3.3.2/ltp_data.model')
+    segmentor.load('/Users/a000/git/ltp_data/cws.model')
+    words = segmentor.segment(doc)
+
+    poser = Postagger()
+    poser.load('/Users/a000/git/ltp_data/pos.model')
+    poses = poser.postag(words)
+    s = ''
+    for i, pos in enumerate(poses):
+        if pos in allow_pos_ltp:
+            s += words[i]
+    return s
