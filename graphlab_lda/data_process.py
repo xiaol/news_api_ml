@@ -10,6 +10,8 @@ from util import doc_process
 from util.logger import Logger
 import traceback
 import pandas as pd
+import jieba
+import jieba.analyse
 
 real_dir_path = os.path.split(os.path.realpath(__file__))[0]
 logger = Logger('data_process', os.path.join(real_dir_path,  'log/data_process.txt'))
@@ -103,6 +105,13 @@ def coll_news_proc(save_dir, chnl, doc_num_per_chnl, csv_path):
         logger.exception(traceback.format_exc())
 
 
+def doc_preprocess(csv_path, save_path):
+    raw_df = pd.read_csv(csv_path)
+    df = raw_df['doc'] # Series
+    df = df.apply(doc_process.txt_process)
+    df = pd.DataFrame({'nid': raw_df['nid'], 'doc': df})
+    df.to_csv(save_path, index=False)
+
 
 class DocProcess(object):
     '''collect docs for training model'''
@@ -111,7 +120,7 @@ class DocProcess(object):
         self.doc_min_len = doc_min_len
         str_time = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
         self.save_dir = os.path.join(real_dir_path, 'data', str_time)
-        self.data_file = os.path.join(self.save_dir, 'data.csv')
+        self.data_file = os.path.join(self.save_dir, 'raw.csv')
         if not os.path.exists(self.save_dir):
             os.mkdir(self.save_dir)
         with open(self.data_file, 'w') as f: #定义总文件
@@ -131,6 +140,7 @@ class DocProcess(object):
         pool.close()
         pool.join()
         join_csv(chnl_file, self.data_file, csv_columns)
+        doc_preprocess(self.data_file, os.path.join(self.save_dir, 'data_after_process.csv'))
         t1 = datetime.datetime.now()
         logger.info("coll_news_handler finished!, it takes {}s".format((t1 - t0).total_seconds()))
 

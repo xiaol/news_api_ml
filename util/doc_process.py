@@ -334,5 +334,13 @@ def join_csv(in_files, out_file, columns):
     df.to_csv(out_file, index=False)
 
 
+allow_pos = ('a', 'ad', 'an', 'f', 'g', 'n', 'nr', 'ns', 'nt', 't', 'v', 'vd', 'vn', 'z', 'i', 'j', 'l')
+def txt_process(doc, topK = 20):
+    s = ''.join(doc.split())
+    s = filter_tags(s)
+    jieba.load_userdict(net_words_file)
+    jieba.analyse.set_stop_words(stop_words_file)
+    tags = jieba.analyse.extract_tags(s, topK=topK, withWeight=False, allowPOS=allow_pos)
+    return ' '.join(tags).encode('utf-8')
 
 
