@@ -17,7 +17,7 @@ real_dir_path = os.path.split(os.path.realpath(__file__))[0]
 logger = Logger('data_process', os.path.join(real_dir_path,  'log/data_process.txt'))
 time_str = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
 save_path = ''
-doc_num_per_chnl = 5
+doc_num_per_chnl = 50000
 doc_min_len = 100
 csv_columns = ('nid', 'doc')
 
@@ -107,6 +107,8 @@ def clear_doc(txt, features):
     logger.info('len is {}'.format(len(wds)))
     wds = [w for w in wds if w.decode('utf-8') in features]
     logger.info('after len is {}'.format(len(wds)))
+    if len(wds) < 20:
+        return ''
     return ' '.join(wds)
 
 def doc_preprocess(csv_path, save_path):
@@ -115,12 +117,15 @@ def doc_preprocess(csv_path, save_path):
     df = df.apply(doc_process.cut_pos_ltp)
     #tfidf 筛选
     from sklearn.feature_extraction.text import TfidfVectorizer
-    tfidf_vec = TfidfVectorizer(max_df=0.1, min_df=0.04)
+    tfidf_vec = TfidfVectorizer(max_df=0.001, min_df=0.00001)
     tfidf = tfidf_vec.fit_transform(df)
     features = tfidf_vec.get_feature_names()
     print 'feature num = ' + str(len(features))
+    logger.info('len of feature = '.format(len(features)))
     df = df.apply(clear_doc, args=(features,))
-    df = pd.DataFrame({'nid': raw_df['nid'], 'doc': df}, columns=csv_columns)
+    ds = df.values
+    ds = [i for i in ds if len(i) != 0]
+    df = pd.DataFrame({'nid': raw_df['nid'], 'doc': ds}, columns=csv_columns)
     df.to_csv(save_path, index=False)
 
 
