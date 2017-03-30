@@ -353,11 +353,11 @@ def cut_pos_ltp(doc):
     from pyltp import Segmentor, Postagger
     segmentor = Segmentor()
     # segmentor.load('/Users/a000/Downloads/ltp-models/3.3.2/ltp_data.model')
-    segmentor.load('~/git/ltp_data/cws.model')
+    segmentor.load('/root/git/ltp_data/cws.model')
     words = segmentor.segment(s)
 
     poser = Postagger()
-    poser.load('~/git/ltp_data/pos.model')
+    poser.load('/root/git/ltp_data/pos.model')
     poses = poser.postag(words)
     ss = []
     for i, pos in enumerate(poses):
