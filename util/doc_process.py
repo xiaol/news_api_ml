@@ -348,17 +348,19 @@ def txt_process(doc, topK = 20):
 allow_pos_ltp = ('a', 'i', 'j', 'n', 'nd', 'nh', 'ni', 'nl', 'ns', 'nt', 'nz', 'v', 'ws')
 #使用哈工大pyltp分词, 过滤词性
 def cut_pos_ltp(doc):
+    s = ''.join(doc.split())
+    s = filter_tags(s)
     from pyltp import Segmentor, Postagger
     segmentor = Segmentor()
     # segmentor.load('/Users/a000/Downloads/ltp-models/3.3.2/ltp_data.model')
-    segmentor.load('/Users/a000/git/ltp_data/cws.model')
-    words = segmentor.segment(doc)
+    segmentor.load('~/git/ltp_data/cws.model')
+    words = segmentor.segment(s)
 
     poser = Postagger()
-    poser.load('/Users/a000/git/ltp_data/pos.model')
+    poser.load('~/git/ltp_data/pos.model')
     poses = poser.postag(words)
-    s = []
+    ss = []
     for i, pos in enumerate(poses):
         if pos in allow_pos_ltp:
-            s.append(words[i])
-    return ' '.join(s)
+            ss.append(words[i])
+    return ' '.join(ss)
