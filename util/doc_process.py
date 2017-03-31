@@ -335,8 +335,11 @@ def join_csv(in_files, out_file, columns):
     df.to_csv(out_file, index=False)
 
 
-allow_pos = ('a', 'ad', 'an','ag', 'al', 'f', 'g', 'n', 'nr', 'ns', 'nt', 'ng', 'nl','nz',
-             't', 's', 'v', 'vd', 'vg', 'vl', 'vi', 'vx', 'vf', 'vn', 'z', 'i', 'j', 'l', 'eng')
+#allow_pos = ('a', 'g', 'n', 'nr', 'ns', 'nt', 'ng', 'nl','nz',
+#             't', 's', 'v', 'vd', 'vg', 'vl', 'vi', 'vx', 'vf', 'vn', 'z', 'i', 'j', 'l', 'eng')
+
+allow_pos = ('a', 'n', 'v', 'eng', 's', 't', 'i', 'j', 'l', 'z')
+
 def cut_pos_jieba(doc, topK = 20):
     s = ''.join(doc.split())
     s = filter_tags(s)
