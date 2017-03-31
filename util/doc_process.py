@@ -329,6 +329,7 @@ def join_csv(in_files, out_file, columns):
     import pandas as pd
     df = pd.DataFrame(columns=columns)
     for f in in_files:
+        print '^^^ ' + f
         d = pd.read_csv(f)
         df = df.merge(d, how='outer')
     df.to_csv(out_file, index=False)
