@@ -50,8 +50,8 @@ class TopicModel(object):
         #logger_9987.info('TopicModel::create begin ...')
         docs_sframe = gl.SFrame.read_csv(self.data_path, header=False)
         docs = gl.text_analytics.count_words(docs_sframe['X1'])
-        docs = gl.text_analytics.trim_rare_words(docs, threshold=5, delimiters=None)
-        self.model = gl.topic_model.create(docs, num_iterations=500, num_burnin=100, num_topics=12000)
+        docs = gl.text_analytics.trim_rare_words(docs, threshold=10, delimiters=None)
+        self.model = gl.topic_model.create(docs, num_iterations=1000, num_burnin=100, num_topics=5000)
 
         sf = self.model.get_topics(num_words=20, output_type='topic_words')
         conn, cursor = get_postgredb()
@@ -128,10 +128,6 @@ def deal_old_nids(nid_list):
         raise
 
 
-
-
-
-
 def predict_nids(nid_list):
     global model_instance
     if not model_instance:
@@ -169,8 +165,10 @@ def predict(model, nid_list):
             if i == 0:
                 props.append(sort_prop[i])
             else:
-                if sort_prop[i][1] > 0.2 * sort_prop[i-1][1]: #大于0.1并且与前一个概率差别不到一倍
+                if sort_prop[i][1] > 0.5 * sort_prop[i-1][1]: #大于0.1并且与前一个概率差别不到一倍
                     props.append(sort_prop[i])
+                else:
+                    break
 
         props_list.append(props)   # [ [(5, 0.3), (3, 0.2)..], ....  ]
     #入库
