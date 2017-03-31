@@ -172,10 +172,11 @@ class DocProcess(object):
 
 def coll_news():
     try:
-        #dp = DocProcess(doc_num_per_chnl, doc_min_len)
-        #dp.coll_news_handler()
-        data_file = os.path.join('/root/workspace/news_api_ml/graphlab_lda/data/2017-03-31-10-19-58', 'raw.csv')
-        doc_preprocess_jieba(data_file, '/root/workspace/news_api_ml/graphlab_lda/data/2017-03-31-10-19-58/data_after.csv')
+        dp = DocProcess(doc_num_per_chnl, doc_min_len)
+        dp.coll_news_handler()
+        #data_file = os.path.join('/root/workspace/news_api_ml/graphlab_lda/data/2017-03-31-10-19-58', 'raw.csv')
+        #doc_preprocess_jieba(data_file, '/root/workspace/news_api_ml/graphlab_lda/data/2017-03-31-10-19-58/data_after.csv')
+        doc_preprocess_jieba(dp.data_file, os.path.join(dp.save_dir, 'data_after_process.csv'))
         print 'collect news finished!'
         logger.info('collect news finished!')
     except:
