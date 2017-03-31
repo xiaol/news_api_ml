@@ -77,7 +77,7 @@ def coll_news_proc(save_dir, chnl, doc_num_per_chnl, csv_path):
                 if 'txt' in content.keys():
                     txt += content['txt'].encode('utf-8')
             total_txt = title + txt
-            data = {'nid':[row[2]], 'doc':[total_txt]}
+            data = {'nid':[row[2]], 'doc':[''.join(total_txt.split())]} #split主要去除回车符\r, 否则pandas.read_csv出错
             df_local = pd.DataFrame(data, columns=csv_columns)
             df = df.append(df_local, ignore_index=True)
             '''
