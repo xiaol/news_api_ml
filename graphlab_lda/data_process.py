@@ -17,7 +17,7 @@ real_dir_path = os.path.split(os.path.realpath(__file__))[0]
 logger = Logger('data_process', os.path.join(real_dir_path,  'log/data_process.txt'))
 time_str = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
 save_path = ''
-doc_num_per_chnl = 5000
+doc_num_per_chnl = 50
 doc_min_len = 100
 csv_columns = ('nid', 'doc')
 
