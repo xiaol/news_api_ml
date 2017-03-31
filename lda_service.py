@@ -13,13 +13,12 @@ from tornado import httpserver
 from tornado import ioloop
 import traceback
 
-from graphlab_lda import topic_model_doc_process
 #from graphlab_lda import redis_lda
-from redis_process import nid_queue
 
 
 class CollNews(tornado.web.RequestHandler):
     def get(self):
+        from graphlab_lda import topic_model_doc_process
         num_per_chanl = int(self.get_argument('num'))
         topic_model_doc_process.coll_news_for_channles(num_per_chanl)
 
@@ -67,6 +66,7 @@ class PredictUserTopic(tornado.web.RequestHandler):
         #from graphlab_lda import redis_lda
         for click in clicks:
             #redis_lda.produce_user_click(click[0], click[1], click[2])
+            from redis_process import nid_queue
             nid_queue.produce_user_click(click[0], click[1], click[2])
 
 
@@ -248,6 +248,7 @@ if __name__ == '__main__':
         http_server = tornado.httpserver.HTTPServer(EmptyApp())
         http_server.listen(port) #同时提供手工处理端口
         #topic_model.load_newest_models()
+        from redis_process import nid_queue
         nid_queue.consume_nid_lda(200)
         #redis_lda.consume_nid(200)
     elif port == 9989: #用户点击事件入队列
@@ -258,6 +259,7 @@ if __name__ == '__main__':
     elif port == 9990: #消费用户点击逻辑进程。
         http_server = tornado.httpserver.HTTPServer(EmptyApp())
         http_server.listen(port) #同时提供手工处理端口
+        from redis_process import nid_queue
         nid_queue.consume_user_click()
     elif port == 9985:
         #http_server = tornado.httpserver.HTTPServer(Application2())
