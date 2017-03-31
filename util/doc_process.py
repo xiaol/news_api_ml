@@ -337,7 +337,7 @@ def join_csv(in_files, out_file, columns):
 
 allow_pos = ('a', 'ad', 'an','ag', 'al', 'f', 'g', 'n', 'nr', 'ns', 'nt', 'ng', 'nl','nz',
              't', 's', 'v', 'vd', 'vg', 'vl', 'vi', 'vx', 'vf', 'vn', 'z', 'i', 'j', 'l', 'eng')
-def txt_process(doc, topK = 20):
+def cut_pos_jieba(doc, topK = 20):
     s = ''.join(doc.split())
     s = filter_tags(s)
     jieba.load_userdict(net_words_file)
@@ -353,7 +353,6 @@ def cut_pos_ltp(doc):
     s = filter_tags(s)
     from pyltp import Segmentor, Postagger
     segmentor = Segmentor()
-    # segmentor.load('/Users/a000/Downloads/ltp-models/3.3.2/ltp_data.model')
     segmentor.load('/root/git/ltp_data/cws.model')
     words = segmentor.segment(s)
 
@@ -361,7 +360,11 @@ def cut_pos_ltp(doc):
     poser.load('/root/git/ltp_data/pos.model')
     poses = poser.postag(words)
     ss = []
+    stopwords = {}.fromkeys([line.rstrip() for line in open(stop_words_file)]) #utf-8
+    stopwords_set = set(stopwords)
     for i, pos in enumerate(poses):
-        if pos in allow_pos_ltp and len(words[i].decode('utf-8')) > 1:
+        if (pos in allow_pos_ltp) and \
+           (len(words[i].decode('utf-8')) > 1) and \
+           (words[i] not in stopwords_set):
             ss.append(words[i])
     return ' '.join(ss)

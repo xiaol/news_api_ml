@@ -111,13 +111,22 @@ def clear_doc(txt, features):
         return ''
     return ' '.join(wds)
 
-def doc_preprocess(csv_path, save_path):
+
+def doc_preprocess_jieba(csv_path, save_path):
+    raw_df = pd.read_csv(csv_path)
+    df = raw_df['doc'] # Series
+    df = df.apply(doc_process.cut_pos_jieba, args=(50, ))
+    df = pd.DataFrame({'nid': raw_df['nid'], 'doc': df}, columns=csv_columns)
+    df.to_csv(save_path, index=False)
+
+
+def doc_preprocess_ltp(csv_path, save_path):
     raw_df = pd.read_csv(csv_path)
     df = raw_df['doc'] # Series
     df = df.apply(doc_process.cut_pos_ltp)
     #tfidf 筛选
     from sklearn.feature_extraction.text import TfidfVectorizer
-    tfidf_vec = TfidfVectorizer(max_df=0.001, min_df=0.00001)
+    tfidf_vec = TfidfVectorizer(max_df=0.001, min_df=0.00001, max_features=100000)
     tfidf = tfidf_vec.fit_transform(df)
     features = tfidf_vec.get_feature_names()
     print 'feature num = ' + str(len(features))
@@ -156,15 +165,17 @@ class DocProcess(object):
         pool.close()
         pool.join()
         join_csv(chnl_file, self.data_file, csv_columns)
-        doc_preprocess(self.data_file, os.path.join(self.save_dir, 'data_after_process.csv'))
+        doc_preprocess_ltp(self.data_file, os.path.join(self.save_dir, 'data_after_process.csv'))
         t1 = datetime.datetime.now()
         logger.info("coll_news_handler finished!, it takes {}s".format((t1 - t0).total_seconds()))
 
 
 def coll_news():
     try:
-        dp = DocProcess(doc_num_per_chnl, doc_min_len)
-        dp.coll_news_handler()
+        #dp = DocProcess(doc_num_per_chnl, doc_min_len)
+        #dp.coll_news_handler()
+        data_file = os.path.join('/root/workspace/news_api_ml/graphlab_lda/data/2017-03-31-10-19-58', 'raw.csv')
+        doc_preprocess_ltp(data_file, '/root/workspace/news_api_ml/graphlab_lda/data/2017-03-31-10-19-58/data_after.csv')
         print 'collect news finished!'
         logger.info('collect news finished!')
     except:
