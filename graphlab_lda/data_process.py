@@ -167,7 +167,7 @@ class DocProcess(object):
         pool.close()
         pool.join()
         join_csv(chnl_file, self.data_file, csv_columns)
-        doc_preprocess_ltp(self.data_file, os.path.join(self.save_dir, 'data_after_process.csv'))
+        doc_preprocess_jieba(self.data_file, os.path.join(self.save_dir, 'data_after_process.csv'))
         t1 = datetime.datetime.now()
         logger.info("coll_news_handler finished!, it takes {}s".format((t1 - t0).total_seconds()))
 
@@ -178,7 +178,7 @@ def coll_news():
         dp.coll_news_handler()
         #data_file = os.path.join('/root/workspace/news_api_ml/graphlab_lda/data/2017-03-31-10-19-58', 'raw.csv')
         #doc_preprocess_jieba(data_file, '/root/workspace/news_api_ml/graphlab_lda/data/2017-03-31-10-19-58/data_after.csv')
-        doc_preprocess_jieba(dp.data_file, os.path.join(dp.save_dir, 'data_after_process.csv'))
+        #doc_preprocess_jieba(dp.data_file, os.path.join(dp.save_dir, 'data_after_process.csv'))
         print 'collect news finished!'
         logger.info('collect news finished!')
     except:
