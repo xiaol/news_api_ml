@@ -17,7 +17,7 @@ real_dir_path = os.path.split(os.path.realpath(__file__))[0]
 logger = Logger('data_process', os.path.join(real_dir_path,  'log/data_process.txt'))
 time_str = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
 save_path = ''
-doc_num_per_chnl = 50
+doc_num_per_chnl = 50000
 doc_min_len = 100
 csv_columns = ('nid', 'doc')
 
@@ -33,7 +33,7 @@ channle_sql ='SELECT a.title, a.content, a.nid \
 FROM newslist_v2 a \
 INNER JOIN (select * from channellist_v2 where "cname"=%s) c \
 ON \
-a."chid"=c."id" ORDER BY nid desc LIMIT %s'
+a."chid"=c."id" where a.state=0 ORDER BY nid desc LIMIT %s'
 
 news_word_sql = "select nid, title, content from newslist_v2 where nid in ({})"
 
