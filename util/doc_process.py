@@ -351,12 +351,16 @@ def cut_pos_jieba(doc, topK = 20):
 
 def cut_pos_nlpir(doc, topK = 20):
     s = ''.join(doc.split())
-    s = filter_tags(s)
-    import pynlpir
-    pynlpir.open()
-    ws = pynlpir.get_key_words(s, topK)
-    pynlpir.close()
-    return ' '.join(ws).encode('utf-8')
+    try:
+        s = filter_tags(s)
+        import pynlpir
+        pynlpir.open()
+        ws = pynlpir.get_key_words(s, topK)
+        pynlpir.close()
+        return ' '.join(ws).encode('utf-8')
+    except:
+        print 'error:  ' + s
+        raise
 
 
 allow_pos_ltp = ('a', 'i', 'j', 'n', 'nd', 'nh', 'ni', 'nl', 'ns', 'nt', 'nz', 'v', 'ws')
