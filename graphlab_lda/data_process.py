@@ -21,12 +21,20 @@ doc_num_per_chnl = 50
 doc_min_len = 100
 csv_columns = ('nid', 'doc')
 
+channel_for_topic_dict = {'社会':46000, '娱乐':44000, '科技':30000, '汽车':24000, '体育':50000,
+                     '财经':50000, '军事':20000, '国际':25000, '时尚':25000, '游戏':33000,
+                     '旅游':18000, '历史':13000, '探索':1500, '美食':10000, '育儿':31000,
+                     '养生':25000, '故事':20000, '美文':3700, '股票':30000, '搞笑':50000,
+                     '互联网':50000, '健康':50000, '科学':20000, '美女':20000,'影视':50000,
+                     '奇闻':30000, '萌宠':30000, '点集':30000, '自媒体':30000,'风水玄学':30000,
+                     '本地':50000, '外媒':30000}
 
 #需要
 channel_for_topic = ['科技', '外媒', '社会', '财经', '体育', '汽车', '国际', '时尚', '探索', '科学',
                      '娱乐', '养生', '育儿', '股票', '互联网', '美食', '健康', '影视', '军事', '历史',
-                     '故事', '旅游', '美文', '萌宠', '游戏', '点集', '自媒体', '奇闻']
-excluded_chnl = ['美女', '视频', '趣图', '搞笑']
+                     '故事', '旅游', '美文', '萌宠', '游戏', '点集', '自媒体', '奇闻', '美女','趣图',
+                     '搞笑']
+excluded_chnl = ['视频', '趣图', '搞笑', ]
 
 
 channle_sql ='SELECT a.title, a.content, a.nid \
@@ -64,7 +72,12 @@ def coll_news_proc(save_dir, chnl, doc_num_per_chnl, csv_path):
         logger.info('    start to collect {} ......'.format(chnl))
         #f = open(os.path.join(save_dir, chnl), 'w') #定义频道文件
         conn, cursor = doc_process.get_postgredb_query()
-        cursor.execute(channle_sql, (chnl, doc_num_per_chnl))
+        if chnl in channel_for_topic_dict.keys():
+            num = channel_for_topic_dict[chnl]
+        else:
+            num = doc_num_per_chnl
+        logger.info('    {} num is {}'.format(chnl, num))
+        cursor.execute(channle_sql, (chnl, num))
         logger.info('        finish to query {} '. format(chnl))
         rows = cursor.fetchall()
         print len(rows)
@@ -76,7 +89,7 @@ def coll_news_proc(save_dir, chnl, doc_num_per_chnl, csv_path):
             for content in content_list:
                 if 'txt' in content.keys():
                     txt += content['txt'].encode('utf-8')
-            total_txt = title + txt
+            total_txt = title*3 + txt
             data = {'nid':[row[2]], 'doc':[''.join(total_txt.split())]} #split主要去除回车符\r, 否则pandas.read_csv出错
             df_local = pd.DataFrame(data, columns=csv_columns)
             df = df.append(df_local, ignore_index=True)
@@ -170,7 +183,7 @@ class DocProcess(object):
         pool = Pool(30)
         from util.doc_process import join_csv
         chnl_file = []
-        for chanl in channel_for_topic:
+        for chanl in channel_for_topic_dict.keys():
             path = os.path.join(self.save_dir, chanl+'.csv')
             chnl_file.append(path)
             pool.apply_async(coll_news_proc, args=(self.save_dir, chanl, self.doc_num_per_chnl, path))
