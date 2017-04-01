@@ -349,6 +349,16 @@ def cut_pos_jieba(doc, topK = 20):
     return ' '.join(tags).encode('utf-8')
 
 
+def cut_pos_nlpir(doc, topK = 20):
+    s = ''.join(doc.split())
+    s = filter_tags(s)
+    import pynlpir
+    pynlpir.open()
+    ws = pynlpir.get_key_words(s, topK)
+    pynlpir.close()
+    return ' '.join(ws).encode('utf-8')
+
+
 allow_pos_ltp = ('a', 'i', 'j', 'n', 'nd', 'nh', 'ni', 'nl', 'ns', 'nt', 'nz', 'v', 'ws')
 #使用哈工大pyltp分词, 过滤词性
 def cut_pos_ltp(doc):

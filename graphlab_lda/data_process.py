@@ -140,6 +140,16 @@ def doc_preprocess_ltp(csv_path, save_path):
     df.to_csv(save_path, index=False)
 
 
+def doc_preprocess_nlpir(csv_path, save_path):
+    raw_df = pd.read_csv(csv_path)
+    df = raw_df['doc'] # Series
+    print 'begin to apply'
+    df = df.apply(doc_process.cut_pos_nlpir, args=(50, ))
+    print 'apply finished'
+    df = pd.DataFrame({'nid': raw_df['nid'], 'doc': df}, columns=csv_columns)
+    df.to_csv(save_path, index=False)
+
+
 class DocProcess(object):
     '''collect docs for training model'''
     def __init__(self, doc_num_per_chnl, doc_min_len):
@@ -167,7 +177,7 @@ class DocProcess(object):
         pool.close()
         pool.join()
         join_csv(chnl_file, self.data_file, csv_columns)
-        doc_preprocess_jieba(self.data_file, os.path.join(self.save_dir, 'data_after_process.csv'))
+        doc_preprocess_nlpir(self.data_file, os.path.join(self.save_dir, 'data_after_process.csv'))
         t1 = datetime.datetime.now()
         logger.info("coll_news_handler finished!, it takes {}s".format((t1 - t0).total_seconds()))
 
