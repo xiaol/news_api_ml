@@ -349,10 +349,13 @@ def cut_pos_jieba(doc, topK = 20):
     return ' '.join(tags).encode('utf-8')
 
 
+from bs4 import BeautifulSoup
 def cut_pos_nlpir(doc, topK = 20):
-    s = ''.join(doc.split())
+    #s = filter_tags(doc)
+    soup = BeautifulSoup(doc, 'lmxl')
+    s = soup.get_text()
     try:
-        s = filter_tags(s)
+        s = ''.join(s.split())
         import pynlpir
         pynlpir.open()
         ws = pynlpir.get_key_words(s, topK)
