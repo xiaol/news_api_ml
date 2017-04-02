@@ -352,7 +352,7 @@ def cut_pos_jieba(doc, topK = 20):
 from bs4 import BeautifulSoup
 def cut_pos_nlpir(doc, topK = 20):
     #s = filter_tags(doc)
-    soup = BeautifulSoup(doc, 'lmxl')
+    soup = BeautifulSoup(doc, 'lxml')
     s = soup.get_text()
     try:
         s = ''.join(s.split())
