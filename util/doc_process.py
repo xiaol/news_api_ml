@@ -375,6 +375,7 @@ def cut_pos_nlpir(doc, topK = 20):
         return ' '.join(ws).encode('utf-8')
     except:
         print 'error:  ' + s
+        traceback.print_exc()
         raise
 
 
