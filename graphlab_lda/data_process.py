@@ -164,16 +164,15 @@ def doc_preprocess_nlpir(csv_path, save_path):
     #df = df.apply(doc_process.cut_pos_nlpir, args=(50, ))
     df_ir = []
     nid_ir = []
-    for d in nid_doc_dict.items():
-        docs = d['doc']
-        nids = d['nid']
-        for doc_idx, doc in enumerate(docs):
-            try:
-                df_ir.append(doc_process.cut_pos_nlpir(doc, 50))
-                nid_ir.append(nids[doc_idx])
-            except:
-                print 'error cut_pos_nlpir'
-                continue
+    docs = nid_doc_dict['doc']
+    nids = nid_doc_dict['nid']
+    for doc_idx, doc in enumerate(docs):
+        try:
+            df_ir.append(doc_process.cut_pos_nlpir(doc, 50))
+            nid_ir.append(nids[doc_idx])
+        except:
+            print 'error cut_pos_nlpir'
+            continue
     doc_process.close_pynlpir()
 
     print 'apply finished'
