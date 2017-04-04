@@ -20,6 +20,7 @@ save_path = ''
 doc_num_per_chnl = 50000
 doc_min_len = 100
 csv_columns = ('nid', 'doc')
+csv_columns_2 = ('doc')
 
 channel_for_topic_dict = {'社会':50000, '娱乐':44000, '科技':30000, '汽车':24000, '体育':50000,
                          '财经':50000, '军事':20000, '国际':25000, '时尚':25000, '游戏':33000,
@@ -156,16 +157,21 @@ def doc_preprocess_ltp(csv_path, save_path):
 def doc_preprocess_nlpir(csv_path, save_path):
     raw_df = pd.read_csv(csv_path)
     df = raw_df['doc'] # Series
+    nids = raw_df['nid']
     print 'begin to apply'
     doc_process.open_pynlpir()
     #df = df.apply(doc_process.cut_pos_nlpir, args=(50, ))
     df_ir = []
     for d in df.values:
-        df_ir.append(doc_process.cut_pos_nlpir(d, 50))
+        try:
+            df_ir.append(doc_process.cut_pos_nlpir(d, 50))
+        except:
+            continue
     doc_process.close_pynlpir()
 
     print 'apply finished'
-    df = pd.DataFrame({'nid': raw_df['nid'], 'doc': df_ir}, columns=csv_columns)
+    #df = pd.DataFrame({'nid': raw_df['nid'], 'doc': df_ir}, columns=csv_columns)
+    df = pd.DataFrame({'doc': df_ir}, columns=csv_columns_2)
     df.to_csv(save_path, index=False)
 
 
