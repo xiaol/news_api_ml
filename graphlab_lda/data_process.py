@@ -156,22 +156,29 @@ def doc_preprocess_ltp(csv_path, save_path):
 
 def doc_preprocess_nlpir(csv_path, save_path):
     raw_df = pd.read_csv(csv_path)
-    df = raw_df['doc'] # Series
-    nids = raw_df['nid']
+    nid_doc_dict = raw_df.to_dict("list")
+    #df = raw_df['doc'] # Series
+    #nids = raw_df['nid']
     print 'begin to apply'
     doc_process.open_pynlpir()
     #df = df.apply(doc_process.cut_pos_nlpir, args=(50, ))
     df_ir = []
-    for d in df.values:
-        try:
-            df_ir.append(doc_process.cut_pos_nlpir(d, 50))
-        except:
-            continue
+    nid_ir = []
+    for d in nid_doc_dict.items():
+        docs = d['doc']
+        nids = d['nid']
+        for doc_idx, doc in enumerate(docs):
+            try:
+                df_ir.append(doc_process.cut_pos_nlpir(doc, 50))
+                nid_ir.append(nids[doc_idx])
+            except:
+                print 'error cut_pos_nlpir'
+                continue
     doc_process.close_pynlpir()
 
     print 'apply finished'
     #df = pd.DataFrame({'nid': raw_df['nid'], 'doc': df_ir}, columns=csv_columns)
-    df = pd.DataFrame({'doc': df_ir}, columns=csv_columns_2)
+    df = pd.DataFrame({'nid':nid_ir, 'doc': df_ir}, columns=csv_columns)
     df.to_csv(save_path, index=False)
 
 
