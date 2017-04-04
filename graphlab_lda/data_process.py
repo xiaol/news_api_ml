@@ -157,7 +157,9 @@ def doc_preprocess_nlpir(csv_path, save_path):
     raw_df = pd.read_csv(csv_path)
     df = raw_df['doc'] # Series
     print 'begin to apply'
+    doc_process.open_pynlpir()
     df = df.apply(doc_process.cut_pos_nlpir, args=(50, ))
+    doc_process.close_pynlpir()
     print 'apply finished'
     df = pd.DataFrame({'nid': raw_df['nid'], 'doc': df}, columns=csv_columns)
     df.to_csv(save_path, index=False)

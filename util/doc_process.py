@@ -349,21 +349,34 @@ def cut_pos_jieba(doc, topK = 20):
     return ' '.join(tags).encode('utf-8')
 
 
+import pynlpir
+def open_pynlpir():
+    global pynlpir
+    pynlpir.open()
+
+
+def close_pynlpir():
+    global pynlpir
+    pynlpir.close()
+
+
+n = 0
 from bs4 import BeautifulSoup
 def cut_pos_nlpir(doc, topK = 20):
     #s = filter_tags(doc)
+    global n
+    print n
+    n += 1
     soup = BeautifulSoup(doc, 'lxml')
     s = soup.get_text()
     try:
         s = ''.join(s.split())
-        import pynlpir
-        pynlpir.open()
         ws = pynlpir.get_key_words(s, topK)
-        pynlpir.close()
         return ' '.join(ws).encode('utf-8')
     except:
         print 'error:  ' + s
         raise
+
 
 
 allow_pos_ltp = ('a', 'i', 'j', 'n', 'nd', 'nh', 'ni', 'nl', 'ns', 'nt', 'nz', 'v', 'ws')
