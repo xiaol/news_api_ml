@@ -49,8 +49,8 @@ class TopicModel(object):
     def create(self):
         #logger_9987.info('TopicModel::create begin ...')
         docs_sframe = gl.SFrame.read_csv(self.data_path, header=False)
-        docs = gl.text_analytics.count_words(docs_sframe['X1'])
-        docs = gl.text_analytics.trim_rare_words(docs, threshold=10, delimiters=None)
+        docs = gl.text_analytics.count_words(docs_sframe['doc'])
+        docs = gl.text_analytics.trim_rare_words(docs, threshold=30, delimiters=None)
         self.model = gl.topic_model.create(docs, num_iterations=1000, num_burnin=100, num_topics=5000)
 
         sf = self.model.get_topics(num_words=20, output_type='topic_words')
@@ -79,7 +79,7 @@ def create_topic_model():
     try:
         global model_instance
         #data_path = '/root/workspace/news_api_ml/graphlab_lda/data/2017-03-17-15-02-05/体育'
-        data_path = os.path.join(get_newest_dir(data_dir), 'data.txt')
+        data_path = os.path.join(get_newest_dir(data_dir), 'data_after.txt')
         model_instance = TopicModel(data_path, model_base_path)
         model_instance.create_and_save()
         #model_instance.create()
