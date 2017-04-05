@@ -156,7 +156,12 @@ def doc_preprocess_ltp(csv_path, save_path):
     idf_dict = dict(zip(tfidf_vec.get_feature_names(), idf))
     features = []
     idfs = []
+    k = 0
     for item in idf_dict.items():
+        if k == 0:
+            print item
+            print type(item)
+        k = 2
         features.append(item[0])
         idfs.append(item[1])
     idf_df = pd.DataFrame({'feature':features, 'idf':idfs}, index=None)
