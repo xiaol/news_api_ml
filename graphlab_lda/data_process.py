@@ -166,7 +166,7 @@ def doc_preprocess_ltp(csv_path, save_path):
         idfs.append(item[1])
     idf_df = pd.DataFrame({'feature':features, 'idf':idfs}, index=None)
     idf_path = os.path.join(real_dir_path, 'idf.txt')
-    idf_df.to_csv(idf_path, index=False, header=False)
+    idf_df.to_csv(idf_path, index=False, header=False, sep=' ')
     import jieba.analyse
     jieba.load_userdict(doc_process.net_words_file)
     jieba.analyse.set_stop_words(doc_process.stop_words_file)
