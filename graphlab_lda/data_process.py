@@ -138,9 +138,13 @@ def doc_preprocess_jieba(csv_path, save_path):
 
 allow_pos = ('a', 'n', 'v', 'eng', 's', 't', 'i', 'j', 'l', 'z')
 def doc_preprocess_ltp(csv_path, save_path):
+    print 'read csv...'
     raw_df = pd.read_csv(csv_path)
+    print 'read csv finished!!'
     df = raw_df['doc'] # Series
+    print 'get df'
     df = df.apply(doc_process.cut_pos_ltp)
+    print 'df apply'
     #tfidf 筛选
     '''
     from sklearn.feature_extraction.text import TfidfVectorizer

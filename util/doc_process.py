@@ -381,14 +381,14 @@ def cut_pos_nlpir(doc, topK = 20):
 
 
 
+from pyltp import Segmentor, Postagger
+segmentor = Segmentor()
+segmentor.load('/root/git/ltp_data/cws.model')
 allow_pos_ltp = ('a', 'i', 'j', 'n', 'nd', 'nh', 'ni', 'nl', 'ns', 'nt', 'nz', 'v', 'ws')
 #使用哈工大pyltp分词, 过滤词性
 def cut_pos_ltp(doc):
     s = ''.join(doc.split())
     s = filter_tags(s)
-    from pyltp import Segmentor, Postagger
-    segmentor = Segmentor()
-    segmentor.load('/root/git/ltp_data/cws.model')
     words = segmentor.segment(s)
 
     '''
