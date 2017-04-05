@@ -173,7 +173,7 @@ def doc_preprocess_ltp(csv_path, save_path):
     jieba.analyse.set_idf_path(idf_path)
     df_tfidf = []
     for i in df.values:
-        df_tfidf.append(' '.join(jieba.analyse.extract_tags(i, 50, withWeight=False, allowPOS=allow_pos)))
+        df_tfidf.append(' '.join(jieba.analyse.extract_tags(i, 50, withWeight=False, allowPOS=allow_pos)).encode('utf-8'))
     '''
     idf_path = os.path.join(real_dir_path, 'idf.txt')
     print 'begin to get idf'
