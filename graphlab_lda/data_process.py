@@ -142,6 +142,7 @@ def doc_preprocess_ltp(csv_path, save_path):
     df = raw_df['doc'] # Series
     df = df.apply(doc_process.cut_pos_ltp)
     #tfidf 筛选
+    '''
     from sklearn.feature_extraction.text import TfidfVectorizer
     tfidf_vec = TfidfVectorizer(use_idf=True, smooth_idf=False, max_df=0.001, min_df=0.00001, max_features=100000)
     tfidf = tfidf_vec.fit_transform(df)
@@ -160,6 +161,19 @@ def doc_preprocess_ltp(csv_path, save_path):
     df_tfidf = []
     for i in df.values:
         df_tfidf.append(' '.join(jieba.analyse.extract_tags(i, 50, withWeight=False, allowPOS=allow_pos)))
+    '''
+    idf_path = os.path.join(real_dir_path, 'idf.txt')
+    print 'begin to get idf'
+    doc_process.get_idf(df, idf_path)
+    print 'end to get idf'
+    import jieba.analyse
+    jieba.load_userdict(doc_process.net_words_file)
+    jieba.analyse.set_stop_words(doc_process.stop_words_file)
+    jieba.analyse.set_idf_path(idf_path)
+    df_tfidf = []
+    for i in df.values:
+        df_tfidf.append(' '.join(jieba.analyse.extract_tags(i, 50, withWeight=False, allowPOS=allow_pos)))
+
     df = pd.DataFrame({'nid': raw_df['nid'], 'doc': df_tfidf}, columns=csv_columns)
     df.to_csv(save_path, index=False)
 

@@ -9,6 +9,7 @@ import re
 import jieba
 import jieba.analyse
 import time
+import math
 
 ##过滤HTML中的标签
 # 将HTML中标签等信息去掉
@@ -407,4 +408,35 @@ def cut_pos_ltp(doc):
     return ' '.join(words)
 
 
-#获取
+#获取idf
+def get_idf(docs, save_path):
+    N = len(docs)
+    word_num_dict = {}
+    for doc in docs:
+        ws = doc.split()
+        ws_set = set(ws)
+        for w in ws_set:
+            if w not in word_num_dict:
+                word_num_dict[w] = 1
+            else:
+                word_num_dict[w] += 1
+    word_idf_dict = {}
+    for item in word_num_dict.items():
+        word_idf_dict[item[0]] = math.log(float(N) / item[1])
+    f = open(save_path, 'w')
+    for item in word_idf_dict.items():
+        f.write(item[0] + ' ' +  str(item[1]) + '\n')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
