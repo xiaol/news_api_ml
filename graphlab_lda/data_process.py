@@ -136,21 +136,31 @@ def doc_preprocess_jieba(csv_path, save_path):
     df.to_csv(save_path, index=False)
 
 
+allow_pos = ('a', 'n', 'v', 'eng', 's', 't', 'i', 'j', 'l', 'z')
 def doc_preprocess_ltp(csv_path, save_path):
     raw_df = pd.read_csv(csv_path)
     df = raw_df['doc'] # Series
     df = df.apply(doc_process.cut_pos_ltp)
     #tfidf 筛选
     from sklearn.feature_extraction.text import TfidfVectorizer
-    tfidf_vec = TfidfVectorizer(max_df=0.001, min_df=0.00001, max_features=100000)
+    tfidf_vec = TfidfVectorizer(use_idf=True, smooth_idf=False, max_df=0.001, min_df=0.00001, max_features=100000)
     tfidf = tfidf_vec.fit_transform(df)
     features = tfidf_vec.get_feature_names()
     print 'feature num = ' + str(len(features))
     logger.info('len of feature = '.format(len(features)))
-    #df = df.apply(clear_doc, args=(features,))
-    #ds = df.values
-    #ds = [i for i in ds if len(i) != 0]
-    df = pd.DataFrame({'nid': raw_df['nid'], 'doc': df}, columns=csv_columns)
+    idf = tfidf_vec.idf_
+    idf_dict = dict(zip(tfidf_vec.get_feature_names(), idf))
+    idf_df = pd.DataFrame(idf_dict, index=None)
+    idf_path = os.path.join(real_dir_path, 'idf.txt')
+    idf_df.to_csv(idf_path, index=False)
+    import jieba.analyse
+    jieba.load_userdict(doc_process.net_words_file)
+    jieba.analyse.set_stop_words(doc_process.stop_words_file)
+    jieba.analyse.set_idf_path(idf_path)
+    df_tfidf = []
+    for i in df.values:
+        df_tfidf.append(' '.join(jieba.analyse.extract_tags(i, 50, withWeight=False, allowPOS=allow_pos)))
+    df = pd.DataFrame({'nid': raw_df['nid'], 'doc': df_tfidf}, columns=csv_columns)
     df.to_csv(save_path, index=False)
 
 
@@ -217,8 +227,8 @@ def coll_news():
     try:
         #dp = DocProcess(doc_num_per_chnl, doc_min_len)
         #dp.coll_news_handler()
-        data_file = os.path.join('/root/workspace/news_api_ml/graphlab_lda/data/2017-04-01-15-42-57', 'raw.csv')
-        doc_preprocess_nlpir(data_file, '/root/workspace/news_api_ml/graphlab_lda/data/2017-04-01-15-42-57/data_after.csv')
+        data_file = os.path.join('/root/workspace/news_api_ml/graphlab_lda/data/2017-04-01-12-00-13', 'raw.csv')
+        doc_preprocess_ltp(data_file, '/root/workspace/news_api_ml/graphlab_lda/data/2017-04-01-12-00-13/data_after.csv')
         #doc_preprocess_jieba(dp.data_file, os.path.join(dp.save_dir, 'data_after_process.csv'))
         print 'collect news finished!'
         logger.info('collect news finished!')

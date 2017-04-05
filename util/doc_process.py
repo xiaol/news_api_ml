@@ -390,6 +390,7 @@ def cut_pos_ltp(doc):
     segmentor.load('/root/git/ltp_data/cws.model')
     words = segmentor.segment(s)
 
+    '''
     poser = Postagger()
     poser.load('/root/git/ltp_data/pos.model')
     poses = poser.postag(words)
@@ -402,3 +403,8 @@ def cut_pos_ltp(doc):
            (words[i] not in stopwords_set):
             ss.append(words[i])
     return ' '.join(ss)
+    '''
+    return ' '.join(words)
+
+
+#获取
