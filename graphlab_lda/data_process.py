@@ -146,7 +146,6 @@ def doc_preprocess_ltp(csv_path, save_path):
     df = df.apply(doc_process.cut_pos_ltp)
     print 'df apply'
     #tfidf 筛选
-    '''
     from sklearn.feature_extraction.text import TfidfVectorizer
     tfidf_vec = TfidfVectorizer(use_idf=True, smooth_idf=False, max_df=0.001, min_df=0.00001, max_features=100000)
     tfidf = tfidf_vec.fit_transform(df)
@@ -177,6 +176,7 @@ def doc_preprocess_ltp(csv_path, save_path):
     df_tfidf = []
     for i in df.values:
         df_tfidf.append(' '.join(jieba.analyse.extract_tags(i, 50, withWeight=False, allowPOS=allow_pos)))
+    '''
 
     df = pd.DataFrame({'nid': raw_df['nid'], 'doc': df_tfidf}, columns=csv_columns)
     df.to_csv(save_path, index=False)
