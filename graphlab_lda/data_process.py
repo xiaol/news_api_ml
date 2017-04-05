@@ -162,7 +162,7 @@ def doc_preprocess_ltp(csv_path, save_path):
             print item
             print type(item)
         k = 2
-        features.append(item[0].decode('utf-8'))
+        features.append(item[0].encode('utf-8'))
         idfs.append(item[1])
     idf_df = pd.DataFrame({'feature':features, 'idf':idfs}, index=None)
     idf_path = os.path.join(real_dir_path, 'idf.txt')
