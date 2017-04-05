@@ -154,9 +154,14 @@ def doc_preprocess_ltp(csv_path, save_path):
     logger.info('len of feature = '.format(len(features)))
     idf = tfidf_vec.idf_
     idf_dict = dict(zip(tfidf_vec.get_feature_names(), idf))
-    idf_df = pd.DataFrame(idf_dict, index=None)
+    features = []
+    idfs = []
+    for item in idf_dict.items():
+        features.append(item[0])
+        idfs.append(item[1])
+    idf_df = pd.DataFrame({'feature':features, 'idf':idfs}, index=None)
     idf_path = os.path.join(real_dir_path, 'idf.txt')
-    idf_df.to_csv(idf_path, index=False)
+    idf_df.to_csv(idf_path, index=False, header=False)
     import jieba.analyse
     jieba.load_userdict(doc_process.net_words_file)
     jieba.analyse.set_stop_words(doc_process.stop_words_file)
@@ -251,6 +256,7 @@ def coll_news():
         print 'collect news finished!'
         logger.info('collect news finished!')
     except:
+        print 'process except'
         logger.error(traceback.format_exc())
 
 
