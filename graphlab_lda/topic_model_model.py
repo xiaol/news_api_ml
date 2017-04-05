@@ -48,7 +48,7 @@ class TopicModel(object):
 
     def create(self):
         #logger_9987.info('TopicModel::create begin ...')
-        docs_sframe = gl.SFrame.read_csv(self.data_path, header=False)
+        docs_sframe = gl.SFrame.read_csv(self.data_path, header=True)
         docs = gl.text_analytics.count_words(docs_sframe['doc'])
         docs = gl.text_analytics.trim_rare_words(docs, threshold=30, delimiters=None)
         self.model = gl.topic_model.create(docs, num_iterations=1000, num_burnin=100, num_topics=5000)
