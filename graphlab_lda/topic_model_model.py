@@ -84,7 +84,7 @@ def create_topic_model():
         model_instance.create_and_save()
         #model_instance.create()
     except:
-        print 'exception !!!!'
+        traceback.print_exc()
         #logger_9987.exception(traceback.format_exc())
 
 
