@@ -147,7 +147,8 @@ def doc_preprocess_ltp(csv_path, save_path):
     print 'df apply'
     #tfidf 筛选
     from sklearn.feature_extraction.text import TfidfVectorizer
-    tfidf_vec = TfidfVectorizer(use_idf=True, smooth_idf=False, max_df=0.001, min_df=0.00001, max_features=100000)
+    #tfidf_vec = TfidfVectorizer(use_idf=True, smooth_idf=False, max_df=0.001, min_df=0.00001, max_features=100000)
+    tfidf_vec = TfidfVectorizer(use_idf=True, smooth_idf=False, max_features=100000)
     tfidf = tfidf_vec.fit_transform(df)
     features = tfidf_vec.get_feature_names()
     print 'feature num = ' + str(len(features))
