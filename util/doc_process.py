@@ -445,7 +445,7 @@ def extract_keywords(idf_path, docs, topK=20, max_percent=1.):
     all_keywords = []
     n = 0
     for doc in docs:  #每一篇文本
-        print '------n'
+        print '------' + str(n)
         n += 1
         words = doc.split()
         w_tfidf = dict()
