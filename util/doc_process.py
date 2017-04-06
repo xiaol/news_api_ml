@@ -450,7 +450,7 @@ def extract_keywords(idf_path, docs, topK=20, max_percent=1.):
         words = doc.split()
         w_tfidf = dict()
         for w in words: #每一个词
-            if len(w.decode('utf-8')) < 2 or (w not in word_idf.keys()) or (w in w_tfidf.keys()):
+            if len(w.decode('utf-8')) < 2 or (w not in word_idf) or (w in w_tfidf.keys()):
                 continue
             w_tfidf[w] = (float(words.count(w)) / len(w)) * word_idf[w]
         tags = sorted(w_tfidf.items(), key=lambda d: d[1], reverse=True)
