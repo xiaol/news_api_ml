@@ -177,6 +177,7 @@ def doc_preprocess_ltp(csv_path, save_path):
         df_tfidf.append(' '.join(jieba.analyse.extract_tags(i, 50, withWeight=False, allowPOS=allow_pos)).encode('utf-8'))
     '''
     df = pd.DataFrame({'nid': raw_df['nid'], 'doc': all_keywords}, columns=csv_columns)
+    df = pd.DataFrame({'doc': all_keywords}, columns=('doc',))
     df.to_csv(save_path, index=False)
 
 
