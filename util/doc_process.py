@@ -433,8 +433,6 @@ def get_idf(docs, save_path):
 #@output: 返回词列表
 ################################################################################
 def extract_keywords(idf_path, docs, topK=20, max_percent=1.):
-    if (not idf_path) or (not docs):
-        return []
     if not os.path.isfile(idf_path):
         raise Exception("extract_keywords: idf file does not exit: " + idf_path)
     f = open(idf_path, 'r')
