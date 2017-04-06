@@ -451,9 +451,9 @@ def extract_keywords(idf_path, docs, topK=20, max_percent=1.):
             w_tfidf[w] = (float(words.count(w)) / len(w)) * word_idf[w]
         tags = sorted(w_tfidf.items(), key=lambda d: d[1], reverse=True)
         k = min(topK, int(len(words) * max_percent))
-        ws = tags[:k]
-        for i in ws:
-            all_keywords.append(' '.join(i[0]))
+        ws_k = tags[:k]
+        ws_k = [t[1] for t in ws_k]
+        all_keywords.append(' '.join(ws_k))
     return all_keywords
 
 
