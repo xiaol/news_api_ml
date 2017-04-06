@@ -250,7 +250,7 @@ def coll_news():
         print 'collect news finished!'
         logger.info('collect news finished!')
     except:
-        print 'process except'
+        traceback.print_exc()
         logger.error(traceback.format_exc())
 
 
