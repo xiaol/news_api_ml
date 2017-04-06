@@ -433,6 +433,7 @@ def get_idf(docs, save_path):
 #@output: 返回词列表
 ################################################################################
 def extract_keywords(idf_path, docs, topK=20, max_percent=1.):
+    print len(docs)
     if not os.path.isfile(idf_path):
         raise Exception("extract_keywords: idf file does not exit: " + idf_path)
     f = open(idf_path, 'r')
@@ -442,7 +443,10 @@ def extract_keywords(idf_path, docs, topK=20, max_percent=1.):
         w_idf = line.split(' ')
         word_idf[w_idf[0]] = float(w_idf[1])
     all_keywords = []
+    n = 0
     for doc in docs:  #每一篇文本
+        print '------n'
+        n += 1
         words = doc.split()
         w_tfidf = dict()
         for w in words: #每一个词
