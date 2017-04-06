@@ -383,7 +383,7 @@ segmentor = Segmentor()
 segmentor.load('/root/git/ltp_data/cws.model')
 allow_pos_ltp = ('a', 'i', 'j', 'n', 'nh', 'ni', 'nl', 'ns', 'nt', 'nz', 'v', 'ws')
 #使用哈工大pyltp分词, 过滤词性
-def cut_pos_ltp(doc, filter_pos = False, allow_pos = allow_pos_ltp):
+def cut_pos_ltp(doc, filter_pos = True, allow_pos = allow_pos_ltp):
     s = ''.join(doc.split())  #去除空白符
     s = filter_tags(s)
     words = segmentor.segment(s)

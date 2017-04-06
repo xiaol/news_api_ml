@@ -136,7 +136,6 @@ def doc_preprocess_jieba(csv_path, save_path):
     df.to_csv(save_path, index=False)
 
 
-allow_pos = ('a', 'n', 'v', 'eng', 's', 't', 'i', 'j', 'l', 'z')
 def doc_preprocess_ltp(csv_path, save_path):
     print 'read csv...'
     raw_df = pd.read_csv(csv_path)
