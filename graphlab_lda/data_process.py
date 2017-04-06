@@ -167,7 +167,7 @@ def doc_preprocess_ltp(csv_path, save_path):
     idf_df = pd.DataFrame({'feature':features, 'idf':idfs}, index=None)
     idf_path = os.path.join(real_dir_path, 'idf.txt')
     idf_df.to_csv(idf_path, index=False, header=False, sep=' ')
-    all_keywords = doc_process.extract_keywords(idf_path, df, 50, 0.3)
+    all_keywords = doc_process.extract_keywords(idf_path, df.tolist(), 50, 0.3)
     '''
     import jieba.analyse
     jieba.load_userdict(doc_process.net_words_file)
