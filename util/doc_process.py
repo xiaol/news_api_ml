@@ -361,13 +361,10 @@ def close_pynlpir():
     pynlpir.close()
 
 
-n = 0
+allow_pos_nlpir = ('a', 'i', 'j', 'n', 'nd', 'nh', 'ni', 'nl', 'ns', 'nt', 'nz', 'v', 'ws')
 from bs4 import BeautifulSoup
 def cut_pos_nlpir(doc, topK = 20):
     #s = filter_tags(doc)
-    global n
-    print n
-    n += 1
     soup = BeautifulSoup(doc, 'lxml')
     s = soup.get_text()
     try:
@@ -384,14 +381,15 @@ def cut_pos_nlpir(doc, topK = 20):
 from pyltp import Segmentor, Postagger
 segmentor = Segmentor()
 segmentor.load('/root/git/ltp_data/cws.model')
-allow_pos_ltp = ('a', 'i', 'j', 'n', 'nd', 'nh', 'ni', 'nl', 'ns', 'nt', 'nz', 'v', 'ws')
+allow_pos_ltp = ('a', 'i', 'j', 'n', 'nh', 'ni', 'nl', 'ns', 'nt', 'nz', 'v', 'ws')
 #使用哈工大pyltp分词, 过滤词性
-def cut_pos_ltp(doc):
-    s = ''.join(doc.split())
+def cut_pos_ltp(doc, filter_pos = False, allow_pos = allow_pos_ltp):
+    s = ''.join(doc.split())  #去除空白符
     s = filter_tags(s)
     words = segmentor.segment(s)
+    if not filter_pos:
+        return ' '.join(words)
 
-    '''
     poser = Postagger()
     poser.load('/root/git/ltp_data/pos.model')
     poses = poser.postag(words)
@@ -399,13 +397,11 @@ def cut_pos_ltp(doc):
     stopwords = {}.fromkeys([line.rstrip() for line in open(stop_words_file)]) #utf-8
     stopwords_set = set(stopwords)
     for i, pos in enumerate(poses):
-        if (pos in allow_pos_ltp) and \
+        if (pos in allow_pos) and \
            (len(words[i].decode('utf-8')) > 1) and \
            (words[i] not in stopwords_set):
             ss.append(words[i])
     return ' '.join(ss)
-    '''
-    return ' '.join(words)
 
 
 #获取idf
@@ -428,11 +424,37 @@ def get_idf(docs, save_path):
         f.write(item[0] + ' ' +  str(item[1]) + '\n')
 
 
-
-
-
-
-
+################################################################################
+#提取关键词
+#@param :
+#      idf_path : 用户指定Idf文件
+#      docs: 句子的list.
+#      topK :做大关键词数目
+#@output: 返回词列表
+################################################################################
+def extract_keywords(idf_path, docs, topK=20, max_percent=1.):
+    if (not idf_path) or (not docs):
+        return []
+    if not os.path.isfile(idf_path):
+        raise Exception("extract_keywords: idf file does not exit: " + idf_path)
+    f = open(idf_path, 'r')
+    lines = f.readlines()
+    word_idf = {}
+    for line in lines:
+        w_idf = line.split(' ')
+        word_idf[w_idf[0]] = w_idf[1]
+    all_keywords = []
+    for doc in docs:  #每一篇文本
+        words = doc.split()
+        w_tfidf = dict()
+        for w in words: #每一个词
+            if len(w.decode('utf-8')) < 2 or (w not in word_idf.keys()) or (w in w_tfidf.keys()):
+                continue
+            w_tfidf[w] = (float(words.count(w)) / len(w)) * word_idf[w]
+        tags = sorted(w_tfidf.items(), key=lambda d: d[1], reverse=True)
+        k = min(topK, int(len(words) * max_percent))
+        all_keywords.append(' '.join(tags[:k]))
+    return all_keywords
 
 
 

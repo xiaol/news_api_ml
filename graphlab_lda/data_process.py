@@ -167,6 +167,8 @@ def doc_preprocess_ltp(csv_path, save_path):
     idf_df = pd.DataFrame({'feature':features, 'idf':idfs}, index=None)
     idf_path = os.path.join(real_dir_path, 'idf.txt')
     idf_df.to_csv(idf_path, index=False, header=False, sep=' ')
+    all_keywords = doc_process.extract_keywords(idf_path, df, 50, 0.3)
+    '''
     import jieba.analyse
     jieba.load_userdict(doc_process.net_words_file)
     jieba.analyse.set_stop_words(doc_process.stop_words_file)
@@ -175,20 +177,7 @@ def doc_preprocess_ltp(csv_path, save_path):
     for i in df.values:
         df_tfidf.append(' '.join(jieba.analyse.extract_tags(i, 50, withWeight=False, allowPOS=allow_pos)).encode('utf-8'))
     '''
-    idf_path = os.path.join(real_dir_path, 'idf.txt')
-    print 'begin to get idf'
-    doc_process.get_idf(df, idf_path)
-    print 'end to get idf'
-    import jieba.analyse
-    jieba.load_userdict(doc_process.net_words_file)
-    jieba.analyse.set_stop_words(doc_process.stop_words_file)
-    jieba.analyse.set_idf_path(idf_path)
-    df_tfidf = []
-    for i in df.values:
-        df_tfidf.append(' '.join(jieba.analyse.extract_tags(i, 50, withWeight=False, allowPOS=allow_pos)))
-    '''
-
-    df = pd.DataFrame({'nid': raw_df['nid'], 'doc': df_tfidf}, columns=csv_columns)
+    df = pd.DataFrame({'nid': raw_df['nid'], 'doc': all_keywords}, columns=csv_columns)
     df.to_csv(save_path, index=False)
 
 
@@ -255,8 +244,8 @@ def coll_news():
     try:
         #dp = DocProcess(doc_num_per_chnl, doc_min_len)
         #dp.coll_news_handler()
-        data_file = os.path.join('/root/workspace/news_api_ml/graphlab_lda/data/2017-04-01-15-42-57', 'raw.csv')
-        doc_preprocess_ltp(data_file, '/root/workspace/news_api_ml/graphlab_lda/data/2017-04-01-15-42-57/data_after.csv')
+        data_file = os.path.join('/root/workspace/news_api_ml/graphlab_lda/data/2017-04-01-12-00-13', 'raw.csv')
+        doc_preprocess_ltp(data_file, '/root/workspace/news_api_ml/graphlab_lda/data/2017-04-01-12-00-13/data_after.csv')
         #doc_preprocess_jieba(dp.data_file, os.path.join(dp.save_dir, 'data_after_process.csv'))
         print 'collect news finished!'
         logger.info('collect news finished!')
