@@ -440,7 +440,7 @@ def extract_keywords(idf_path, docs, topK=20, max_percent=1.):
     word_idf = {}
     for line in lines:
         w_idf = line.split(' ')
-        word_idf[w_idf[0]] = w_idf[1]
+        word_idf[w_idf[0]] = float(w_idf[1])
     all_keywords = []
     for doc in docs:  #每一篇文本
         words = doc.split()
