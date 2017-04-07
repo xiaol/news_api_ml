@@ -188,7 +188,7 @@ def clear_queue_lda():
     while True:
         print 'redis_inst is '
         print redis_inst
-        nid = redis_inst.rpop(lda_queue)[1]
+        nid = redis_inst.rpop(lda_queue)
         if not nid:
             break
 
