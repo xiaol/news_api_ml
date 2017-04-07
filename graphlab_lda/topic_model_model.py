@@ -96,7 +96,7 @@ def create_topic_model():
 
 # -------------------------------我是分割线, 下面是预测新闻主题--------------------
 def load_topic_model(model_path):
-    logger_9988.info('load_topic_model begin ...')
+    logger_9988.info('load_topic_model {} begin ...'.format(model_path))
     global model_instance
     if not model_instance:
         model_instance = TopicModel()
