@@ -199,7 +199,7 @@ class DealOldClicks2(tornado.web.RequestHandler):
         try:
             print '-------------deal old clicks begin!-------------'
             from graphlab_lda import topic_model_model
-            s = "select uid, nid, ctime from newsrecommendclick where ctime > now() - interval '2 day'"
+            s = "select uid, nid, ctime from newsrecommendclick where ctime > now() - interval '30 day'"
             from util import doc_process
             conn, cursor = doc_process.get_postgredb_query()
             cursor.execute(s)
@@ -211,6 +211,32 @@ class DealOldClicks2(tornado.web.RequestHandler):
             traceback.print_exc()
 
 
+class DealOldNewsClick(tornado.web.RequestHandler):
+    def get(self):
+        try:
+            print '----deal old news and click----'
+            from graphlab_lda import topic_model_model
+            from redis_process import nid_queue
+            nid_queue.clear_queue_lda() #清空旧nid
+            s_new = "select nid from newslist_v2 where ctime > now() - interval '30 day'"
+            from util import doc_process
+            conn, cursor = doc_process.get_postgredb_query()
+            cursor.execute(s_new)
+            nids = cursor.fetchall()
+            topic_model_model.predict_nids(nids)
+            print '    ----- finish to predict news, begin to predict click-----'
+
+            nid_queue.clear_queue_click()
+            s_click = "select uid, nid, ctime from newsrecommendclick where ctime > now() - interval '30 day'"
+            cursor.execute(s_click)
+            clicks = tuple(cursor.fetchall())
+            topic_model_model.predict_clicks(clicks)
+            print '----------- finish to predict clicks--------'
+
+            conn.close()
+        except:
+            traceback.print_exc()
+
 # 用于手工的一些接口
 class Application2(tornado.web.Application):
     def __init__(self):
@@ -221,6 +247,7 @@ class Application2(tornado.web.Application):
             ("/topic_model/get_user_topic2", CollectUserTopic2),
             ("/topic_model/deal_old_clicks", DealOldClicks),
             ("/topic_model/deal_old_clicks2", DealOldClicks2),
+            ("/topic_model/deal_old_news_click", DealOldNewsClick)
         ]
         settings = {}
         tornado.web.Application.__init__(self, handlers, **settings)

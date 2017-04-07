@@ -57,6 +57,7 @@ def consume_nid():
 '''
 
 
+
 def consume_nid_lda(num=1):
     global redis_inst
     n = 0
@@ -180,4 +181,20 @@ def get_old_clicks():
         except:
             raise
     return clicks
+
+
+def clear_queue_lda():
+    global redis_inst
+    while True:
+        nid = redis_inst.rpop(lda_queue)[1]
+        if not nid:
+            break
+
+
+def clear_queue_click():
+    global redis_inst
+    while True:
+        click = redis_inst.rpop(user_click_queue)
+        if not click:
+            break
 

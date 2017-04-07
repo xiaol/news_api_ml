@@ -36,6 +36,7 @@ logger_9990 = Logger('process9990_3',  os.path.join(real_dir_path,  'log/log_999
 
 data_dir = os.path.join(real_dir_path, 'data')
 model_base_path = os.path.join('/root/ossfs', 'topic_models')  #模型保存路径
+model_base_new_path = os.path.join('/root/ossfs/', 'topic_models/000')  #模型测试路径
 model_version = ''  #模型版本
 model_instance = None
 save_model_sql = "insert into topic_models_v2 (model_v, topic_id, topic_words) VALUES (%s, %s, %s)"
@@ -85,7 +86,7 @@ def create_topic_model():
         global model_instance
         #data_path = '/root/workspace/news_api_ml/graphlab_lda/data/2017-03-17-15-02-05/体育'
         data_path = os.path.join(get_newest_dir(data_dir), 'data_after.csv')
-        model_instance = TopicModel(data_path, model_base_path)
+        model_instance = TopicModel(data_path, model_base_new_path)
         model_instance.create_and_save()
         print '************** create_topic_model finished************'
         #model_instance.create()
@@ -134,12 +135,17 @@ def deal_old_nids(nid_list):
         raise
 
 
-def predict_nids(nid_list):
+def predict_nids(nid_list, for_new_version=False):
     global model_instance
     if not model_instance:
-        p = '/root/ossfs/topic_models/2017-03-20-19-21-21'
-        load_topic_model(p)
-        #load_topic_model(get_newest_dir(model_base_path))
+        #p = '/root/ossfs/topic_models/2017-03-20-19-21-21'
+        #load_topic_model(p)
+        #'''
+        if for_new_version:
+            load_topic_model(get_newest_dir(model_base_new_path))
+        else:
+            load_topic_model(get_newest_dir(model_base_path))
+        #'''
     return predict(model_instance, nid_list)
 
 def predict(model, nid_list):
