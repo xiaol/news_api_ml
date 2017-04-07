@@ -24,17 +24,15 @@ from util.doc_process import get_postgredb
 from util.doc_process import get_postgredb_query
 
 real_dir_path = os.path.split(os.path.realpath(__file__))[0]
-pid = os.getpid()
-ppid = os.getppid()
-print pid
-print ppid
-logger = Logger('process'+str(pid),  os.path.join(real_dir_path,  'log/log_{}.txt'.format(pid)))
-logger.info('pid {} begin!'.format(pid))
+logger = None
+def set_logger(port):
+    logger = Logger('process'+str(port),  os.path.join(real_dir_path,  'log/log_{}.txt'.format(port)))
+    logger.info('pid {} begin!'.format(port))
 
 #logger9987 = Logger('process9987',  os.path.join(real_dir_path,  'log/log_9987.txt'))
-#logger_9988 = Logger('process9988_3',  os.path.join(real_dir_path,  'log/log_9988_3.txt'))
-#logger_9989 = Logger('process9989_3',  os.path.join(real_dir_path,  'log/log_9989_3.txt'))
-#logger_9990 = Logger('process9990_3',  os.path.join(real_dir_path,  'log/log_9990_3.txt'))
+logger_9988 = Logger('process9988_3',  os.path.join(real_dir_path,  'log/log_9988_3.txt'))
+logger_9989 = Logger('process9989_3',  os.path.join(real_dir_path,  'log/log_9989_3.txt'))
+logger_9990 = Logger('process9990_3',  os.path.join(real_dir_path,  'log/log_9990_3.txt'))
 
 data_dir = os.path.join(real_dir_path, 'data')
 model_base_path = os.path.join('/root/ossfs', 'topic_models')  #模型保存路径
@@ -98,13 +96,13 @@ def create_topic_model():
 
 # -------------------------------我是分割线, 下面是预测新闻主题--------------------
 def load_topic_model(model_path):
-    logger.info('load_topic_model begin ...')
+    logger_9988.info('load_topic_model begin ...')
     global model_instance
     if not model_instance:
         model_instance = TopicModel()
         model_instance.version = os.path.split(model_path)[-1]
         model_instance.model = gl.load_model(model_path)
-    logger.info('load_topic_model finished!')
+    logger_9988.info('load_topic_model finished!')
 
 
 #获取一个文件夹下最新版的文件夹
@@ -145,7 +143,7 @@ def predict_nids(nid_list):
     return predict(model_instance, nid_list)
 
 def predict(model, nid_list):
-    logger.info('predict {}'.format(nid_list))
+    logger_9988.info('predict {}'.format(nid_list))
     t0 = datetime.datetime.now()
     nid_words_dict = get_news_words(nid_list)
     nids = []
@@ -183,8 +181,6 @@ def predict(model, nid_list):
     insert_list = []
     str_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     res_dict_list = []
-    if pid == 9985:
-        res_dict_list = []
     for n in xrange(len(nids)):
         for m in xrange(len(props_list[n])):
             topic_id = props_list[n][m][0]
@@ -192,22 +188,22 @@ def predict(model, nid_list):
             insert_list.append((nids[n], model.version, topic_id, prop, str_time))
             sf = model.model.get_topics(num_words=20,
                                        output_type='topic_words')
-            if pid == 9985:
-                info_dict = {}
-                info_dict['nid'] = nids[n]
-                info_dict['model_v'] = model_version
-                info_dict['topic_id'] = topic_id
-                info_dict['probability'] = prop
-                info_dict['topic_words'] = sf[topic_id]['words']
-                res_dict_list.append(info_dict)
+            '''
+            info_dict = {}
+            info_dict['nid'] = nids[n]
+            info_dict['model_v'] = model_version
+            info_dict['topic_id'] = topic_id
+            info_dict['probability'] = prop
+            info_dict['topic_words'] = sf[topic_id]['words']
+            res_dict_list.append(info_dict)
+            '''
     conn, cursor = get_postgredb()
     cursor.executemany(insert_sql, insert_list)
     conn.commit()
     conn.close()
     t1 = datetime.datetime.now()
-    logger.info('prediction takes {}s'.format((t1 - t0).total_seconds()))
-    if pid == 9985:
-        return res_dict_list
+    logger_9988.info('prediction takes {}s'.format((t1 - t0).total_seconds()))
+    return res_dict_list
 
 
 #预测多个点击
@@ -235,7 +231,7 @@ def predict_click(click_info, model_v = None):
         else:
             ctime = click_info[2]
             time_str = ctime.strftime('%Y-%m-%d %H:%M:%S')
-        logger.info("consume click: uid={}, nid={}, time_str={}".format(uid, nid, time_str))
+        logger_9990.info("consume click: uid={}, nid={}, time_str={}".format(uid, nid, time_str))
         valid_time = ctime + timedelta(days=30) #有效时间定为30天
         fail_time = valid_time.strftime('%Y-%m-%d %H:%M:%S')
         conn, cursor = get_postgredb_query()
@@ -249,7 +245,7 @@ def predict_click(click_info, model_v = None):
             rows2 = cursor2.fetchone()
             if rows2: #该用户已经关注过该topic_id, 更新probability即可
                 new_prop = probability + rows2[0]
-                logger.info('update: uid={}, topic_id={}'.format(uid, topic_id))
+                logger_9990.info('update: uid={}, topic_id={}'.format(uid, topic_id))
                 cursor2.execute(ut_update_sql.format(new_prop, time_str, fail_time, uid, model_v, topic_id))
             else:
                 cursor2.execute(user_topic_insert_sql.format(uid, model_v, topic_id, probability, time_str, fail_time))
