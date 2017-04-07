@@ -175,28 +175,28 @@ def predict(model, nid_list):
     #入库
     insert_list = []
     str_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    #res_dict_list = []
+    res_dict_list = []
     for n in xrange(len(nids)):
         for m in xrange(len(props_list[n])):
             topic_id = props_list[n][m][0]
             prop = props_list[n][m][1]
             insert_list.append((nids[n], model.version, topic_id, prop, str_time))
-            #sf = model.model.get_topics(num_words=20,
-            #                           output_type='topic_words')
-            #info_dict = {}
-            #info_dict['nid'] = nids[n]
-            #info_dict['model_v'] = model_version
-            #info_dict['topic_id'] = topic_id
-            #info_dict['probability'] = prop
-            #info_dict['topic_words'] = sf[topic_id]['words']
-            #res_dict_list.append(info_dict)
+            sf = model.model.get_topics(num_words=20,
+                                       output_type='topic_words')
+            info_dict = {}
+            info_dict['nid'] = nids[n]
+            info_dict['model_v'] = model_version
+            info_dict['topic_id'] = topic_id
+            info_dict['probability'] = prop
+            info_dict['topic_words'] = sf[topic_id]['words']
+            res_dict_list.append(info_dict)
     conn, cursor = get_postgredb()
     cursor.executemany(insert_sql, insert_list)
     conn.commit()
     conn.close()
     t1 = datetime.datetime.now()
     logger_9988.info('prediction takes {}s'.format((t1 - t0).total_seconds()))
-    #return res_dict_list
+    return res_dict_list
 
 
 #预测多个点击
