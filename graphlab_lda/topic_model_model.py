@@ -25,9 +25,9 @@ from util.doc_process import get_postgredb_query
 
 real_dir_path = os.path.split(os.path.realpath(__file__))[0]
 #logger9987 = Logger('process9987',  os.path.join(real_dir_path,  'log/log_9987.txt'))
-logger_9988 = Logger('process9988_2',  os.path.join(real_dir_path,  'log/log_9988_2.txt'))
-logger_9989 = Logger('process9989_2',  os.path.join(real_dir_path,  'log/log_9989_2.txt'))
-logger_9990 = Logger('process9990_2',  os.path.join(real_dir_path,  'log/log_9990_2.txt'))
+logger_9988 = Logger('process9988_3',  os.path.join(real_dir_path,  'log/log_9988_3.txt'))
+logger_9989 = Logger('process9989_3',  os.path.join(real_dir_path,  'log/log_9989_3.txt'))
+logger_9990 = Logger('process9990_3',  os.path.join(real_dir_path,  'log/log_9990_3.txt'))
 
 data_dir = os.path.join(real_dir_path, 'data')
 model_base_path = os.path.join('/root/ossfs', 'topic_models')  #模型保存路径
