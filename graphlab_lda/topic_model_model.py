@@ -137,7 +137,7 @@ def deal_old_nids(nid_list):
 def predict_nids(nid_list):
     global model_instance
     if not model_instance:
-        p = '/root/ossfs/topic_models/2017-04-05-11-20-05'
+        p = '/root/ossfs/topic_models/2017-03-20-19-21-21'
         load_topic_model(p)
         #load_topic_model(get_newest_dir(model_base_path))
     return predict(model_instance, nid_list)
