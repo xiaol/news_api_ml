@@ -218,12 +218,20 @@ class DealOldNewsClick(tornado.web.RequestHandler):
             from graphlab_lda import topic_model_model
             from redis_process import nid_queue
             nid_queue.clear_queue_lda() #清空旧nid
-            s_new = "select nid from newslist_v2 where ctime > now() - interval '30 day'"
+            s_new = "select nid from newslist_v2 where ctime > now() - interval '30 day' and chid not in (28, 23, 21, 44) and state=0"
             from util import doc_process
             conn, cursor = doc_process.get_postgredb_query()
             cursor.execute(s_new)
-            nids = cursor.fetchall()
-            topic_model_model.predict_nids(nids)
+            nids = list(cursor.fetchall())
+            if len(nids) < 1000:
+                topic_model_model.predict_nids(nids)
+            else:
+                n = 0
+                while (n + 1000) < len(nids):
+                    topic_model_model.predict_nids(nids[n:n+1000])
+                    n += 1000
+                topic_model_model.predict_nids(nids[n-1000:len(nids)])
+
             print '    ----- finish to predict news, begin to predict click-----'
 
             nid_queue.clear_queue_click()
