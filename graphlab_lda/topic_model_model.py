@@ -186,9 +186,9 @@ def predict(model, nid_list):
             topic_id = props_list[n][m][0]
             prop = props_list[n][m][1]
             insert_list.append((nids[n], model.version, topic_id, prop, str_time))
+            '''
             sf = model.model.get_topics(num_words=20,
                                        output_type='topic_words')
-            '''
             info_dict = {}
             info_dict['nid'] = nids[n]
             info_dict['model_v'] = model_version
