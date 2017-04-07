@@ -222,7 +222,11 @@ class DealOldNewsClick(tornado.web.RequestHandler):
             from util import doc_process
             conn, cursor = doc_process.get_postgredb_query()
             cursor.execute(s_new)
-            nids = list(cursor.fetchall())
+            rows = cursor.fetchall()
+            nids = []
+            for r in rows:
+                nids.append(r[0])
+
             if len(nids) < 1000:
                 topic_model_model.predict_nids(nids)
             else:
