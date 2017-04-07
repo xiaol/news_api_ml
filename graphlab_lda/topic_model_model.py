@@ -25,6 +25,9 @@ from util.doc_process import get_postgredb_query
 
 real_dir_path = os.path.split(os.path.realpath(__file__))[0]
 pid = os.getpid()
+ppid = os.getppid()
+print pid
+print ppid
 logger = Logger('process'+str(pid),  os.path.join(real_dir_path,  'log/log_{}.txt'.format(pid)))
 logger.info('pid {} begin!'.format(pid))
 
