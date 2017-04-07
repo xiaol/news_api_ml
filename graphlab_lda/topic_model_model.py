@@ -82,6 +82,7 @@ def create_topic_model():
         data_path = os.path.join(get_newest_dir(data_dir), 'data_after.csv')
         model_instance = TopicModel(data_path, model_base_path)
         model_instance.create_and_save()
+        print '************** create_topic_model finished************'
         #model_instance.create()
     except:
         traceback.print_exc()
