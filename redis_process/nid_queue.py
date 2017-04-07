@@ -186,8 +186,6 @@ def get_old_clicks():
 def clear_queue_lda():
     global redis_inst
     while True:
-        print 'redis_inst is '
-        print redis_inst
         nid = redis_inst.rpop(lda_queue)
         if not nid:
             break
