@@ -217,15 +217,17 @@ class DealOldNewsClick(tornado.web.RequestHandler):
             print '----deal old news and click----'
             from graphlab_lda import topic_model_model
             from redis_process import nid_queue
-            nid_queue.clear_queue_lda() #清空旧nid
-            s_new = "select nid from newslist_v2 where ctime > now() - interval '30 day' and chid not in (28, 23, 21, 44) and state=0"
             from util import doc_process
             conn, cursor = doc_process.get_postgredb_query()
+            '''
+            nid_queue.clear_queue_lda() #清空旧nid
+            s_new = "select nid from newslist_v2 where ctime > now() - interval '30 day' and chid not in (28, 23, 21, 44) and state=0"
             cursor.execute(s_new)
             rows = cursor.fetchall()
             nids = []
             for r in rows:
                 nids.append(r[0])
+            l = len(nids)
 
             if len(nids) < 1000:
                 topic_model_model.predict_nids(nids)
@@ -234,12 +236,14 @@ class DealOldNewsClick(tornado.web.RequestHandler):
                 while (n + 1000) < len(nids):
                     topic_model_model.predict_nids(nids[n:n+1000])
                     n += 1000
+                    print ('{} of {} finished!'.format(n, l))
                 topic_model_model.predict_nids(nids[n-1000:len(nids)])
 
             print '    ----- finish to predict news, begin to predict click-----'
 
+            '''
             nid_queue.clear_queue_click()
-            s_click = "select uid, nid, ctime from newsrecommendclick where ctime > now() - interval '30 day'"
+            s_click = "select uid, nid, ctime from newsrecommendclick where ctime > now() - interval '20 day'"
             cursor.execute(s_click)
             clicks = tuple(cursor.fetchall())
             topic_model_model.predict_clicks(clicks)
