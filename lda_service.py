@@ -243,7 +243,7 @@ class DealOldNewsClick(tornado.web.RequestHandler):
             print '    ----- finish to predict news, begin to predict click-----'
 
             '''
-            s_click = "select uid, nid, ctime from newsrecommendclick where (ctime > now() - interval '20 day') and (ctime < now() - interval '1.5 day') "
+            s_click = "select uid, nid, ctime from newsrecommendclick where (ctime > now() - interval '10 day') and (ctime < now() - interval '1.5 day') "
             cursor.execute(s_click)
             clicks = tuple(cursor.fetchall())
             topic_model_model.predict_clicks(clicks)
