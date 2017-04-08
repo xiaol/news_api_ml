@@ -220,8 +220,9 @@ class DealOldNewsClick(tornado.web.RequestHandler):
             from util import doc_process
             conn, cursor = doc_process.get_postgredb_query()
             '''
+            nid_queue.clear_queue_click()
             nid_queue.clear_queue_lda() #清空旧nid
-            s_new = "select nid from newslist_v2 where ctime > now() - interval '30 day' and chid not in (28, 23, 21, 44) and state=0"
+            s_new = "select nid from newslist_v2 where ctime > now() - interval '10 day' and chid not in (28, 23, 21, 44) and state=0"
             cursor.execute(s_new)
             rows = cursor.fetchall()
             nids = []
@@ -242,8 +243,7 @@ class DealOldNewsClick(tornado.web.RequestHandler):
             print '    ----- finish to predict news, begin to predict click-----'
 
             '''
-            nid_queue.clear_queue_click()
-            s_click = "select uid, nid, ctime from newsrecommendclick where ctime > now() - interval '20 day'"
+            s_click = "select uid, nid, ctime from newsrecommendclick where (ctime > now() - interval '20 day') and (ctime < now() - interval '1 day') "
             cursor.execute(s_click)
             clicks = tuple(cursor.fetchall())
             topic_model_model.predict_clicks(clicks)
