@@ -90,7 +90,7 @@ def coll_user_topics():
         master_user = []
         slave_user = []
         similarity = []
-        for item in W:
+        for item in W.items():
             #master_user.append(item[0])
             for i2 in item[1].items():
                 master_user.append(item[0])
