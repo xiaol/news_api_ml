@@ -211,6 +211,7 @@ class DealOldClicks2(tornado.web.RequestHandler):
             traceback.print_exc()
 
 
+#更新LDA版本后,收集部分旧news和clicks
 class DealOldNewsClick(tornado.web.RequestHandler):
     def get(self):
         try:
@@ -219,7 +220,6 @@ class DealOldNewsClick(tornado.web.RequestHandler):
             from redis_process import nid_queue
             from util import doc_process
             conn, cursor = doc_process.get_postgredb_query()
-            '''
             nid_queue.clear_queue_click()
             nid_queue.clear_queue_lda() #清空旧nid
             s_new = "select nid from newslist_v2 where ctime > now() - interval '10 day' and chid not in (28, 23, 21, 44) and state=0"
@@ -242,7 +242,6 @@ class DealOldNewsClick(tornado.web.RequestHandler):
 
             print '    ----- finish to predict news, begin to predict click-----'
 
-            '''
             s_click = "select uid, nid, ctime from newsrecommendclick where (ctime > now() - interval '10 day') and (ctime < now() - interval '1.5 day') "
             cursor.execute(s_click)
             clicks = tuple(cursor.fetchall())
