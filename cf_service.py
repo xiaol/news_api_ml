@@ -10,4 +10,4 @@
 
 if __name__ == '__main__':
     from user_based_cf import data_process
-    data_process.coll_click()
+    data_process.coll_user_topics()
