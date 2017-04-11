@@ -169,6 +169,10 @@ def get_user_topic_similarity(users, topics, props):
             for v_prop in i_users_prop.items():
                 if u_prop[0] == v_prop[0]:
                     continue
+                if u_prop[0] not in C:
+                    C[u_prop[0]] = {}
+                if v_prop[0] not in C[u_prop[0]]:
+                    C[u_prop[0]][v_prop[0]] = 0
                 C[u_prop[0]][v_prop[0]] += min(u_prop[1], v_prop[1])  #取最小的probability作为相似值
 
     #calcute final similirity matrix W based on user matrix
