@@ -99,7 +99,9 @@ def coll_user_topics():
         df2 = pd.DataFrame({'uid1':master_user, 'uid2':slave_user, 'similarity':similarity}, columns=('uid1', 'uid2', 'similarity'))
         df2.to_csv(user_user_file, index=False)
         log_cf.info('uid1-uid2-similarity are save to {}'.format(user_user_file))
+        print 'finished!!'
     except:
+        traceback.print_exc()
         log_cf.exception(traceback.format_exc())
 
 
