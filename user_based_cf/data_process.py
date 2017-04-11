@@ -156,7 +156,7 @@ def get_user_topic_similarity(users, topics, props):
     for i in xrange(len(topics)):
         if topics[i] not in topic_user_dict.keys():
             topic_user_dict[topics[i]] = dict()
-        topic_user_dict[topics[i]][users[i]] = props[i]
+        topic_user_dict[topics[i]][user_dict[users[i]]] = props[i]
 
     #get user relationship matrix
     C = dict()  #记录用户相关矩阵
