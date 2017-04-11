@@ -62,7 +62,7 @@ def coll_click():
         conn.close()
 
 
-user_topic_prop = "select uid, topic_id, probability from user_topics_v2 where model_v = '{}'"
+user_topic_prop = "select uid, topic_id, probability from user_topics_v2 where model_v = '{}' limit 100"
 def coll_user_topics():
     try:
         log_cf.info('coll_user_topics begin ...')
