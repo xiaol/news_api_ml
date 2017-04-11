@@ -22,7 +22,7 @@ log_cf = logger.Logger('log_cf', os.path.join(real_dir_path, 'log', 'log.txt'))
 #@brief: 获取最新的topic版本
 ################################################################################
 def get_newest_topic_v():
-    topic_sql = "select model_v from user_topic_v2 group by model_v"
+    topic_sql = "select model_v from user_topics_v2 group by model_v"
     conn, cursor = get_postgredb_query()
     cursor.execute(topic_sql)
     rows = cursor.fetchall()
