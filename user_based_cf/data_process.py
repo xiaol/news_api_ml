@@ -80,13 +80,13 @@ def coll_user_topics():
 
         df = pd.DataFrame({'uid': user_ids, 'topic': topic_ids, 'property': props}, columns=('uid', 'topic', 'property'))
         time_str = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-        topic_file = os.path.join(real_dir_path, 'data', 'user_topic_data'+time_str + '.txt')
+        topic_file = os.path.join(real_dir_path, 'data', 'user_topic_data_'+time_str + '.txt')
         df.to_csv(topic_file, index=False)
         log_cf.info('uid-topic-property are save to {}'.format(topic_file))
         conn.close()
         #calcute similarity and save to file
         W = get_user_topic_similarity(user_ids, topic_ids, props)
-        user_user_file = os.path.join(real_dir_path, 'data', 'user_topic_similarity'+time_str + '.txt')
+        user_user_file = os.path.join(real_dir_path, 'data', 'user_topic_similarity_'+time_str + '.txt')
         master_user = []
         slave_user = []
         similarity = []
@@ -185,7 +185,7 @@ def get_user_topic_similarity(users, topics, props):
                 W[user_invert_dict[u]] = dict()
             if user_invert_dict[v] not in W[user_invert_dict[u]]:
                 W[user_invert_dict[u]][user_invert_dict[v]] = 0
-            print 'cuv = {} and sqrt = {},  {}'.format(cuv, N[u], N[v])
+            #print 'cuv = {} and sqrt = {},  {}'.format(cuv, N[u], N[v])
             W[user_invert_dict[u]][user_invert_dict[v]] = cuv / math.sqrt(N[u] * N[v])
 
     return W
