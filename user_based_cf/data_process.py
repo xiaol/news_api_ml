@@ -64,36 +64,43 @@ def coll_click():
 
 user_topic_prop = "select uid, topic_id, probability from user_topics_v2 where model_v = {}"
 def coll_user_topics():
-    conn, cursor = get_postgredb_query()
-    cursor.execute(user_topic_prop.format(get_newest_topic_v()))
-    rows = cursor.fetchall()
-    user_ids = []
-    topic_ids = []
-    props = []
-    for r in rows:
-        user_ids.append(r[0])
-        topic_ids.append(r[1])
-        props.append(r[2])
+    try:
+        log_cf.info('coll_user_topics begin ...')
+        conn, cursor = get_postgredb_query()
+        cursor.execute(user_topic_prop.format(get_newest_topic_v()))
+        rows = cursor.fetchall()
+        user_ids = []
+        topic_ids = []
+        props = []
+        log_cf.info('query user topic finished. {} item found.'.format(len(rows)))
+        for r in rows:
+            user_ids.append(r[0])
+            topic_ids.append(r[1])
+            props.append(r[2])
 
-    df = pd.DataFrame({'uid': user_ids, 'topic': topic_ids, 'property': props}, columns=('uid', 'topic', 'property'))
-    time_str = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-    topic_file = os.path.join(real_dir_path, 'user_topic_data', time_str + '.txt')
-    df.to_csv(topic_file, index=False)
-    conn.close()
-    #calcute similarity and save to file
-    W = get_user_topic_similarity(user_ids, topic_ids, props)
-    user_user_file = os.path.join(real_dir_path, 'user_topic_similarity', time_str + '.txt')
-    master_user = []
-    slave_user = []
-    similarity = []
-    for item in W:
-        #master_user.append(item[0])
-        for i2 in item[1].items():
-            master_user.append(item[0])
-            slave_user.append(i2[0])
-            similarity.append(i2[1])
-    df2 = pd.DataFrame({'uid1':master_user, 'uid2':slave_user, 'similarity':similarity}, columns=('uid1', 'uid2', 'similarity'))
-    df2.to_csv(user_user_file, index=False)
+        df = pd.DataFrame({'uid': user_ids, 'topic': topic_ids, 'property': props}, columns=('uid', 'topic', 'property'))
+        time_str = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+        topic_file = os.path.join(real_dir_path, 'user_topic_data', time_str + '.txt')
+        df.to_csv(topic_file, index=False)
+        log_cf.info('uid-topic-property are save to {}'.format(topic_file))
+        conn.close()
+        #calcute similarity and save to file
+        W = get_user_topic_similarity(user_ids, topic_ids, props)
+        user_user_file = os.path.join(real_dir_path, 'user_topic_similarity', time_str + '.txt')
+        master_user = []
+        slave_user = []
+        similarity = []
+        for item in W:
+            #master_user.append(item[0])
+            for i2 in item[1].items():
+                master_user.append(item[0])
+                slave_user.append(i2[0])
+                similarity.append(i2[1])
+        df2 = pd.DataFrame({'uid1':master_user, 'uid2':slave_user, 'similarity':similarity}, columns=('uid1', 'uid2', 'similarity'))
+        df2.to_csv(user_user_file, index=False)
+        log_cf.info('uid1-uid2-similarity are save to {}'.format(user_user_file))
+    except:
+        log_cf.exception(traceback.format_exc())
 
 
 
