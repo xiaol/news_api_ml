@@ -179,6 +179,10 @@ def get_user_topic_similarity(users, topics, props):
     W = dict()
     for u, related_users in C.items():
         for v, cuv in related_users.items():
+            if user_invert_dict[u] not in W:
+                W[user_invert_dict[u]] = dict()
+            if user_invert_dict[v] not in W[user_invert_dict[u]]:
+                W[user_invert_dict[u]][user_invert_dict[v]] = 0
             W[user_invert_dict[u]][user_invert_dict[v]] = cuv / math.sqrt(N[u] * N[v])
 
     return W
