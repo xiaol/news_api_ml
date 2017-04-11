@@ -163,6 +163,8 @@ def get_user_topic_similarity(users, topics, props):
     N = dict()  #记录每个用户兴趣总值, 所有probability相加
     for i, i_users_prop in topic_user_dict.items():
         for u_prop in i_users_prop.items():  #字典
+            if u_prop[0] not in N:
+                N[u_prop[0]] = 0
             N[u_prop[0]] += u_prop[1]
             for v_prop in i_users_prop.items():
                 if u_prop[0] == v_prop[0]:
