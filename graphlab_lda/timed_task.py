@@ -9,6 +9,7 @@ from util.doc_process import get_postgredb
 from redis_lda import produce_user_click
 from topic_model_doc_process import channel_for_topic
 from graphlab_kmeans.kmeans import chnl_k_dict
+from data_process import channel_for_topic_dict
 
 #定义取用户点击的循环周期
 period = 30
@@ -22,7 +23,7 @@ where cname in ({0}) and c.ctime > now() - INTERVAL '{1} second' "
 #select c2.uid, c2.nid from newsrecommendclick c2 \
 #where c2.ctime < now() - interval ' second' and c2.ctime > now() - INTERVAL '1 day') "
 
-channels = ', '.join("\'" + ch+"\'" for ch in chnl_k_dict.keys())
+channels = ', '.join("\'" + ch+"\'" for ch in channel_for_topic_dict.keys())
 def get_clicks_5m():
     conn, cursor = get_postgredb()
     cursor.execute(click_sql.format(channels, period))
