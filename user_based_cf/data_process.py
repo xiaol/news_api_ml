@@ -112,7 +112,7 @@ def cal_neignbours(user_ids, topic_ids, props, time):
             print cursor.mogrify(insert_similarity_sql.format(master, json.dumps(topK_list), time))
             cursor.execute(insert_similarity_sql.format(master, json.dumps(topK_list), time))
         #'''
-        user_user_file = os.path.join(real_dir_path, 'data', 'user_topic_similarity_'+time.strftime('%Y-%m-%d-%H-%M-%S') + '.txt')
+        user_user_file = os.path.join(real_dir_path, 'data', 'user_topic_similarity_'+time + '.txt')
         master_user = []
         slave_user = []
         similarity = []
