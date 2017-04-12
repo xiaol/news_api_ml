@@ -108,6 +108,7 @@ def cal_neignbours(user_ids, topic_ids, props, time_str):
             sims_list = sorted(sims_dict.items(), key= lambda d:d[1], reverse=True)
             topK_list = sims_list[:50]
             user_neighbour_dict[master] = topK_list
+            print cursor.mogrify(insert_similarity_sql.format(master, json.dumps(topK_list), time_str))
             cursor.execute(insert_similarity_sql.format(master, json.dumps(topK_list), time_str))
         #'''
         user_user_file = os.path.join(real_dir_path, 'data', 'user_topic_similarity_'+time_str + '.txt')
