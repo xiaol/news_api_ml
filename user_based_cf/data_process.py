@@ -12,6 +12,7 @@ import pandas as pd
 from util.doc_process import get_postgredb_query
 import datetime
 import math
+import json
 
 
 real_dir_path = os.path.split(os.path.realpath(__file__))[0] #文件所在路径
@@ -62,7 +63,8 @@ def coll_click():
         conn.close()
 
 
-user_topic_prop = "select uid, topic_id, probability from user_topics_v2 where model_v = '{}'"
+#uid=0是旧版app,没有确切的uid。所有旧版app的使用者的id都是0
+user_topic_prop = "select uid, topic_id, probability from user_topics_v2 where model_v = '{}' and uid != 0 and create_time > now - interval '30 day' "
 def coll_user_topics():
     try:
         log_cf.info('coll_user_topics begin ...')
@@ -84,8 +86,16 @@ def coll_user_topics():
         df.to_csv(topic_file, index=False)
         log_cf.info('uid-topic-property are save to {}'.format(topic_file))
         conn.close()
-        #calcute similarity and save to file
+        #calcute similarity and save
         W = get_user_topic_similarity(user_ids, topic_ids, props)
+        insert_similarity_sql = "insert into user_similarity_cf (uid, similar, ctime) VALUES ({}, '{}', '{}')"
+        for it in W:  #save every user's
+            master = it[0]
+            sims_dict = it[1]
+            sims_list = sorted(sims_dict.items(), key= lambda d:d[1], reverse=True)
+            topK_list = sims_list[:50]
+            cursor.execute(insert_similarity_sql.format(master, json.dumps(topK_list), time_str))
+        '''
         user_user_file = os.path.join(real_dir_path, 'data', 'user_topic_similarity_'+time_str + '.txt')
         master_user = []
         slave_user = []
@@ -99,6 +109,7 @@ def coll_user_topics():
         df2 = pd.DataFrame({'uid1':master_user, 'uid2':slave_user, 'similarity':similarity}, columns=('uid1', 'uid2', 'similarity'))
         df2.to_csv(user_user_file, index=False)
         log_cf.info('uid1-uid2-similarity are save to {}'.format(user_user_file))
+        '''
         print 'finished!!'
     except:
         traceback.print_exc()
