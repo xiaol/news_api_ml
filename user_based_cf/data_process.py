@@ -101,7 +101,7 @@ def cal_neignbours(user_ids, topic_ids, props, time):
         conn, cursor = get_postgredb_query()
         W = get_user_topic_similarity(user_ids, topic_ids, props)
         user_neighbour_dict = dict()
-        insert_similarity_sql = "insert into user_similarity_cf (uid, similar, ctime) VALUES ({}, '{}', '{}')"
+        insert_similarity_sql = "insert into user_similarity_cf (uid, similarity, ctime) VALUES ({}, '{}', '{}')"
         for it in W.items():  #save every user's
             master = it[0]
             sims_dict = it[1]
