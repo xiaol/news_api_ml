@@ -3,6 +3,8 @@
 # @Author  : liulei
 # @Brief   : 协同过滤数据处理; user-based cf算法。 首先收集用户点击行为; 用户相似度矩阵每隔一两天就需要更新
 #             item使用LDA形成的topic_id代替news_id,降维
+#             新表: user_topic_cf  ----- 最终的结果, 用户的邻居推荐的topic
+#                   user_similarity_cf ------- 用户相似性的表
 # @File    : data_process.py
 # @Software: PyCharm Community Edition
 import os
@@ -65,7 +67,7 @@ def coll_click():
 
 
 #uid=0是旧版app,没有确切的uid。所有旧版app的使用者的id都是0
-user_topic_prop_sql = "select uid, topic_id, probability from user_topics_v2 where model_v = '{}' and uid != 0 and create_time > now() - interval '30 day' limit 100"
+user_topic_prop_sql = "select uid, topic_id, probability from user_topics_v2 where model_v = '{}' and uid != 0 and create_time > now() - interval '20 day'"
 def coll_user_topics(model_v, time_str):
     try:
         log_cf.info('coll_user_topics begin ...')
@@ -267,8 +269,6 @@ def get_user_topic_cf():
     user_neighbours = cal_neignbours(user_ids, topic_ids, props, time_str)
     #计算neighbour推荐的topic
     get_potential_topic(user_topic_prop_dict, user_neighbours, model_v)
-
-
 
 
 if __name__ == '__main__':
