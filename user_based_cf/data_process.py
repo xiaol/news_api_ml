@@ -64,38 +64,52 @@ def coll_click():
 
 
 #uid=0是旧版app,没有确切的uid。所有旧版app的使用者的id都是0
-user_topic_prop = "select uid, topic_id, probability from user_topics_v2 where model_v = '{}' and uid != 0 and create_time > now() - interval '30 day' "
-def coll_user_topics():
+user_topic_prop_sql = "select uid, topic_id, probability from user_topics_v2 where model_v = '{}' and uid != 0 and create_time > now() - interval '30 day' limit 100"
+def coll_user_topics(model_v, time_str):
     try:
         log_cf.info('coll_user_topics begin ...')
         conn, cursor = get_postgredb_query()
-        cursor.execute(user_topic_prop.format(get_newest_topic_v()))
+        cursor.execute(user_topic_prop_sql.format(model_v))
         rows = cursor.fetchall()
         user_ids = []
         topic_ids = []
         props = []
         log_cf.info('query user topic finished. {} item found.'.format(len(rows)))
+        user_topic_prop_dict = {}
         for r in rows:
             user_ids.append(r[0])
             topic_ids.append(r[1])
             props.append(r[2])
+            if r[0] not in user_topic_prop_dict:
+                user_topic_prop_dict[r[0]] = dict()
+            user_topic_prop_dict[r[0]][r[1]] = r[2]
 
         df = pd.DataFrame({'uid': user_ids, 'topic': topic_ids, 'property': props}, columns=('uid', 'topic', 'property'))
-        time_str = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+        #time_str = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
         topic_file = os.path.join(real_dir_path, 'data', 'user_topic_data_'+time_str + '.txt')
         df.to_csv(topic_file, index=False)
         log_cf.info('uid-topic-property are save to {}'.format(topic_file))
-        conn.close()
+        return user_topic_prop_dict, user_ids, topic_ids, props
+    except:
+        traceback.print_exc()
+        log_cf.exception(traceback.format_exc())
+
+
+def cal_neignbours(user_ids, topic_ids, props, time_str):
+    try:
         #calcute similarity and save
+        conn, cursor = get_postgredb_query()
         W = get_user_topic_similarity(user_ids, topic_ids, props)
+        user_neighbour_dict = dict()
         insert_similarity_sql = "insert into user_similarity_cf (uid, similar, ctime) VALUES ({}, '{}', '{}')"
         for it in W.items():  #save every user's
             master = it[0]
             sims_dict = it[1]
             sims_list = sorted(sims_dict.items(), key= lambda d:d[1], reverse=True)
             topK_list = sims_list[:50]
+            user_neighbour_dict[master] = topK_list
             cursor.execute(insert_similarity_sql.format(master, json.dumps(topK_list), time_str))
-        '''
+        #'''
         user_user_file = os.path.join(real_dir_path, 'data', 'user_topic_similarity_'+time_str + '.txt')
         master_user = []
         slave_user = []
@@ -109,8 +123,11 @@ def coll_user_topics():
         df2 = pd.DataFrame({'uid1':master_user, 'uid2':slave_user, 'similarity':similarity}, columns=('uid1', 'uid2', 'similarity'))
         df2.to_csv(user_user_file, index=False)
         log_cf.info('uid1-uid2-similarity are save to {}'.format(user_user_file))
-        '''
+        #'''
+        conn.commit()
+        conn.close()
         print 'finished!!'
+        return user_neighbour_dict
     except:
         traceback.print_exc()
         log_cf.exception(traceback.format_exc())
@@ -202,6 +219,53 @@ def get_user_topic_similarity(users, topics, props):
             W[user_invert_dict[u]][user_invert_dict[v]] = cuv / math.sqrt(N[u] * N[v])
 
     return W
+
+
+#计算由cf推荐的topic, 这些topic是用户没有点击过的
+#相似度作为与邻居的权重; 推荐概率为sum(权重 * topic概率)/邻居数
+#@input: user_topic_prop_dict ----{u1: {t1:0.1, t2:0.3, t4:0.1.. }, ...}
+#        user_neighbours ----{u1:[(u2, 0.2), (u4, 0.05), ...], ...}
+def get_potential_topic(user_topic_prop_dict, user_neighbours, model_v):
+    potential_utp_dict = dict() #存储每个邻居推荐的topic及对应的概率
+    for it in user_neighbours.items():
+        u = it[0]
+        potential_utp_dict[u] = dict()
+        for nei_sim in it[1]: #每个邻居
+            nei = nei_sim[0]
+            sim = nei_sim[1]
+            nei_topics_prop = user_topic_prop_dict[nei]  #邻居的所有topic
+            for tp in nei_topics_prop.items():  #
+                if tp[0] not in user_topic_prop_dict[u]: #原用户并没有行为的topic
+                    if tp[0] not in potential_utp_dict[u]:
+                        potential_utp_dict[u][tp[0]] = sim * tp[1]
+                    else:
+                        potential_utp_dict[u][tp[0]] += sim * tp[1]
+
+    user_potential_topic_sql = "insert into user_topic_cf (uid, model_v, topic_id, property) VALUES ({}, '{}', {}, {})"
+    conn, cursor = get_postgredb_query()
+    for item in potential_utp_dict.items():
+        u = item[0]
+        for it in item[1].items():
+            cursor.execute(user_potential_topic_sql.format(u, model_v, it[0], it[1]))
+    conn.commit()
+    conn.close()
+
+
+
+################################################################################
+#整体流程
+################################################################################
+def get_user_topic_cf():
+    time_str = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+    model_v = get_newest_topic_v()
+    #读取user-topic-property
+    user_topic_prop_dict, user_ids, topic_ids, props = coll_user_topics(model_v, time_str)
+    #计算neighbour
+    user_neighbours = cal_neignbours(user_ids, topic_ids, props, time_str)
+    #计算neighbour推荐的topic
+    get_potential_topic(user_topic_prop_dict, user_neighbours, model_v)
+
+
 
 
 if __name__ == '__main__':
