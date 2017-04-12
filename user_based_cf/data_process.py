@@ -89,7 +89,7 @@ def coll_user_topics():
         #calcute similarity and save
         W = get_user_topic_similarity(user_ids, topic_ids, props)
         insert_similarity_sql = "insert into user_similarity_cf (uid, similar, ctime) VALUES ({}, '{}', '{}')"
-        for it in W:  #save every user's
+        for it in W.items():  #save every user's
             master = it[0]
             sims_dict = it[1]
             sims_list = sorted(sims_dict.items(), key= lambda d:d[1], reverse=True)
