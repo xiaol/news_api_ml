@@ -95,7 +95,7 @@ def coll_user_topics(model_v, time_str):
         log_cf.exception(traceback.format_exc())
 
 
-def cal_neignbours(user_ids, topic_ids, props, time_str):
+def cal_neignbours(user_ids, topic_ids, props, time):
     try:
         #calcute similarity and save
         conn, cursor = get_postgredb_query()
@@ -108,10 +108,10 @@ def cal_neignbours(user_ids, topic_ids, props, time_str):
             sims_list = sorted(sims_dict.items(), key= lambda d:d[1], reverse=True)
             topK_list = sims_list[:50]
             user_neighbour_dict[master] = topK_list
-            print cursor.mogrify(insert_similarity_sql.format(master, json.dumps(topK_list), time_str))
-            cursor.execute(insert_similarity_sql.format(master, json.dumps(topK_list), time_str))
+            print cursor.mogrify(insert_similarity_sql.format(master, json.dumps(topK_list), time))
+            cursor.execute(insert_similarity_sql.format(master, json.dumps(topK_list), time))
         #'''
-        user_user_file = os.path.join(real_dir_path, 'data', 'user_topic_similarity_'+time_str + '.txt')
+        user_user_file = os.path.join(real_dir_path, 'data', 'user_topic_similarity_'+time.strftime('%Y-%m-%d-%H-%M-%S') + '.txt')
         master_user = []
         slave_user = []
         similarity = []
@@ -257,7 +257,8 @@ def get_potential_topic(user_topic_prop_dict, user_neighbours, model_v):
 #整体流程
 ################################################################################
 def get_user_topic_cf():
-    time_str = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+    time = datetime.datetime.now()
+    time_str = time.strftime('%Y-%m-%d-%H-%M-%S')
     model_v = get_newest_topic_v()
     #读取user-topic-property
     user_topic_prop_dict, user_ids, topic_ids, props = coll_user_topics(model_v, time_str)
