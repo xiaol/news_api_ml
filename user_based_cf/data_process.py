@@ -10,6 +10,7 @@ import traceback
 from util import logger
 import pandas as pd
 from util.doc_process import get_postgredb_query
+from util.doc_process import get_postgredb
 import datetime
 import math
 import json
@@ -98,7 +99,7 @@ def coll_user_topics(model_v, time_str):
 def cal_neignbours(user_ids, topic_ids, props, time):
     try:
         #calcute similarity and save
-        conn, cursor = get_postgredb_query()
+        conn, cursor = get_postgredb()
         W = get_user_topic_similarity(user_ids, topic_ids, props)
         user_neighbour_dict = dict()
         insert_similarity_sql = "insert into user_similarity_cf (uid, similarity, ctime) VALUES ({}, '{}', '{}')"
@@ -243,7 +244,7 @@ def get_potential_topic(user_topic_prop_dict, user_neighbours, model_v):
                         potential_utp_dict[u][tp[0]] += sim * tp[1]
 
     user_potential_topic_sql = "insert into user_topic_cf (uid, model_v, topic_id, property) VALUES ({}, '{}', {}, {})"
-    conn, cursor = get_postgredb_query()
+    conn, cursor = get_postgredb()
     for item in potential_utp_dict.items():
         u = item[0]
         for it in item[1].items():
