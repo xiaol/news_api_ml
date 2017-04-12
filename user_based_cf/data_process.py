@@ -269,6 +269,7 @@ def get_user_topic_cf():
     user_neighbours = cal_neignbours(user_ids, topic_ids, props, time_str)
     #计算neighbour推荐的topic
     get_potential_topic(user_topic_prop_dict, user_neighbours, model_v)
+    print '~~~~~~~~~~~~~~~ all finished~~~~~~~~~~~~~~~~~~~~~'
 
 
 if __name__ == '__main__':
