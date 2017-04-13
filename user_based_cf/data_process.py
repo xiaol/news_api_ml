@@ -221,7 +221,8 @@ def get_user_topic_similarity(users, topics, props):
             if user_invert_dict[v] not in W[user_invert_dict[u]]:
                 W[user_invert_dict[u]][user_invert_dict[v]] = 0
             #print 'cuv = {} and sqrt = {},  {}'.format(cuv, N[u], N[v])
-            W[user_invert_dict[u]][user_invert_dict[v]] = cuv / math.sqrt(N[u] * N[v])
+            if cuv / math.sqrt(N[u] * N[v]) != 1:
+                W[user_invert_dict[u]][user_invert_dict[v]] = cuv / math.sqrt(N[u] * N[v])
 
     log_cf.info('finished get_user_topic_similarity...')
     return W
