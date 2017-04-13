@@ -176,6 +176,7 @@ def get_user_click_similarity(users, nids, times):
 
 #获取topic-user倒排表, 格式  {topic1:[uid1, uid2...], topic2:...}
 def get_user_topic_similarity(users, topics, props):
+    log_cf.info('begin to get_user_topic_similarity...')
     user_set = set(users)
     #记录用户id的索引id
     user_dict = {}
@@ -222,6 +223,7 @@ def get_user_topic_similarity(users, topics, props):
             #print 'cuv = {} and sqrt = {},  {}'.format(cuv, N[u], N[v])
             W[user_invert_dict[u]][user_invert_dict[v]] = cuv / math.sqrt(N[u] * N[v])
 
+    log_cf.info('finished get_user_topic_similarity...')
     return W
 
 
@@ -230,6 +232,7 @@ def get_user_topic_similarity(users, topics, props):
 #@input: user_topic_prop_dict ----{u1: {t1:0.1, t2:0.3, t4:0.1.. }, ...}
 #        user_neighbours ----{u1:[(u2, 0.2), (u4, 0.05), ...], ...}
 def get_potential_topic(user_topic_prop_dict, user_neighbours, model_v):
+    log_cf.info('begin to get_potential_topic...')
     potential_utp_dict = dict() #存储每个邻居推荐的topic及对应的概率
     for it in user_neighbours.items():
         u = it[0]
@@ -253,6 +256,7 @@ def get_potential_topic(user_topic_prop_dict, user_neighbours, model_v):
             cursor.execute(user_potential_topic_sql.format(u, model_v, it[0], it[1]))
     conn.commit()
     conn.close()
+    log_cf.info('finished get_potential_topic...')
 
 
 
