@@ -38,7 +38,7 @@ def get_newest_topic_v():
 
 
 click_file = ''
-click_query_sql = "select uid, nid, ctime from newsrecommendclick where ctime > now() - interval '%s day'"
+click_query_sql = "select uid, nid, ctime from newsrecommendclick where ctime > now() - interval '%s day' limit 100"
 #收集用户一段时间内的的点击行为
 def coll_click():
     global click_file
@@ -221,8 +221,9 @@ def get_user_topic_similarity(users, topics, props):
             if user_invert_dict[v] not in W[user_invert_dict[u]]:
                 W[user_invert_dict[u]][user_invert_dict[v]] = 0
             #print 'cuv = {} and sqrt = {},  {}'.format(cuv, N[u], N[v])
-            if cuv / math.sqrt(N[u] * N[v]) != 1:
-                W[user_invert_dict[u]][user_invert_dict[v]] = cuv / math.sqrt(N[u] * N[v])
+            #sim = cuv / math.sqrt(N[u] * N[v])
+            #if sim != 1 and sim > 0.05:
+            W[user_invert_dict[u]][user_invert_dict[v]] = cuv / math.sqrt(N[u] * N[v])
 
     log_cf.info('finished get_user_topic_similarity...')
     return W
@@ -232,7 +233,7 @@ def get_user_topic_similarity(users, topics, props):
 #相似度作为与邻居的权重; 推荐概率为sum(权重 * topic概率)/邻居数
 #@input: user_topic_prop_dict ----{u1: {t1:0.1, t2:0.3, t4:0.1.. }, ...}
 #        user_neighbours ----{u1:[(u2, 0.2), (u4, 0.05), ...], ...}
-def get_potential_topic(user_topic_prop_dict, user_neighbours, model_v):
+def get_potential_topic(user_topic_prop_dict, user_neighbours, model_v, time_str):
     log_cf.info('begin to get_potential_topic...')
     potential_utp_dict = dict() #存储每个邻居推荐的topic及对应的概率
     for it in user_neighbours.items():
@@ -241,6 +242,8 @@ def get_potential_topic(user_topic_prop_dict, user_neighbours, model_v):
         for nei_sim in it[1]: #每个邻居
             nei = nei_sim[0]
             sim = nei_sim[1]
+            if sim == 1.0:  #完全相同的用户不需做其他比较
+                continue
             nei_topics_prop = user_topic_prop_dict[nei]  #邻居的所有topic
             for tp in nei_topics_prop.items():  #
                 if tp[0] not in user_topic_prop_dict[u]: #原用户并没有行为的topic
@@ -249,12 +252,12 @@ def get_potential_topic(user_topic_prop_dict, user_neighbours, model_v):
                     else:
                         potential_utp_dict[u][tp[0]] += sim * tp[1]
 
-    user_potential_topic_sql = "insert into user_topic_cf (uid, model_v, topic_id, property) VALUES ({}, '{}', {}, {})"
+    user_potential_topic_sql = "insert into user_topic_cf (uid, model_v, topic_id, property, ctime) VALUES ({}, '{}', {}, {}, '{}')"
     conn, cursor = get_postgredb()
     for item in potential_utp_dict.items():
         u = item[0]
         for it in item[1].items():
-            cursor.execute(user_potential_topic_sql.format(u, model_v, it[0], it[1]))
+            cursor.execute(user_potential_topic_sql.format(u, model_v, it[0], it[1], time_str))
     conn.commit()
     conn.close()
     log_cf.info('finished get_potential_topic...')
@@ -273,7 +276,7 @@ def get_user_topic_cf():
     #计算neighbour
     user_neighbours = cal_neignbours(user_ids, topic_ids, props, time_str)
     #计算neighbour推荐的topic
-    get_potential_topic(user_topic_prop_dict, user_neighbours, model_v)
+    get_potential_topic(user_topic_prop_dict, user_neighbours, model_v, time_str)
     print '~~~~~~~~~~~~~~~ all finished~~~~~~~~~~~~~~~~~~~~~'
 
 
