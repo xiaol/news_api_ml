@@ -233,7 +233,7 @@ def get_user_topic_similarity(users, topics, props):
 #相似度作为与邻居的权重; 推荐概率为sum(权重 * topic概率)/邻居数
 #@input: user_topic_prop_dict ----{u1: {t1:0.1, t2:0.3, t4:0.1.. }, ...}
 #        user_neighbours ----{u1:[(u2, 0.2), (u4, 0.05), ...], ...}
-def get_potential_topic(user_topic_prop_dict, user_neighbours, model_v, time_str):
+def get_potential_topic(user_topic_prop_dict, user_neighbours, model_v, time):
     log_cf.info('begin to get_potential_topic...')
     potential_utp_dict = dict() #存储每个邻居推荐的topic及对应的概率
     for it in user_neighbours.items():
@@ -257,7 +257,7 @@ def get_potential_topic(user_topic_prop_dict, user_neighbours, model_v, time_str
     for item in potential_utp_dict.items():
         u = item[0]
         for it in item[1].items():
-            cursor.execute(user_potential_topic_sql.format(u, model_v, it[0], it[1], time_str))
+            cursor.execute(user_potential_topic_sql.format(u, model_v, it[0], it[1], time))
     conn.commit()
     conn.close()
     log_cf.info('finished get_potential_topic...')
@@ -276,7 +276,7 @@ def get_user_topic_cf():
     #计算neighbour
     user_neighbours = cal_neignbours(user_ids, topic_ids, props, time_str)
     #计算neighbour推荐的topic
-    get_potential_topic(user_topic_prop_dict, user_neighbours, model_v, time_str)
+    get_potential_topic(user_topic_prop_dict, user_neighbours, model_v, time)
     print '~~~~~~~~~~~~~~~ all finished~~~~~~~~~~~~~~~~~~~~~'
 
 
