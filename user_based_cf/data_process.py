@@ -257,7 +257,8 @@ def get_potential_topic(user_topic_prop_dict, user_neighbours, model_v, time):
     for item in potential_utp_dict.items():
         u = item[0]
         for it in item[1].items():
-            cursor.execute(user_potential_topic_sql.format(u, model_v, it[0], it[1], time))
+            if it[1] > 0.05:
+                cursor.execute(user_potential_topic_sql.format(u, model_v, it[0], it[1], time))
     conn.commit()
     conn.close()
     log_cf.info('finished get_potential_topic...')
