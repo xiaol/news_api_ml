@@ -38,7 +38,7 @@ def get_newest_topic_v():
 
 
 click_file = ''
-click_query_sql = "select uid, nid, ctime from newsrecommendclick where ctime > now() - interval '%s day' limit 100"
+click_query_sql = "select uid, nid, ctime from newsrecommendclick where ctime > now() - interval '%s day'"
 #收集用户一段时间内的的点击行为
 def coll_click():
     global click_file
@@ -67,7 +67,7 @@ def coll_click():
 
 
 #uid=0是旧版app,没有确切的uid。所有旧版app的使用者的id都是0
-user_topic_prop_sql = "select uid, topic_id, probability from user_topics_v2 where model_v = '{}' and uid != 0 and create_time > now() - interval '20 day'"
+user_topic_prop_sql = "select uid, topic_id, probability from user_topics_v2 where model_v = '{}' and uid != 0 and create_time > now() - interval '20 day' limit 100"
 def coll_user_topics(model_v, time_str):
     try:
         log_cf.info('coll_user_topics begin ...')
