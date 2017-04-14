@@ -357,7 +357,7 @@ cal_sql2 ="SELECT a.nid \
 FROM newslist_v2 a \
 RIGHT OUTER JOIN (select * from channellist_v2 where cname not in %s) c \
 ON \
-a.'chid' =c.'id' where (a.ctime > now() - interval '2 day') and a.state=0 LIMIT %s offset %s"
+a.chid =c.id where (a.ctime > now() - interval '2 day') and a.state=0 LIMIT %s offset %s"
 ignore_cname = ("美女", "帅哥", "搞笑", "趣图", "视频")
 
 def coll_sentence_hash():
