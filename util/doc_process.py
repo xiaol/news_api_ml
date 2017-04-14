@@ -245,8 +245,8 @@ def get_words_on_nid(nid):
         txt = ''
         for content in content_list:
             if 'txt' in content.keys():
-                txt += content['txt'].encode('utf-8')
-        total_txt = title + txt
+                txt += content['txt']
+        total_txt = title + txt.encode('utf-8')
         word_list = filter_html_stopwords_pos(total_txt, remove_num=True, remove_single_word=True)
     return word_list
 

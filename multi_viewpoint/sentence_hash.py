@@ -41,6 +41,9 @@ insert_sentence_hash = "insert into news_sentence_hash (nid, sentence, sentence_
 query_sen_sql = "select ns.nid, ns.hash_val from news_sentence_hash ns inner join newslist_v2 nl on ns.nid=nl.nid where (first_16=%s or second_16=%s or third_16=%s or fourth_16=%s) and" \
                 " (first2_16=%s or second2_16=%s or third2_16=%s or fourth2_16=%s) and " \
                 "nl.state=0 group by ns.nid, ns.hash_val "
+query_sen_sql_interval = "select ns.nid, ns.hash_val from news_sentence_hash ns inner join newslist_v2 nl on ns.nid=nl.nid where (first_16=%s or second_16=%s or third_16=%s or fourth_16=%s) and" \
+                " (first2_16=%s or second2_16=%s or third2_16=%s or fourth2_16=%s) and " \
+                "(nl.ctime > now() - interval '%s day') and nl.state=0 group by ns.nid, ns.hash_val "
 #insert_same_sentence = "insert into news_same_sentence_map (nid1, nid2, sentence1, sentence2, ctime) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')"
 insert_same_sentence = "insert into news_same_sentence_map (nid1, nid2, sentence1, sentence2, ctime) VALUES (%s, %s, %s, %s, %s)"
 s_nid_sql = "select distinct nid from news_sentence_hash "
@@ -161,7 +164,7 @@ multo_vp_insert_sql = "insert into news_multi_vp (nid1, sentence1, nid2, sentenc
 ################################################################################
 #@brief: 计算子进程
 ################################################################################
-def cal_process(nid_set, log=None, same_t=3):
+def cal_process(nid_set, log=None, same_t=3, news_interval=999999):
     log = logger_9965
     log.info('there are {} news to calulate'.format(len(nid_set)))
     nid_sents_dict, nid_para_links_dict, nid_pname_dict = get_nids_sentences(nid_set)
@@ -199,7 +202,7 @@ def cal_process(nid_set, log=None, same_t=3):
                         #  删除广告句子
                         log.info('find ads of {0}  : {1} '.format(nid, str_no_html.encode("utf-8")))
                         continue
-                    cursor_query.execute(query_sen_sql, (str(fir), str(sec), str(thi), str(fou), str(fir2), str(sec2), str(thi2), str(fou2)))
+                    cursor_query.execute(query_sen_sql_interval, (str(fir), str(sec), str(thi), str(fou), str(fir2), str(sec2), str(thi2), str(fou2), news_interval))
                     #print cursor.mogrify(query_sen_sql, (str(fir), str(sec), str(thi), str(fou), str(fir2), str(sec2), str(thi2), str(fou2)))
                     rows = cursor_query.fetchall()  #所有可能相同的段落
                     if len(rows) == 0:
@@ -354,8 +357,8 @@ cal_sql2 ='SELECT a.nid \
 FROM newslist_v2 a \
 RIGHT OUTER JOIN (select * from channellist_v2 where "cname" not in %s) c \
 ON \
-a."chid" =c."id" where a.state=0 LIMIT %s offset %s'
-ignore_cname = ("美女", "帅哥", "搞笑", "趣图")
+a."chid" =c."id" where a.ctime > now() - interval "2 day" and a.state=0 LIMIT %s offset %s'
+ignore_cname = ("美女", "帅哥", "搞笑", "趣图", "视频")
 
 def coll_sentence_hash():
     logger_9965.info("Begin to collect sentence...")
@@ -377,7 +380,7 @@ def coll_sentence_hash():
         need_to_cal_set = all_set - exist_set
         if len(need_to_cal_set) == 0:
             continue
-        pool.apply_async(cal_process, args=(need_to_cal_set, None, 3))
+        pool.apply_async(cal_process, args=(need_to_cal_set, None, 3, 2)) #相同的阈值为3; 取2天内的新闻
 
     pool.close()
     pool.join()
