@@ -118,7 +118,12 @@ def consume_nid_sentence_simhash(num=1):
     nid_list = []
     t0 = datetime.datetime.now()
     while True:
+        if not redis_inst.brpop(sentence_simhash_queue):
+            print 'non sentence_hash'
+            break
         nid = redis_inst.brpop(sentence_simhash_queue)[1]
+        print 'sentence_simhash queue'
+        continue
         nid_list.append(nid)
         n += 1
         t1 = datetime.datetime.now()
