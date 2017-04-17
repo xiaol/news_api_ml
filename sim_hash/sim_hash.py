@@ -159,7 +159,7 @@ def cal_and_check_news_hash(nid_list):
             t = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             fir, sec, thi, fou, fir2, sec2, thi2, fou2 = get_4_segments(h.__long__())
             cursor.execute(insert_news_simhash_sql.format(nid, h.__str__(), t, fir, sec, thi, fou, fir2, sec2, thi2, fou2))
-        conn.commit()
+            conn.commit()
         cursor.close()
         conn.close()
         t1 = datetime.datetime.now()
@@ -174,6 +174,7 @@ def is_news_same(nid1, nid2, same_t=3):
         w2 = doc_process.get_words_on_nid(nid2)
         h1 = simhash(w1)
         h2 = simhash(w2)
+        #print h1.hamming_distance(h2)
         if h1.hamming_distance(h2) > same_t:
             return False
         return True
@@ -189,6 +190,7 @@ if __name__ == '__main__':
     print is_news_same(3211559, 3212267, 4)
     print is_news_same(3248729, 3247245, 4)
     print is_news_same(12119757, 12119757, 4)
+    print is_news_same(15134277, 15135383, 4)
     #cal_and_check_news_hash(nid_list)
     #w1 = doc_process.get_words_on_nid(11580728)
     #w2 = doc_process.get_words_on_nid(11603489)
