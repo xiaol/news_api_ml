@@ -198,6 +198,8 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=999999):
                         continue
                     h = simhash.simhash(wl)
                     fir, sec, thi, fou, fir2, sec2, thi2, fou2 = simhash.get_4_segments(h.__long__())
+                    #将所有句子入库
+                    cursor.execute(insert_sentence_hash, (nid, str_no_html, n, h.__str__(), fir, sec, thi, fou, t, fir2, sec2, thi2, fou2))
                     if is_sentence_ads(h, fir, sec, thi, fou, fir2, sec2, thi2, fou2, nid_pname_dict[nid]):  #在广告db内
                         #  删除广告句子
                         log.info('find ads of {0}  : {1} '.format(nid, str_no_html.encode("utf-8")))
@@ -326,8 +328,8 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=999999):
                                 log.info('get multi viewpoint :{}'.format(str_no_html.encode('utf-8')))
 
                     #将所有段落入库
-                    cursor.execute(insert_sentence_hash, (nid, str_no_html, n, h.__str__(), fir, sec, thi, fou, t, fir2, sec2, thi2, fou2))
-                    conn.commit()
+                    #cursor.execute(insert_sentence_hash, (nid, str_no_html, n, h.__str__(), fir, sec, thi, fou, t, fir2, sec2, thi2, fou2))
+                conn.commit()
                 cursor.close()
                 conn.close()
                 cursor_query.close()
