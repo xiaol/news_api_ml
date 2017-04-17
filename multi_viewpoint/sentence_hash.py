@@ -208,6 +208,8 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=999999):
                     if len(rows) == 0:
                         logger_9965.info('len of potential same sentence is 0')
                         continue
+                    else:
+                        logger_9965.info('len of potential same sentence is {}'.format(len(rows)))
 
                     same_sentence_sql_para = []
                     nids_for_ads = set()
