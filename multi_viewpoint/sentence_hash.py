@@ -206,6 +206,7 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=999999):
                     #print cursor.mogrify(query_sen_sql, (str(fir), str(sec), str(thi), str(fou), str(fir2), str(sec2), str(thi2), str(fou2)))
                     rows = cursor_query.fetchall()  #所有可能相同的段落
                     if len(rows) == 0:
+                        logger_9965.info('len of potential same sentence is 0')
                         continue
 
                     same_sentence_sql_para = []
@@ -215,6 +216,7 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=999999):
                             #break
                         #距离过大或者是同一篇新闻
                         if h.hamming_distance_with_val(long(r[1])) > same_t or (nid in same_dict.keys() and r[0] in same_dict[nid]) or nid == r[0]:
+                            logger_9965.info('distance is too big or same news of {} and {}'.format(nid, r[0]))
                             continue
                         cursor_query.execute(same_sql2, (r[0], r[1]))
                         rs = cursor_query.fetchall()
@@ -222,6 +224,7 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=999999):
                             sen = r2[0].decode('utf-8')
                             sen_without_html = filter_tags(sen)
                             if len(sen) == 1 or len(sen_without_html) > len(str_no_html)*1.5 or len(str_no_html) > len(sen_without_html)*1.5:
+                                logger_9965.info('sentence len mismatch: {} ----{}'.format(str_no_html, sen_without_html))
                                 continue
                             wl1 = jieba.cut(str_no_html)
                             set1 = set(wl1)
@@ -380,7 +383,7 @@ def coll_sentence_hash():
         need_to_cal_set = all_set - exist_set
         if len(need_to_cal_set) == 0:
             continue
-        pool.apply_async(cal_process, args=(need_to_cal_set, None, 3, 2)) #相同的阈值为3; 取2天内的新闻
+        pool.apply_async(cal_process, args=(need_to_cal_set, None, 3, 0.1)) #相同的阈值为3; 取2天内的新闻
 
     pool.close()
     pool.join()
