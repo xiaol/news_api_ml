@@ -383,7 +383,7 @@ def coll_sentence_hash():
         need_to_cal_set = all_set - exist_set
         if len(need_to_cal_set) == 0:
             continue
-        pool.apply_async(cal_process, args=(need_to_cal_set, None, 3, 0.1)) #相同的阈值为3; 取2天内的新闻
+        pool.apply_async(cal_process, args=(need_to_cal_set, None, 3, 3)) #相同的阈值为3; 取2天内的新闻
 
     pool.close()
     pool.join()
