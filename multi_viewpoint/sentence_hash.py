@@ -245,8 +245,8 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=999999):
                             #cursor.execute(insert_same_sentence, (nid, r[0], str_no_html, sen, t))
                             #print cursor.mogrify(insert_same_sentence, (nid, r[0], str_no_html, sen_without_html, t))
                     if len(nids_for_ads) == 0:
-                        cursor.execute(insert_sentence_hash, (nid, str_no_html, n, h.__str__(), fir, sec, thi, fou, t, fir2, sec2, thi2, fou2))
-                        conn.commit()
+                        #cursor.execute(insert_sentence_hash, (nid, str_no_html, n, h.__str__(), fir, sec, thi, fou, t, fir2, sec2, thi2, fou2))
+                        #conn.commit()
                         continue
 
                     is_new_ads = False
