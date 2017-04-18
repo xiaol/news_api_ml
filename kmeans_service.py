@@ -14,7 +14,8 @@ from tornado import httpserver
 class CreateKmeansModel(tornado.web.RequestHandler):
     def get(self):
         from graphlab_kmeans import kmeans
-        kmeans.create_kmeans_models()
+        #kmeans.create_kmeans_models()
+        kmeans.create_new_kmeans_model()
 
 class PredictKmeans(tornado.web.RequestHandler):
     def get(self):

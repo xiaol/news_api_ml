@@ -38,6 +38,68 @@ chnl_k_dict = {'财经':20, '股票':10, '故事':20, '互联网':20, '健康':3
                '游戏':40, '育儿':20,
                '体育':20, '娱乐':10, '社会':10, '科技':12, '国际':5}
 
+chnl_k_dict = {'财经':20, '股票':10, '故事':20, '互联网':20, '健康':30, '军事':20,
+               '科学':20, '历史':30, '旅游':20, '美食':20, '美文':20, '萌宠':20,
+               '汽车':30, '时尚':30, '探索':10, '外媒':30, '养生':30, '影视':30,
+               '游戏':30, '育儿':20,'体育':20, '娱乐':10, '社会':10,'科技':12,
+               '国际':5, '美女': 1, '搞笑': 1, '趣图':1, '风水玄学':10, '本地':10,
+               '自媒体':20, '奇闻':20}
+
+
+chnl_newsnum_dict = {'财经':20000, '股票':10000, '故事':10000, '互联网':20000, '健康':20000, '军事':10000,
+                     '科学':10000, '历史':10000, '旅游':10000, '美食':10000, '美文':10000, '萌宠':20000,
+                     '汽车':20000, '时尚':20000, '探索':1500, '外媒':10000, '养生':20000, '影视':20000,
+                     '游戏':20000, '育儿':20000, '体育':20000, '娱乐':20000, '社会':30000, '科技':20000,
+                     '国际':20000,'美女': 100, '搞笑': 100, '趣图':100, '风水玄学':10000, '本地':20000,
+                     '自媒体':10000, '奇闻':10000}
+chnl_newsnum_dict = {'财经':20, '股票':10}
+
+#创建新版本模型子进程
+def create_kmeans_core(chname, docs, model_save_dir):
+    #logger.info('---begin to deal with {}'.format(chname))
+    print 'begin to create kmeans model for {}'.format(chname)
+    trim_sa = gl.text_analytics.trim_rare_words(docs, threshold=5, to_lower=False)
+    docs_trim = gl.text_analytics.count_words(trim_sa)
+    model = gl.kmeans.create(gl.SFrame(docs_trim),
+                             num_clusters=chnl_k_dict[chname],
+                             max_iterations=200)
+    g_channel_kmeans_model_dict[chname] = model
+    #save model to file
+    model.save(model_save_dir+'/'+chname)
+    print 'create kmeans model for {} finish'.format(chname)
+
+
+#创建新版本的模型
+def create_new_kmeans_model():
+    t0 = datetime.datetime.now()
+    global kmeans_model_save_dir, g_channle_kmeans_model_dict, model_v
+    model_create_time = datetime.datetime.now()
+    time_str = model_create_time.strftime('%Y-%m-%d-%H-%M-%S')
+    model_v = kmeans_model_save_dir + time_str
+    if not os.path.exists(model_v):
+        os.mkdir(model_v)
+        logger.info('create kmeans models {}'.format(time_str))
+
+    from util.doc_process import coll_cut_extract
+    coll_cut_extract(chnl_newsnum_dict, real_dir_path, os.path.join(real_dir_path, 'idf.txt'))
+    news = gl.SFrame.read_csv(os.path.join(real_dir_path, 'cut_extract.csv'))
+    chnls = news['chnl']
+    nids = news['nid']
+    docs = news['doc']
+    chnl_doc_dict = dict()
+    #提取各个频道的新闻
+    for i in chnls.num_cols():
+        if chnls[i] not in chnl_doc_dict:
+            chnl_doc_dict[chnls[i]] = []
+        chnl_doc_dict[chnls[i]].append(docs[i])
+    #单进程训练
+    for item in chnl_doc_dict.items():
+        create_kmeans_core(item[0], item[1], model_v)
+    t1 = datetime.datetime.now()
+    time_cost = (t1 - t0).seconds
+    print 'create models finished!! it cost ' + str(time_cost) + '\'s'
+
+
 
 def get_newest_model_dir():
     global kmeans_model_save_dir, kmeans_model_save_dir
