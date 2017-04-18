@@ -22,7 +22,7 @@ logger.addHandler(handler)
 logger.setLevel(logging.INFO)
 
 #定义全局变量
-data_dir = os.path.join(real_dir_path, '..', 'graphlab_lda', 'data')
+data_dir = os.path.join(real_dir_path, 'data')
 real_dir_path = os.path.split(os.path.realpath(__file__))[0]
 kmeans_model_save_dir = real_dir_path + '/' + 'models/'
 if not os.path.exists(kmeans_model_save_dir):
@@ -75,14 +75,17 @@ def create_new_kmeans_model():
     global kmeans_model_save_dir, g_channle_kmeans_model_dict, model_v
     model_create_time = datetime.datetime.now()
     time_str = model_create_time.strftime('%Y-%m-%d-%H-%M-%S')
+    data_dir_v = os.path.join(data_dir, time_str)
     model_v = kmeans_model_save_dir + time_str
     if not os.path.exists(model_v):
         os.mkdir(model_v)
         logger.info('create kmeans models {}'.format(time_str))
+    if not os.path.exists(data_dir_v):
+        os.mkdir(data_dir_v)
 
     from util.doc_process import coll_cut_extract
-    coll_cut_extract(chnl_newsnum_dict, os.path.join(real_dir_path, 'data'), os.path.join(real_dir_path, 'idf.txt'))
-    news = gl.SFrame.read_csv(os.path.join(real_dir_path, 'cut_extract.csv'))
+    coll_cut_extract(chnl_newsnum_dict, data_dir_v, os.path.join(real_dir_path, 'idf.txt'))
+    news = gl.SFrame.read_csv(os.path.join(data_dir_v, 'cut_extract.csv'))
     chnls = news['chnl']
     nids = news['nid']
     docs = news['doc']
