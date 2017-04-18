@@ -381,8 +381,10 @@ def cut_pos_nlpir(doc, topK = 20):
 from pyltp import Segmentor, Postagger
 segmentor = Segmentor()
 segmentor.load('/root/git/ltp_data/cws.model')
+#segmentor.load('/Users/a000/git/ltp_data/cws.model')
 poser = Postagger()
 poser.load('/root/git/ltp_data/pos.model')
+#poser.load('/Users/a000/git/ltp_data/pos.model')
 
 allow_pos_ltp = ('a', 'i', 'j', 'n', 'nh', 'ni', 'nl', 'ns', 'nt', 'nz', 'v', 'ws')
 #使用哈工大pyltp分词, 过滤词性
@@ -434,7 +436,6 @@ def get_idf(docs, save_path):
 #@output: 返回词列表
 ################################################################################
 def extract_keywords(idf_path, docs, topK=20, max_percent=1.):
-    print len(docs)
     if not os.path.isfile(idf_path):
         raise Exception("extract_keywords: idf file does not exit: " + idf_path)
     f = open(idf_path, 'r')
@@ -447,7 +448,6 @@ def extract_keywords(idf_path, docs, topK=20, max_percent=1.):
     n = 0
     for doc in docs:  #每一篇文本
         try:
-            print '------' + str(n)
             n += 1
             words = doc.split()
             w_tfidf = dict()
@@ -466,6 +466,80 @@ def extract_keywords(idf_path, docs, topK=20, max_percent=1.):
     return all_keywords
 
 
+################################################################################
+#@brief : 各个频道获取新闻, 保存至csv文件
+#@input : chnl_num_dict------各频道取新闻数量
+#          save_dir--------csv保存目录
+################################################################################
+channle_sql ='SELECT a.title, a.content, a.nid \
+FROM newslist_v2 a \
+INNER JOIN (select * from channellist_v2 where "cname"=%s) c \
+ON \
+a."chid"=c."id" where a.state=0 ORDER BY nid desc LIMIT %s'
+def coll_news(chnl_num_dict, save_dir, to_csv=True):
+    import pandas as pd
+    conn, cursor = get_postgredb_query()
+    chnls = []
+    nids = []
+    docs = []
+    for item in chnl_num_dict.items(): #每个频道
+        cursor.execute(channle_sql, (item[0], item[1]))
+        rows = cursor.fetchall()
+        for row in rows:
+            title = row[0]
+            content_list = row[1]
+            txt = ''
+            for content in content_list:
+                if 'txt' in content.keys():
+                    txt += content['txt']
+            total_txt = title + txt.encode('utf-8')
+            chnls.append(item[0])
+            nids.append(row[2])
+            docs.append(''.join(total_txt.split())) #split主要去除回车符\r, 否则pandas.read_csv出错
+    if to_csv:
+        data = {'chnl':chnls, 'nid':nids, 'doc':docs}
+        df = pd.DataFrame(data, columns=('chnl', 'nid', 'doc'))
+        df.to_csv(os.path.join(save_dir, 'raw.csv'), index=False)
+    return chnls, nids, docs
+
+
+def coll_news_cut(chnl_num_dict, save_dir, save_raw_to_csv=True, to_csv_file=True):
+    import pandas as pd
+    chnls, nids, docs = coll_news(chnl_num_dict, save_dir, save_raw_to_csv)
+    docs = pd.Series(docs)
+    docs = docs.apply(cut_pos_ltp)
+    df = pd.DataFrame({'chnl':chnls, 'nid':nids, 'doc':docs}, columns=('chnl', 'nid', 'doc'))
+    if to_csv_file:
+        df.to_csv(os.path.join(save_dir, 'cut.csv'), index=False)
+    return df
+
+
+def coll_cut_extract(chnl_num_dict,
+                     save_dir,
+                     idf_save_path,
+                     topK=50,
+                     max_percent=0.3,
+                     save_raw_to_csv=True,
+                     save_cut_to_csv=True,
+                     to_csv_file=True):
+    import pandas as pd
+    df = coll_news_cut(chnl_num_dict, save_dir, save_raw_to_csv, save_cut_to_csv)
+    doc = df['doc']
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    tfidf_vec = TfidfVectorizer(use_idf=True, smooth_idf=False, max_features=100000)
+    tfidf = tfidf_vec.fit_transform(doc)
+    idf_dict = dict(zip(tfidf_vec.get_feature_names(), tfidf_vec.idf_))
+    features = []
+    idfs = []
+    for item in idf_dict.items():
+        features.append(item[0].encode('utf-8'))
+        idfs.append(item[1])
+    idf_df = pd.DataFrame({'feature': features, 'idf': idfs}, index=None)
+    idf_df.to_csv(idf_save_path, index=False, header=False, sep=' ')
+    all_keywords = extract_keywords(idf_save_path, doc.tolist(), topK, max_percent)
+    df = pd.DataFrame({'chnl': df['chnl'], 'nid': df['nid'], 'doc': all_keywords}, columns=('chnl', 'nid', 'doc'))
+    if to_csv_file:
+        df.to_csv(os.path.join(save_dir, 'cut_extract.csv'), index=False)
 
 
 
