@@ -74,7 +74,7 @@ def create_new_kmeans_model():
         model_create_time = datetime.datetime.now()
         time_str = model_create_time.strftime('%Y-%m-%d-%H-%M-%S')
         data_dir_v = os.path.join(data_dir, time_str)
-        model_v = kmeans_model_save_dir + time_str
+        model_v = os.path.join(kmeans_model_save_dir,  time_str)
         if not os.path.exists(model_v):
             os.mkdir(model_v)
             logger_update.info('create kmeans models {}'.format(time_str))
@@ -115,7 +115,7 @@ def get_newest_model_dir():
     for m in models:
         ms[m] = m.replace('-', '')
     ms_sort = sorted(ms.items(), key=lambda x:x[1])
-    return kmeans_model_save_dir + ms_sort.pop()[0]
+    return os.path.join(kmeans_model_save_dir, ms_sort.pop()[0])
 
 #初始化模型版本号为最新的保存的模型
 model_v = os.path.split(get_newest_model_dir())[1]
@@ -201,7 +201,7 @@ def kmeans_predict(nid_list):
                 nids.append(nid)
                 doc_list.append(nid_info[nid][1])
 
-        print 'news num of ' + chname + ' is ' + str(len(chname))
+        print 'news num of ' + chname + ' is ' + str(len(nids))
         if len(nids) == 0:
             continue
         ws = gl.SArray(doc_list)
