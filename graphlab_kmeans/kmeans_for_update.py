@@ -31,7 +31,7 @@ chnl_k_dict = {'财经':20, '股票':10, '故事':20, '互联网':20, '健康':3
                '游戏':40, '育儿':20,
                '体育':20, '娱乐':10, '社会':10, '科技':12, '国际':5}
 
-chnl_k_dict = {'财经':3, '股票':3, '故事':20, '互联网':20, '健康':30, '军事':20,
+chnl_k_dict = {'财经':5, '股票':3, '故事':20, '互联网':20, '健康':30, '军事':20,
                '科学':20, '历史':30, '旅游':20, '美食':20, '美文':20, '萌宠':20,
                '汽车':30, '时尚':30, '探索':10, '外媒':30, '养生':30, '影视':30,
                '游戏':30, '育儿':20,'体育':20, '娱乐':10, '社会':10,'科技':12,
@@ -157,7 +157,7 @@ def get_chname_id_dict():
 
 
 def random_predict_nids():
-    sql = "select nid from newslist_v2 nv inner join channellist_v2 cl on nv.chid=cl.id where cl.cname in %s limit 100"
+    sql = "select nid from newslist_v2 nv inner join channellist_v2 cl on nv.chid=cl.id where cl.cname in %s limit 200"
     conn, cursor = doc_process.get_postgredb_query()
     print cursor.mogrify(sql, (tuple(chnl_newsnum_dict.keys()),))
     cursor.execute(sql, (tuple(chnl_newsnum_dict.keys()),))
@@ -216,11 +216,11 @@ def kmeans_predict(nid_list):
         print 'news num of ' + chname + ' is ' + str(len(nids))
         if len(nids) == 0:
             continue
-        print '-----'
-        print nids[0]
-        print '--11---'
-        print doc_list[0]
-        print '---22--'
+        #print '-----'
+        #print nids[0]
+        #print '--11---'
+        #print doc_list[0]
+        #print '---22--'
         ws = gl.SArray(doc_list)
         docs = gl.SFrame(data={'X1': ws})
         docs = gl.text_analytics.count_words(docs['X1'])
