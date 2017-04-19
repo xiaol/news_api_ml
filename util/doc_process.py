@@ -433,9 +433,11 @@ def get_idf(docs, save_path):
 #      idf_path : 用户指定Idf文件
 #      docs: 句子的list.
 #      topK :做大关键词数目
+#       max_percent:保留的最大比例。   实际词的个数为min(topK, max_percent*len)
+#      single:是否保留词频。
 #@output: 返回词列表
 ################################################################################
-def extract_keywords(idf_path, docs, topK=20, max_percent=1.):
+def extract_keywords(idf_path, docs, topK=20, max_percent=1., single=False):
     if not os.path.isfile(idf_path):
         raise Exception("extract_keywords: idf file does not exit: " + idf_path)
     f = open(idf_path, 'r')
@@ -459,7 +461,14 @@ def extract_keywords(idf_path, docs, topK=20, max_percent=1.):
             k = min(topK, int(len(words) * max_percent))
             ws_k = tags[:k]
             ws_k = [t[0] for t in ws_k]
-            all_keywords.append(' '.join(ws_k))
+            if single:
+                all_keywords.append(' '.join(ws_k))
+            else:
+                kw = []
+                for w in words:
+                    if w in ws_k:
+                        kw.append(w)
+                all_keywords.append(' '.join(kw))
         except:
             traceback.print_exc()
             continue
