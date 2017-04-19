@@ -216,10 +216,12 @@ def kmeans_predict(nid_list):
         print 'news num of ' + chname + ' is ' + str(len(nids))
         if len(nids) == 0:
             continue
+        print doc_list[0]
         ws = gl.SArray(doc_list)
         docs = gl.SFrame(data={'X1': ws})
         docs = gl.text_analytics.count_words(docs['X1'])
         docs = gl.SFrame(docs)
+        print docs[0]
         pred = g_channel_kmeans_model_dict[chname].predict(docs, output_type = 'cluster_id')
         print pred
         if len(nids) != len(pred):
