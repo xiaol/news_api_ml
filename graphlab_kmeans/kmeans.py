@@ -10,6 +10,7 @@ import datetime
 import graphlab as gl
 from util import doc_process
 from multiprocessing import Process
+import traceback
 
 #添加日志
 import logging
@@ -56,51 +57,57 @@ chnl_newsnum_dict = {'财经':20, '股票':10}
 
 #创建新版本模型子进程
 def create_kmeans_core(chname, docs, model_save_dir):
-    #logger.info('---begin to deal with {}'.format(chname))
-    print 'begin to create kmeans model for {}'.format(chname)
-    trim_sa = gl.text_analytics.trim_rare_words(docs, threshold=5, to_lower=False)
-    docs_trim = gl.text_analytics.count_words(trim_sa)
-    model = gl.kmeans.create(gl.SFrame(docs_trim),
-                             num_clusters=chnl_k_dict[chname],
-                             max_iterations=200)
-    g_channel_kmeans_model_dict[chname] = model
-    #save model to file
-    model.save(model_save_dir+'/'+chname)
-    print 'create kmeans model for {} finish'.format(chname)
+    try:
+        #logger.info('---begin to deal with {}'.format(chname))
+        print 'begin to create kmeans model for {}'.format(chname)
+        trim_sa = gl.text_analytics.trim_rare_words(docs, threshold=5, to_lower=False)
+        docs_trim = gl.text_analytics.count_words(trim_sa)
+        model = gl.kmeans.create(gl.SFrame(docs_trim),
+                                 num_clusters=chnl_k_dict[chname],
+                                 max_iterations=200)
+        g_channel_kmeans_model_dict[chname] = model
+        #save model to file
+        model.save(model_save_dir+'/'+chname)
+        print 'create kmeans model for {} finish'.format(chname)
+    except:
+        traceback.print_exc()
 
 
 #创建新版本的模型
 def create_new_kmeans_model():
-    t0 = datetime.datetime.now()
-    global kmeans_model_save_dir, g_channle_kmeans_model_dict, model_v
-    model_create_time = datetime.datetime.now()
-    time_str = model_create_time.strftime('%Y-%m-%d-%H-%M-%S')
-    data_dir_v = os.path.join(data_dir, time_str)
-    model_v = kmeans_model_save_dir + time_str
-    if not os.path.exists(model_v):
-        os.mkdir(model_v)
-        logger.info('create kmeans models {}'.format(time_str))
-    if not os.path.exists(data_dir_v):
-        os.mkdir(data_dir_v)
+    try:
+        t0 = datetime.datetime.now()
+        global kmeans_model_save_dir, g_channle_kmeans_model_dict, model_v
+        model_create_time = datetime.datetime.now()
+        time_str = model_create_time.strftime('%Y-%m-%d-%H-%M-%S')
+        data_dir_v = os.path.join(data_dir, time_str)
+        model_v = kmeans_model_save_dir + time_str
+        if not os.path.exists(model_v):
+            os.mkdir(model_v)
+            logger.info('create kmeans models {}'.format(time_str))
+        if not os.path.exists(data_dir_v):
+            os.mkdir(data_dir_v)
 
-    from util.doc_process import coll_cut_extract
-    coll_cut_extract(chnl_newsnum_dict, data_dir_v, os.path.join(real_dir_path, 'idf.txt'))
-    news = gl.SFrame.read_csv(os.path.join(data_dir_v, 'cut_extract.csv'))
-    chnls = news['chnl']
-    nids = news['nid']
-    docs = news['doc']
-    chnl_doc_dict = dict()
-    #提取各个频道的新闻
-    for i in chnls.num_cols():
-        if chnls[i] not in chnl_doc_dict:
-            chnl_doc_dict[chnls[i]] = []
-        chnl_doc_dict[chnls[i]].append(docs[i])
-    #单进程训练
-    for item in chnl_doc_dict.items():
-        create_kmeans_core(item[0], item[1], model_v)
-    t1 = datetime.datetime.now()
-    time_cost = (t1 - t0).seconds
-    print 'create models finished!! it cost ' + str(time_cost) + '\'s'
+        from util.doc_process import coll_cut_extract
+        coll_cut_extract(chnl_newsnum_dict, data_dir_v, os.path.join(real_dir_path, 'idf.txt'))
+        news = gl.SFrame.read_csv(os.path.join(data_dir_v, 'cut_extract.csv'))
+        chnls = news['chnl']
+        nids = news['nid']
+        docs = news['doc']
+        chnl_doc_dict = dict()
+        #提取各个频道的新闻
+        for i in chnls.num_cols():
+            if chnls[i] not in chnl_doc_dict:
+                chnl_doc_dict[chnls[i]] = []
+            chnl_doc_dict[chnls[i]].append(docs[i])
+        #单进程训练
+        for item in chnl_doc_dict.items():
+            create_kmeans_core(item[0], item[1], model_v)
+        t1 = datetime.datetime.now()
+        time_cost = (t1 - t0).seconds
+        print 'create models finished!! it cost ' + str(time_cost) + '\'s'
+    except:
+        traceback.print_exc()
 
 
 
