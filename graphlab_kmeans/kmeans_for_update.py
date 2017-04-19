@@ -216,8 +216,11 @@ def kmeans_predict(nid_list):
         print 'news num of ' + chname + ' is ' + str(len(nids))
         if len(nids) == 0:
             continue
+        print '-----'
         print nids[0]
+        print '--11---'
         print doc_list[0]
+        print '---22--'
         ws = gl.SArray(doc_list)
         docs = gl.SFrame(data={'X1': ws})
         docs = gl.text_analytics.count_words(docs['X1'])
