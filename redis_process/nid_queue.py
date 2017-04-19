@@ -145,27 +145,39 @@ def consume_nid_ads():
         response = requests.get(url, params=data)
 
 
-user_click_queue = 'user_click_queue'
+user_click_queue_lda = 'user_click_queue_lda'
+user_click_queue_kmeans = 'user_click_queue_kmeans'
 def produce_user_click(uid, nid, ctime):
     global redis_inst
     print 'produce user ' + str(uid) + ' ' + str(nid) + ' ' + ctime
-    redis_inst.lpush(user_click_queue, json.dumps([uid, nid, ctime]))
+    redis_inst.lpush(user_click_queue_lda, json.dumps([uid, nid, ctime]))
+    redis_inst.lpush(user_click_queue_kmeans, json.dumps([uid, nid, ctime]))
 
 
-#消费用户点击行为
-def consume_user_click():
+
+def consume_user_click_kmeans():
     global redis_inst
     while True:
         try:
-            data = json.loads(redis_inst.brpop(user_click_queue)[1])
+            data = json.loads(redis_inst.brpop(user_click_queue_kmeans)[1])
             uid = data[0]
             nid = data[1]
             ctime = data[2]
-            #for topic model
-            #topic_model.predict_click((uid, nid, ctime))
-            topic_model_model.predict_click((uid, nid, ctime))
-            #for kmeans
             kmeans.predict_click((uid, nid, ctime))
+        except :
+            traceback.print_exc()
+            continue
+
+#消费用户点击行为
+def consume_user_click_lda():
+    global redis_inst
+    while True:
+        try:
+            data = json.loads(redis_inst.brpop(user_click_queue_lda)[1])
+            uid = data[0]
+            nid = data[1]
+            ctime = data[2]
+            topic_model_model.predict_click((uid, nid, ctime))
         except :
             traceback.print_exc()
             continue
@@ -175,7 +187,7 @@ def get_old_clicks():
     clicks = []
     while True:
         try:
-            d = redis_inst.rpop(user_click_queue)
+            d = redis_inst.rpop(user_click_queue_lda)
             if not d:
                 break
             data = json.loads(d)
@@ -199,7 +211,7 @@ def clear_queue_lda():
 def clear_queue_click():
     global redis_inst
     while True:
-        click = redis_inst.rpop(user_click_queue)
+        click = redis_inst.rpop(user_click_queue_lda)
         if not click:
             break
 

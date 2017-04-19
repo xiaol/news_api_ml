@@ -302,7 +302,7 @@ if __name__ == '__main__':
         http_server = tornado.httpserver.HTTPServer(EmptyApp())
         http_server.listen(port) #同时提供手工处理端口
         from redis_process import nid_queue
-        nid_queue.consume_user_click()
+        nid_queue.consume_user_click_lda()
     elif port == 9985:
         http_server = tornado.httpserver.HTTPServer(Application2())
         http_server.listen(port)

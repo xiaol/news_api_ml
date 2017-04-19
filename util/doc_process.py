@@ -390,7 +390,7 @@ allow_pos_ltp = ('a', 'i', 'j', 'n', 'nh', 'ni', 'nl', 'ns', 'nt', 'nz', 'v', 'w
 #使用哈工大pyltp分词, 过滤词性
 def cut_pos_ltp(doc, filter_pos = True, allow_pos = allow_pos_ltp):
     s = ''.join(doc.split())  #去除空白符
-    s = filter_tags(s)
+    s = filter_tags(s)  #去除html标签
     words = segmentor.segment(s)
     if not filter_pos:
         return ' '.join(words)

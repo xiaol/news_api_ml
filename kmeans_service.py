@@ -13,15 +13,15 @@ from tornado import httpserver
 
 class CreateKmeansModel(tornado.web.RequestHandler):
     def get(self):
-        from graphlab_kmeans import kmeans
+        from graphlab_kmeans import kmeans_for_update
         #kmeans.create_kmeans_models()
-        kmeans.create_new_kmeans_model()
+        kmeans_for_update.create_new_kmeans_model()
 
 class PredictKmeans(tornado.web.RequestHandler):
     def get(self):
         nids = self.get_arguments('nid')
-        from graphlab_kmeans import kmeans
-        res = kmeans.kmeans_predict(nids)
+        from graphlab_kmeans import kmeans_for_update
+        res = kmeans_for_update.kmeans_predict(nids)
         self.write(json.dumps(res))
 
 
@@ -30,8 +30,8 @@ class PredictClick(tornado.web.RequestHandler):
         uid = 1
         nid = 10682265
         time_str = '2016-12-20 07:11:53'
-        from graphlab_kmeans import kmeans
-        kmeans.predict_click((uid, nid, time_str))
+        from graphlab_kmeans import kmeans_for_update
+        kmeans_for_update.predict_click((uid, nid, time_str))
 
 
 
@@ -45,11 +45,20 @@ class Application(tornado.web.Application):
         settings = {}
         tornado.web.Application.__init__(self, handlers, **settings)
 
+#空白应用。 可以起到占用端口,防止某个服务被反复启动
+class EmptyApp(tornado.web.Application):
+    def __init__(self):
+        handlers = [
+
+        ]
+        settings = {}
+        tornado.web.Application.__init__(self, handlers, **settings)
+
 
 if __name__ == '__main__':
     port = int(sys.argv[1])
     if port == 9100:
-        http_server = tornado.httpserver.HTTPServer(Application())
+        http_server = tornado.httpserver.HTTPServer(Application())  #包含训练新模型及测试新模型
         http_server.listen(port) #同时提供手工处理端口
     elif port == 9980:
         from graphlab_kmeans import kmeans
@@ -62,5 +71,10 @@ if __name__ == '__main__':
         http_server.listen(port) #同时提供手工处理端口
         from redis_process import nid_queue
         nid_queue.consume_nid_kmeans(200)
+    elif port == 9978: #消费click队列
+        http_server = tornado.httpserver.HTTPServer(EmptyApp())
+        http_server.listen(port) #同时提供手工处理端口
+        from redis_process import nid_queue
+        nid_queue.consume_user_click_kmeans()
 
     tornado.ioloop.IOLoop.instance().start()

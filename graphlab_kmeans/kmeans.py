@@ -330,3 +330,30 @@ def updateModel2():
     conn.commit()
     cursor.close()
     conn.close()
+
+#使用新模型处理旧新闻和点击
+def deal_old_news_clicks(day=10):
+    from util import doc_process
+    conn, cursor = doc_process.get_postgredb_query()
+    s_new = "select nid from newslist_v2 where ctime > now() - interval '10 day' and chid not in (44,) and state=0"
+    cursor.execute(s_new)
+    rows = cursor.fetchall()
+    nids = []
+    for r in rows:
+        nids.append(r[0])
+    l = len(nids)
+
+    if len(nids) < 1000:
+        kmeans_predict(nids)
+    else:
+        n = 0
+        while (n + 1000) < len(nids):
+            kmeans_predict(nids[n:n + 1000])
+            n += 1000
+            print ('{} of {} finished!'.format(n, l))
+        kmeans_predict(nids[n - 1000:len(nids)])
+
+    s_click = "select uid, nid, ctime from newsrecommendclick where (ctime > now() - interval '10 day') "
+    cursor.execute(s_click)
+    clicks = tuple(cursor.fetchall())
+    predict_click(clicks)
