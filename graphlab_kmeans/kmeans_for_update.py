@@ -154,6 +154,15 @@ def get_chname_id_dict():
     conn.close()
 
 
+def random_predict_nids():
+    sql = 'select nid from newslist_v2 nv inner join channellist_v2 cl on nv.chid=cl.id where cl.cname in "%s" limit 100'
+    conn, cursor = doc_process.get_postgredb_query()
+    cursor.execute(sql, tuple(chnl_newsnum_dict.keys()))
+    rows = cursor.fetchall()
+    kmeans_predict(list(rows))
+    conn.close()
+
+
 nid_sql = 'select a.title, a.content, c.cname \
 from (select * from newslist_v2 where nid=%s) a \
 inner join channellist_v2 c on a."chid"=c."id"'
@@ -190,8 +199,9 @@ def kmeans_predict(nid_list):
         cursor.close()
         conn.close()
 
-    clstid_nid_dict = {}
+    ch_pred_dict = {}
     for chname in g_channel_kmeans_model_dict.keys():
+        clstid_nid_dict = {}
         print 'predict ---- ' + chname
         nids = []
         doc_list = []
@@ -216,8 +226,9 @@ def kmeans_predict(nid_list):
             if pred[i] not in clstid_nid_dict.keys():
                 clstid_nid_dict[pred[i]] = []
             clstid_nid_dict[pred[i]].append(nids[i])
+        ch_pred_dict[chname] = clstid_nid_dict
     #print clstid_nid_dict
-    return clstid_nid_dict
+    return ch_pred_dict
 
 
 
