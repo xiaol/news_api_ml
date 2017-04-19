@@ -91,13 +91,14 @@ def create_new_kmeans_model():
         from util.doc_process import coll_cut_extract
         coll_cut_extract(chnl_newsnum_dict, data_dir_v, os.path.join(real_dir_path, 'idf.txt'))
         news = gl.SFrame.read_csv(os.path.join(data_dir_v, 'cut_extract.csv'))
-        chnls = news['chnl']
+        chnls = news['chnl']  #SArray类型
         nids = news['nid']
         docs = news['doc']
         chnl_doc_dict = dict()
         #提取各个频道的新闻
-        for i in chnls.num_cols():
+        for i in xrange(chnls.size()):
             if chnls[i] not in chnl_doc_dict:
+                print chnls[i]
                 chnl_doc_dict[chnls[i]] = []
             chnl_doc_dict[chnls[i]].append(docs[i])
         #单进程训练
