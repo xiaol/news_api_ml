@@ -31,7 +31,7 @@ chnl_k_dict = {'财经':20, '股票':10, '故事':20, '互联网':20, '健康':3
                '游戏':40, '育儿':20,
                '体育':20, '娱乐':10, '社会':10, '科技':12, '国际':5}
 
-chnl_k_dict = {'财经':20, '股票':10, '故事':20, '互联网':20, '健康':30, '军事':20,
+chnl_k_dict = {'财经':3, '股票':3, '故事':20, '互联网':20, '健康':30, '军事':20,
                '科学':20, '历史':30, '旅游':20, '美食':20, '美文':20, '萌宠':20,
                '汽车':30, '时尚':30, '探索':10, '外媒':30, '养生':30, '影视':30,
                '游戏':30, '育儿':20,'体育':20, '娱乐':10, '社会':10,'科技':12,
@@ -160,8 +160,8 @@ def random_predict_nids():
     print cursor.mogrify(sql, (tuple(chnl_newsnum_dict.keys()),))
     cursor.execute(sql, (tuple(chnl_newsnum_dict.keys()),))
     rows = cursor.fetchall()
-    kmeans_predict(list(rows))
     conn.close()
+    return kmeans_predict(list(rows))
 
 
 nid_sql = 'select a.title, a.content, c.cname \
