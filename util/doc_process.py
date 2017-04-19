@@ -491,7 +491,10 @@ def coll_news(chnl_num_dict, save_dir, to_csv=True):
             txt = ''
             for content in content_list:
                 if 'txt' in content.keys():
-                    txt += content['txt']
+                    txt += content['txt']   #unicode
+
+            soup = BeautifulSoup(txt, 'lxml')
+            txt = soup.get_text()
             total_txt = title + txt.encode('utf-8')
             chnls.append(item[0])
             nids.append(row[2])
