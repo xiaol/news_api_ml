@@ -197,8 +197,8 @@ def kmeans_predict(nid_list):
                 txt += content['txt']
         total_txt = title + txt.encode('utf-8')
         #word_list = doc_process.filter_html_stopwords_pos(total_txt, remove_num=True, remove_single_word=True)
-        word_list = cut_pos_ltp(total_txt)
-        nid_info[nid] = [chanl_name, ' '.join(word_list)]
+        total_txt = cut_pos_ltp(total_txt)
+        nid_info[nid] = [chanl_name, total_txt]
         cursor.close()
         conn.close()
 
