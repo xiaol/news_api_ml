@@ -109,6 +109,8 @@ def create_new_kmeans_model():
 def get_newest_model_dir():
     global kmeans_model_save_dir
     models = os.listdir(kmeans_model_save_dir)
+    if len(models) == 0:
+        return ''
     ms = {}
     for m in models:
         ms[m] = m.replace('-', '')
