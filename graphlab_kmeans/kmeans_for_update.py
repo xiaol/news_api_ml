@@ -141,10 +141,6 @@ def load_newest_models():
 #@brief  :预测新数据
 #@input  :
 ###############################################################################
-nid_sql = 'select a.title, a.content, c.cname \
-from (select * from newslist_v2 where nid=%s) a \
-inner join channellist_v2 c on a."chid"=c."id"'
-
 chname_id_dict = {}
 def get_chname_id_dict():
     global chname_id_dict
@@ -158,6 +154,9 @@ def get_chname_id_dict():
     conn.close()
 
 
+nid_sql = 'select a.title, a.content, c.cname \
+from (select * from newslist_v2 where nid=%s) a \
+inner join channellist_v2 c on a."chid"=c."id"'
 def kmeans_predict(nid_list):
     global g_channel_kmeans_model_dict, chname_id_dict
     print "****************************************************"  + model_v
@@ -209,6 +208,7 @@ def kmeans_predict(nid_list):
         docs = gl.text_analytics.count_words(docs['X1'])
         docs = gl.SFrame(docs)
         pred = g_channel_kmeans_model_dict[chname].predict(docs, output_type = 'cluster_id')
+        print pred
         if len(nids) != len(pred):
             print 'len(nids) != len(pred)'
             return
