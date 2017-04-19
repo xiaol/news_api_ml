@@ -55,6 +55,8 @@ def create_kmeans_core(chname, docs, model_save_dir):
         print 'begin to create kmeans model for {}'.format(chname)
         trim_sa = gl.text_analytics.trim_rare_words(docs, threshold=5, to_lower=False)
         docs_trim = gl.text_analytics.count_words(trim_sa)
+        print '********'
+        print docs_trim
         model = gl.kmeans.create(gl.SFrame(docs_trim),
                                  num_clusters=chnl_k_dict[chname],
                                  max_iterations=200)
