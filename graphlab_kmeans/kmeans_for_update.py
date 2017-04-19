@@ -155,7 +155,7 @@ def get_chname_id_dict():
 
 
 def random_predict_nids():
-    sql = "select nid from newslist_v2 nv inner join channellist_v2 cl on nv.chid=cl.id where cl.cname in '%s' limit 100"
+    sql = "select nid from newslist_v2 nv inner join channellist_v2 cl on nv.chid=cl.id where cl.cname in %s limit 100"
     conn, cursor = doc_process.get_postgredb_query()
     print cursor.mogrify(sql, (tuple(chnl_newsnum_dict.keys()),))
     cursor.execute(sql, (tuple(chnl_newsnum_dict.keys()),))
