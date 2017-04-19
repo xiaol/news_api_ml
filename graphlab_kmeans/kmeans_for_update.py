@@ -216,7 +216,7 @@ def kmeans_predict(nid_list):
         print 'news num of ' + chname + ' is ' + str(len(nids))
         if len(nids) == 0:
             continue
-        print nid[0]
+        print nids[0]
         print doc_list[0]
         ws = gl.SArray(doc_list)
         docs = gl.SFrame(data={'X1': ws})
