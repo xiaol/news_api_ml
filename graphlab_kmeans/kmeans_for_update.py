@@ -157,7 +157,7 @@ def get_chname_id_dict():
 
 
 def random_predict_nids():
-    sql = "select nid from newslist_v2 nv inner join channellist_v2 cl on nv.chid=cl.id where cl.cname in %s limit 200"
+    sql = "select nid from newslist_v2 nv inner join channellist_v2 cl on nv.chid=cl.id where cl.cname in %s limit 10"
     conn, cursor = doc_process.get_postgredb_query()
     print cursor.mogrify(sql, (tuple(chnl_newsnum_dict.keys()),))
     cursor.execute(sql, (tuple(chnl_newsnum_dict.keys()),))
@@ -222,10 +222,15 @@ def kmeans_predict(nid_list):
         #print doc_list[0]
         #print '---22--'
         ws = gl.SArray(doc_list)
+        for iii in doc_list:
+            print iii
         docs = gl.SFrame(data={'X1': ws})
         docs = gl.text_analytics.count_words(docs['X1'])
         docs = gl.SFrame(docs)
-        print docs[0]
+        ddd = list(docs['X1'])
+        print '====='
+        for kkk in ddd:
+            print kkk
         pred = g_channel_kmeans_model_dict[chname].predict(docs, output_type = 'cluster_id')
         print pred
         if len(nids) != len(pred):
