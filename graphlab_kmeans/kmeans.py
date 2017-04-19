@@ -58,6 +58,7 @@ chnl_newsnum_dict = {'财经':20, '股票':10}
 #创建新版本模型子进程
 def create_kmeans_core(chname, docs, model_save_dir):
     try:
+        global g_channel_kmeans_model_dict
         #logger.info('---begin to deal with {}'.format(chname))
         print 'begin to create kmeans model for {}'.format(chname)
         trim_sa = gl.text_analytics.trim_rare_words(docs, threshold=5, to_lower=False)
@@ -77,7 +78,7 @@ def create_kmeans_core(chname, docs, model_save_dir):
 def create_new_kmeans_model():
     try:
         t0 = datetime.datetime.now()
-        global kmeans_model_save_dir, g_channle_kmeans_model_dict, model_v
+        global kmeans_model_save_dir,  model_v
         model_create_time = datetime.datetime.now()
         time_str = model_create_time.strftime('%Y-%m-%d-%H-%M-%S')
         data_dir_v = os.path.join(data_dir, time_str)
@@ -89,7 +90,7 @@ def create_new_kmeans_model():
             os.mkdir(data_dir_v)
 
         from util.doc_process import coll_cut_extract
-        coll_cut_extract(chnl_newsnum_dict, data_dir_v, os.path.join(real_dir_path, 'idf.txt'))
+        coll_cut_extract(chnl_newsnum_dict, data_dir_v, os.path.join(data_dir_v, 'idf.txt'))
         news = gl.SFrame.read_csv(os.path.join(data_dir_v, 'cut_extract.csv'))
         chnls = news['chnl']  #SArray类型
         nids = news['nid']
@@ -114,7 +115,7 @@ def create_new_kmeans_model():
 
 
 def get_newest_model_dir():
-    global kmeans_model_save_dir, kmeans_model_save_dir
+    global kmeans_model_save_dir
     models = os.listdir(kmeans_model_save_dir)
     ms = {}
     for m in models:
