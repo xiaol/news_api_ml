@@ -103,7 +103,8 @@ def create_new_kmeans_model():
             chnl_doc_dict[chnls[i]].append(docs[i])
         #单进程训练
         for item in chnl_doc_dict.items():
-            create_kmeans_core(item[0], item[1], model_v)
+            print type(item[1])
+            create_kmeans_core(item[0], gl.SArray(item[1]), model_v)
         t1 = datetime.datetime.now()
         time_cost = (t1 - t0).seconds
         print 'create models finished!! it cost ' + str(time_cost) + '\'s'
