@@ -505,7 +505,7 @@ def coll_news(chnl_num_dict, save_dir, to_csv=True):
 
             soup = BeautifulSoup(txt, 'lxml')
             txt = soup.get_text()
-            total_txt = title + txt.encode('utf-8')
+            total_txt = title + ' ' + txt.encode('utf-8')
             chnls.append(item[0])
             nids.append(row[2])
             docs.append(''.join(total_txt.split())) #split主要去除回车符\r, 否则pandas.read_csv出错
@@ -513,6 +513,7 @@ def coll_news(chnl_num_dict, save_dir, to_csv=True):
         data = {'chnl':chnls, 'nid':nids, 'doc':docs}
         df = pd.DataFrame(data, columns=('chnl', 'nid', 'doc'))
         df.to_csv(os.path.join(save_dir, 'raw.csv'), index=False)
+    conn.close()
     return chnls, nids, docs
 
 
