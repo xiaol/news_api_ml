@@ -629,8 +629,9 @@ def coll_cut_extract_multiprocess(chnl_num_dict,
     for item in chnl_num_dict.items():
         chnl = item[0]
         num = item[1]
-        chnl_cut_file.append(os.path.join(save_dir, chnl+'_cut.csv'))
-        pool.apply_async(coll_cut_chnal, args=(chnl, num, save_dir, chnl_cut_file))
+        cut_save_path = os.path.join(save_dir, chnl+'_cut.csv')
+        chnl_cut_file.append(cut_save_path)
+        pool.apply_async(coll_cut_chnal, args=(chnl, num, save_dir, cut_save_path))
         #coll_cut_chnal(chnl, num, save_dir)
     pool.close()
     pool.join()
