@@ -10,7 +10,7 @@ import jieba
 import jieba.analyse
 import time
 import math
-
+import pandas as pd
 ##过滤HTML中的标签
 # 将HTML中标签等信息去掉
 # @param htmlstr HTML字符串.
@@ -108,14 +108,14 @@ def get_file_real_dir_path():
 real_dir_path = os.path.split(os.path.realpath(__file__))[0] #文件所在路径
 net_words_file = real_dir_path + '/networds.txt'
 stop_words_file = real_dir_path + '/stopwords.txt'
+stopwords = {}.fromkeys([line.rstrip() for line in open(stop_words_file)]) #utf-8
+stopwords_set = set(stopwords)
 #去除html标签及停用词
 def remove_html_and_stopwords(str):
     #删除html标签
     txt_no_html = filter_tags(str)
     jieba.load_userdict(net_words_file)
     words = jieba.cut(txt_no_html)  #unicode is returned
-    stopwords = {}.fromkeys([line.rstrip() for line in open(stop_words_file)]) #utf-8
-    stopwords_set = set(stopwords)
     final_words = []
     for w in words:
         if not w.encode('utf-8') in stopwords_set and (not w.isspace()):
@@ -145,8 +145,6 @@ def filter_html_stopwords_pos(str, remove_num=False, remove_single_word=False, r
     jieba.load_userdict(net_words_file)
     words = jieba.posseg.cut(txt_no_html)  #unicode is returned
     words_filter = filterPOS2(words, POS)
-    stopwords = {}.fromkeys([line.rstrip() for line in open(stop_words_file)]) #utf-8
-    stopwords_set = set(stopwords)
     final_words = []
     for w in words_filter:
         if not w.encode('utf-8') in stopwords_set and (not w.isspace()):
@@ -387,23 +385,29 @@ poser.load('/root/git/ltp_data/pos.model')
 #poser.load('/Users/a000/git/ltp_data/pos.model')
 
 allow_pos_ltp = ('a', 'i', 'j', 'n', 'nh', 'ni', 'nl', 'ns', 'nt', 'nz', 'v', 'ws')
+nn = 0
 #使用哈工大pyltp分词, 过滤词性
-def cut_pos_ltp(doc, filter_pos = True, allow_pos = allow_pos_ltp):
+def cut_pos_ltp(doc, filter_pos = True, allow_pos = allow_pos_ltp, remove_tags=True):
+    global nn
+    nn += 1
+    print nn
     s = ''.join(doc.split())  #去除空白符
-    s = filter_tags(s)  #去除html标签
+    if remove_tags:
+        s = filter_tags(s)  #去除html标签
     words = segmentor.segment(s)
-    if not filter_pos:
-        return ' '.join(words)
 
-    poses = poser.postag(words)
+    words2 = []
+    for w in words:
+        if len(w.decode('utf-8')) > 1 and (w not in stopwords_set):
+            words2.append(w)
+    if not filter_pos:
+        return ' '.join(words2)
+
+    poses = poser.postag(words2)
     ss = []
-    stopwords = {}.fromkeys([line.rstrip() for line in open(stop_words_file)]) #utf-8
-    stopwords_set = set(stopwords)
     for i, pos in enumerate(poses):
-        if (pos in allow_pos) and \
-           (len(words[i].decode('utf-8')) > 1) and \
-           (words[i] not in stopwords_set):
-            ss.append(words[i])
+        if pos in allow_pos:
+            ss.append(words2[i])
     return ' '.join(ss)
 
 
@@ -501,7 +505,7 @@ def coll_news(chnl_num_dict, save_dir, to_csv=True):
             txt = ''
             for content in content_list:
                 if 'txt' in content.keys():
-                    txt += content['txt']   #unicode
+                    txt += content['txt'] + ' '   #unicode
 
             soup = BeautifulSoup(txt, 'lxml')
             txt = soup.get_text()
@@ -521,7 +525,7 @@ def coll_news_cut(chnl_num_dict, save_dir, save_raw_to_csv=True, to_csv_file=Tru
     import pandas as pd
     chnls, nids, docs = coll_news(chnl_num_dict, save_dir, save_raw_to_csv)
     docs = pd.Series(docs)
-    docs = docs.apply(cut_pos_ltp)
+    docs = docs.apply(cut_pos_ltp, (True, allow_pos_ltp, False))
     df = pd.DataFrame({'chnl':chnls, 'nid':nids, 'doc':docs}, columns=('chnl', 'nid', 'doc'))
     if to_csv_file:
         df.to_csv(os.path.join(save_dir, 'cut.csv'), index=False)
@@ -554,6 +558,94 @@ def coll_cut_extract(chnl_num_dict,
     df = pd.DataFrame({'chnl': df['chnl'], 'nid': df['nid'], 'doc': all_keywords}, columns=('chnl', 'nid', 'doc'))
     if to_csv_file:
         df.to_csv(os.path.join(save_dir, 'cut_extract.csv'), index=False)
+
+
+#########################  提供多进程版本  ####################################
+#读取频道新闻
+def coll_chnal(chname, num, to_csv=True, save_path=''):
+    import pandas as pd
+    conn, cursor = get_postgredb_query()
+    chnal = []
+    nids = []
+    docs = []
+    cursor.execute(channle_sql, (chname, num))
+    rows = cursor.fetchall()
+    for row in rows:
+        title = row[0]
+        content_list = row[1]
+        txt = ''
+        for content in content_list:
+            if 'txt' in content.keys():
+                txt += content['txt'] + ' '   #unicode
+
+        soup = BeautifulSoup(txt, 'lxml')
+        txt = soup.get_text()
+        total_txt = title + ' ' + txt.encode('utf-8')
+        chnal.append(chname)
+        nids.append(row[2])
+        docs.append(''.join(total_txt.split())) #split主要去除回车符\r, 否则pandas.read_csv出错
+    if to_csv:
+        data = {'chnl':chnal, 'nid':nids, 'doc':docs}
+        df = pd.DataFrame(data, columns=('chnl', 'nid', 'doc'))
+        df.to_csv(save_path, index=False)
+    conn.close()
+
+
+def get_idf_file(docs, idf_save_path, max_features=99999999999):
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    #tfidf_vec = TfidfVectorizer(use_idf=True, smooth_idf=False, max_df=0.001, min_df=0.00001, max_features=100000)
+    tfidf_vec = TfidfVectorizer(use_idf=True, smooth_idf=False, max_features=max_features)
+    tfidf = tfidf_vec.fit_transform(docs)
+    idf_dict = dict(zip(tfidf_vec.get_feature_names(), tfidf_vec.idf_))
+    features = []
+    idfs = []
+    for item in idf_dict.items():
+        features.append(item[0].encode('utf-8'))
+        idfs.append(item[1])
+    idf_df = pd.DataFrame({'feature':features, 'idf':idfs}, index=None)
+    idf_df.to_csv(idf_save_path, index=False, header=False, sep=' ')
+
+
+def coll_cut_chnal(chname, num, save_dir, cut_save_file):
+    save_path = os.path.join(save_dir, chname+'_raw.csv')
+    coll_chnal(chname, num, True, save_path)
+    raw_df = pd.read_csv(save_path)
+    docs_series = raw_df['doc']
+    docs_series = docs_series.apply(cut_pos_ltp, (True, allow_pos_ltp, False))
+    raw_df['doc'] = docs_series
+    raw_df.to_csv(cut_save_file, index=False)
+
+
+def coll_cut_extract_multiprocess(chnl_num_dict,
+                                  save_dir,
+                                  idf_save_path,
+                                  topK=100,
+                                  max_percent=0.3,
+                                  to_csv_file=True):
+    from multiprocessing import Pool
+    pool = Pool(30)
+    chnl_cut_file = []
+    for item in chnl_num_dict.items():
+        chnl = item[0]
+        num = item[1]
+        chnl_cut_file.append(os.path.join(save_dir, chnl+'_cut.csv'))
+        pool.apply_async(coll_cut_chnal, args=(chnl, num, save_dir, chnl_cut_file))
+        #coll_cut_chnal(chnl, num, save_dir)
+    pool.close()
+    pool.join()
+
+    data_cut_path = os.path.join(save_dir, 'data_cut.csv')
+    join_csv(chnl_cut_file, data_cut_path, columns=('chnl', 'nid', 'doc'))
+    cut_df = pd.read_csv(data_cut_path)
+    cut_docs = cut_df['doc']
+    get_idf_file(cut_docs, idf_save_path, 5000000)
+    extract_docs = extract_keywords(idf_save_path, cut_docs.tolist(), topK, max_percent)
+    cut_df['doc'] = extract_docs
+    if to_csv_file:
+        cut_df.to_csv(os.path.join(save_dir, 'cut_extract.csv'), index=False)
+
+
+#########################  提供多进程版本结束  ####################################
 
 
 

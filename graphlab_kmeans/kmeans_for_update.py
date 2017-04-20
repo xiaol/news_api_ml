@@ -40,7 +40,7 @@ chnl_k_dict = {'财经':20, '股票':10, '故事':20, '互联网':20, '健康':3
 
 
 chnl_newsnum_dict = {'财经':20000, '股票':10000, '故事':10000, '互联网':10000, '健康':20000, '军事':20000,
-                     '科学':10000, '历史':20000, '旅游':10000, '美食':10000, '美文':10000, '萌宠':10000,
+                     '科学':10000, '历史':20000, '旅游':10000, '美食':10000, '美文':3700, '萌宠':10000,
                      '汽车':20000, '时尚':5000, '探索':1500, '外媒':10000, '养生':20000, '影视':5000,
                      '游戏':20000, '育儿':10000, '体育':20000, '娱乐':20000, '社会':30000, '科技':10000,
                      '国际':20000,'美女': 10, '搞笑': 10, '趣图':10, '风水玄学':10000, '本地':20000,
@@ -81,8 +81,9 @@ def create_new_kmeans_model():
         if not os.path.exists(data_dir_v):
             os.mkdir(data_dir_v)
 
-        from util.doc_process import coll_cut_extract
-        coll_cut_extract(chnl_newsnum_dict, data_dir_v, os.path.join(data_dir_v, 'idf.txt'))
+        from util.doc_process import coll_cut_extract_multiprocess
+        #coll_cut_extract(chnl_newsnum_dict, data_dir_v, os.path.join(data_dir_v, 'idf.txt'))
+        coll_cut_extract_multiprocess(chnl_newsnum_dict, data_dir_v, os.path.join(data_dir_v, 'idf.txt'))
         news = gl.SFrame.read_csv(os.path.join(data_dir_v, 'cut_extract.csv'))
         chnls = news['chnl']  #SArray类型
         nids = news['nid']
