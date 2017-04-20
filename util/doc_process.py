@@ -385,12 +385,8 @@ poser.load('/root/git/ltp_data/pos.model')
 #poser.load('/Users/a000/git/ltp_data/pos.model')
 
 allow_pos_ltp = ('a', 'i', 'j', 'n', 'nh', 'ni', 'nl', 'ns', 'nt', 'nz', 'v', 'ws')
-nn = 0
 #使用哈工大pyltp分词, 过滤词性
 def cut_pos_ltp(doc, filter_pos = True, allow_pos = allow_pos_ltp, remove_tags=True):
-    global nn
-    nn += 1
-    print nn
     s = ''.join(doc.split())  #去除空白符
     if remove_tags:
         s = filter_tags(s)  #去除html标签
