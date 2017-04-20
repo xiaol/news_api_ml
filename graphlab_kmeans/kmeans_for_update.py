@@ -31,22 +31,21 @@ g_channel_kmeans_model_dict = {}
 #               '游戏':40, '育儿':20,
 #               '体育':20, '娱乐':10, '社会':10, '科技':12, '国际':5}
 
-chnl_k_dict = {'财经':5, '股票':3, '故事':20, '互联网':20, '健康':30, '军事':20,
-               '科学':20, '历史':30, '旅游':20, '美食':20, '美文':20, '萌宠':20,
+chnl_k_dict = {'财经':20, '股票':10, '故事':20, '互联网':20, '健康':30, '军事':20,
+               '科学':20, '历史':30, '旅游':20, '美食':20, '美文':20, '萌宠':10,
                '汽车':30, '时尚':30, '探索':10, '外媒':30, '养生':30, '影视':30,
-               '游戏':30, '育儿':20,'体育':20, '娱乐':10, '社会':10,'科技':12,
+               '游戏':30, '育儿':20,'体育':20, '娱乐':20, '社会':20,'科技':12,
                '国际':5, '美女': 1, '搞笑': 1, '趣图':1, '风水玄学':10, '本地':10,
-               '自媒体':20, '奇闻':20}
+               '自媒体':50, '奇闻':10}
 
 
-#chnl_newsnum_dict = {'财经':20000, '股票':10000, '故事':10000, '互联网':20000, '健康':20000, '军事':10000,
-#                     '科学':10000, '历史':10000, '旅游':10000, '美食':10000, '美文':10000, '萌宠':20000,
-#                     '汽车':20000, '时尚':20000, '探索':1500, '外媒':10000, '养生':20000, '影视':20000,
-#                     '游戏':20000, '育儿':20000, '体育':20000, '娱乐':20000, '社会':30000, '科技':20000,
-#                     '国际':20000,'美女': 100, '搞笑': 100, '趣图':100, '风水玄学':10000, '本地':20000,
-#                     '自媒体':10000, '奇闻':10000}
-#chnl_newsnum_dict = {'财经':500, '股票':500, '美女':50, '体育':500}
-chnl_newsnum_dict = {'体育':20000, '美女':10}
+chnl_newsnum_dict = {'财经':20000, '股票':10000, '故事':10000, '互联网':10000, '健康':20000, '军事':20000,
+                     '科学':10000, '历史':20000, '旅游':10000, '美食':10000, '美文':10000, '萌宠':10000,
+                     '汽车':20000, '时尚':20000, '探索':1500, '外媒':10000, '养生':20000, '影视':20000,
+                     '游戏':20000, '育儿':20000, '体育':20000, '娱乐':20000, '社会':30000, '科技':20000,
+                     '国际':20000,'美女': 10, '搞笑': 10, '趣图':10, '风水玄学':10000, '本地':20000,
+                     '自媒体':30000, '奇闻':10000}
+#chnl_newsnum_dict = {'体育':20000, '美女':10}
 
 #创建新版本模型子进程
 def create_kmeans_core(chname, docs, model_save_dir):
@@ -54,12 +53,8 @@ def create_kmeans_core(chname, docs, model_save_dir):
         global g_channel_kmeans_model_dict
         #logger.info('---begin to deal with {}'.format(chname))
         print 'begin to create kmeans model for {}'.format(chname)
-        print type(docs[0])
-        print docs[0]
         trim_sa = gl.text_analytics.trim_rare_words(docs, threshold=5, to_lower=False)
         docs_trim = gl.text_analytics.count_words(trim_sa)
-        print '********'
-        print chnl_k_dict[chname]
         model = gl.kmeans.create(gl.SFrame(docs_trim),
                                  num_clusters=chnl_k_dict[chname],
                                  max_iterations=200)
@@ -96,12 +91,10 @@ def create_new_kmeans_model():
         #提取各个频道的新闻
         for i in xrange(chnls.size()):
             if chnls[i] not in chnl_doc_dict:
-                print chnls[i]
                 chnl_doc_dict[chnls[i]] = []
             chnl_doc_dict[chnls[i]].append(docs[i])
         #单进程训练
         for item in chnl_doc_dict.items():
-            print type(item[1])
             create_kmeans_core(item[0], gl.SArray(item[1]), model_v)
         t1 = datetime.datetime.now()
         time_cost = (t1 - t0).seconds
@@ -160,7 +153,7 @@ def get_chname_id_dict():
 
 
 def random_predict_nids():
-    sql = "select nid from newslist_v2 nv inner join channellist_v2 cl on nv.chid=cl.id where cl.cname in %s order by nid desc limit 30"
+    sql = "select nid from newslist_v2 nv inner join channellist_v2 cl on nv.chid=cl.id where cl.cname in %s order by nid desc limit 50"
     conn, cursor = doc_process.get_postgredb_query()
     #print cursor.mogrify(sql, (tuple(chnl_newsnum_dict.keys()),))
     cursor.execute(sql, (tuple(chnl_newsnum_dict.keys()),))
@@ -226,9 +219,6 @@ def kmeans_predict(nid_list):
         #print '---22--'
         logger_update.info('type of doc_list is {}'.format(type(doc_list[0])))
         ws = gl.SArray(doc_list)
-        for iii in doc_list:
-            logger_update.info('------------')
-            logger_update.info(iii)
         docs = gl.SFrame(data={'X1': ws})
         docs = gl.text_analytics.count_words(docs['X1'])
         docs = gl.SFrame(docs)
