@@ -223,12 +223,14 @@ def kmeans_predict(nid_list):
         #print '---22--'
         ws = gl.SArray(doc_list)
         for iii in doc_list:
-            print iii
+            logger_update.info('------------')
+            logger_update.info(iii)
         docs = gl.SFrame(data={'X1': ws})
         docs = gl.text_analytics.count_words(docs['X1'])
         docs = gl.SFrame(docs)
         pred = g_channel_kmeans_model_dict[chname].predict(docs, output_type = 'cluster_id')
         print pred
+        logger_update.info('result : {}'.format(pred))
         if len(nids) != len(pred):
             print 'len(nids) != len(pred)'
             return
