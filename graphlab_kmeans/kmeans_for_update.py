@@ -34,7 +34,7 @@ g_channel_kmeans_model_dict = {}
 chnl_k_dict = {'财经':5, '股票':3, '故事':20, '互联网':20, '健康':30, '军事':20,
                '科学':20, '历史':30, '旅游':20, '美食':20, '美文':20, '萌宠':20,
                '汽车':30, '时尚':30, '探索':10, '外媒':30, '养生':30, '影视':30,
-               '游戏':30, '育儿':20,'体育':5, '娱乐':10, '社会':10,'科技':12,
+               '游戏':30, '育儿':20,'体育':20, '娱乐':10, '社会':10,'科技':12,
                '国际':5, '美女': 1, '搞笑': 1, '趣图':1, '风水玄学':10, '本地':10,
                '自媒体':20, '奇闻':20}
 
@@ -46,7 +46,7 @@ chnl_k_dict = {'财经':5, '股票':3, '故事':20, '互联网':20, '健康':30,
 #                     '国际':20000,'美女': 100, '搞笑': 100, '趣图':100, '风水玄学':10000, '本地':20000,
 #                     '自媒体':10000, '奇闻':10000}
 #chnl_newsnum_dict = {'财经':500, '股票':500, '美女':50, '体育':500}
-chnl_newsnum_dict = {'体育':1000}
+chnl_newsnum_dict = {'体育':20000}
 
 #创建新版本模型子进程
 def create_kmeans_core(chname, docs, model_save_dir):
@@ -160,7 +160,7 @@ def get_chname_id_dict():
 
 
 def random_predict_nids():
-    sql = "select nid from newslist_v2 nv inner join channellist_v2 cl on nv.chid=cl.id where cl.cname in %s limit 10"
+    sql = "select nid from newslist_v2 nv inner join channellist_v2 cl on nv.chid=cl.id where cl.cname in %s order by nid desc limit 10"
     conn, cursor = doc_process.get_postgredb_query()
     #print cursor.mogrify(sql, (tuple(chnl_newsnum_dict.keys()),))
     cursor.execute(sql, (tuple(chnl_newsnum_dict.keys()),))
