@@ -492,6 +492,7 @@ def coll_news(chnl_num_dict, save_dir, to_csv=True):
     nids = []
     docs = []
     for item in chnl_num_dict.items(): #每个频道
+        print '*****' + item[0]
         cursor.execute(channle_sql, (item[0], item[1]))
         rows = cursor.fetchall()
         for row in rows:
