@@ -45,7 +45,8 @@ chnl_k_dict = {'财经':5, '股票':3, '故事':20, '互联网':20, '健康':30,
 #                     '游戏':20000, '育儿':20000, '体育':20000, '娱乐':20000, '社会':30000, '科技':20000,
 #                     '国际':20000,'美女': 100, '搞笑': 100, '趣图':100, '风水玄学':10000, '本地':20000,
 #                     '自媒体':10000, '奇闻':10000}
-chnl_newsnum_dict = {'财经':500, '股票':500, '美女':50, '体育':500}
+#chnl_newsnum_dict = {'财经':500, '股票':500, '美女':50, '体育':500}
+chnl_newsnum_dict = {'体育':1000}
 
 #创建新版本模型子进程
 def create_kmeans_core(chname, docs, model_save_dir):
@@ -56,7 +57,7 @@ def create_kmeans_core(chname, docs, model_save_dir):
         trim_sa = gl.text_analytics.trim_rare_words(docs, threshold=5, to_lower=False)
         docs_trim = gl.text_analytics.count_words(trim_sa)
         print '********'
-        print docs_trim
+        print chnl_k_dict[chname]
         model = gl.kmeans.create(gl.SFrame(docs_trim),
                                  num_clusters=chnl_k_dict[chname],
                                  max_iterations=200)
@@ -159,7 +160,7 @@ def get_chname_id_dict():
 def random_predict_nids():
     sql = "select nid from newslist_v2 nv inner join channellist_v2 cl on nv.chid=cl.id where cl.cname in %s limit 10"
     conn, cursor = doc_process.get_postgredb_query()
-    print cursor.mogrify(sql, (tuple(chnl_newsnum_dict.keys()),))
+    #print cursor.mogrify(sql, (tuple(chnl_newsnum_dict.keys()),))
     cursor.execute(sql, (tuple(chnl_newsnum_dict.keys()),))
     rows = cursor.fetchall()
     conn.close()
