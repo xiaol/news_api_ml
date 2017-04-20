@@ -227,10 +227,6 @@ def kmeans_predict(nid_list):
         docs = gl.SFrame(data={'X1': ws})
         docs = gl.text_analytics.count_words(docs['X1'])
         docs = gl.SFrame(docs)
-        ddd = list(docs['X1'])
-        print '====='
-        for kkk in ddd:
-            print kkk
         pred = g_channel_kmeans_model_dict[chname].predict(docs, output_type = 'cluster_id')
         print pred
         if len(nids) != len(pred):
