@@ -609,11 +609,13 @@ def get_idf_file(docs, idf_save_path, max_features=99999999999):
 def coll_cut_chnal(chname, num, save_dir, cut_save_file):
     save_path = os.path.join(save_dir, chname+'_raw.csv')
     coll_chnal(chname, num, True, save_path)
+    print '-------{} coll finish!'.format(chname)
     raw_df = pd.read_csv(save_path)
     docs_series = raw_df['doc']
     docs_series = docs_series.apply(cut_pos_ltp, (True, allow_pos_ltp, False))
     raw_df['doc'] = docs_series
     raw_df.to_csv(cut_save_file, index=False)
+    print '**************{} finished! '.format(chname)
 
 
 def coll_cut_extract_multiprocess(chnl_num_dict,
