@@ -54,6 +54,8 @@ def create_kmeans_core(chname, docs, model_save_dir):
         global g_channel_kmeans_model_dict
         #logger.info('---begin to deal with {}'.format(chname))
         print 'begin to create kmeans model for {}'.format(chname)
+        print type(docs[0])
+        print docs[0]
         trim_sa = gl.text_analytics.trim_rare_words(docs, threshold=5, to_lower=False)
         docs_trim = gl.text_analytics.count_words(trim_sa)
         print '********'
@@ -222,6 +224,7 @@ def kmeans_predict(nid_list):
         #print '--11---'
         #print doc_list[0]
         #print '---22--'
+        logger_update.info('type of doc_list is {}'.format(type(doc_list[0])))
         ws = gl.SArray(doc_list)
         for iii in doc_list:
             logger_update.info('------------')
