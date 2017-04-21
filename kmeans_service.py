@@ -10,6 +10,7 @@ import sys
 import tornado
 from tornado import web
 from tornado import httpserver
+from tornado import ioloop
 
 class CreateKmeansModel(tornado.web.RequestHandler):
     def get(self):
@@ -70,9 +71,11 @@ if __name__ == '__main__':
     elif port == 9980:
         from graphlab_kmeans import kmeans
         kmeans.updateModel()
-    elif port == 9981:
-        from graphlab_kmeans import kmeans
-        kmeans.updateModel2()
+    elif port == 9981:  #click 入队列
+        from graphlab_kmeans.timed_task import get_clicks_5m, period
+        ioloop.PeriodicCallback(get_clicks_5m, period * 1000).start() #定时从点击表中取
+        http_server = tornado.httpserver.HTTPServer(EmptyApp())
+        http_server.listen(port) #同时提供手工处理端口
     elif port == 9979: #消费nid
         http_server = tornado.httpserver.HTTPServer(tornado.web.Application())
         http_server.listen(port) #同时提供手工处理端口

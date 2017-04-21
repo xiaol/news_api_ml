@@ -147,13 +147,16 @@ def consume_nid_ads():
 
 user_click_queue_lda = 'user_click_queue_lda'
 user_click_queue_kmeans = 'user_click_queue_kmeans'
-def produce_user_click(uid, nid, ctime):
+def produce_user_click_lda(uid, nid, ctime):
     global redis_inst
     print 'produce user ' + str(uid) + ' ' + str(nid) + ' ' + ctime
     redis_inst.lpush(user_click_queue_lda, json.dumps([uid, nid, ctime]))
+
+
+def produce_user_click_kmeans(uid, nid, ctime):
+    global redis_inst
+    print 'produce user ' + str(uid) + ' ' + str(nid) + ' ' + ctime
     redis_inst.lpush(user_click_queue_kmeans, json.dumps([uid, nid, ctime]))
-
-
 
 def consume_user_click_kmeans():
     global redis_inst
