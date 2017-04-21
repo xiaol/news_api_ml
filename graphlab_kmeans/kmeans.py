@@ -330,6 +330,7 @@ def updateModel2():
 def deal_old_news_clicks(day=10):
     from util import doc_process
     logger.info('deal_old_news_clicks begin....')
+    print 'dddddddddd'
     conn, cursor = doc_process.get_postgredb_query()
     s_new = "select nid from newslist_v2 where (ctime > now() - interval '{} day') and chid not in (44,) and state=0"
     cursor.execute(s_new.format(day))
