@@ -90,7 +90,7 @@ if __name__ == '__main__':
         http_server = tornado.httpserver.HTTPServer(tornado.web.Application())
         http_server.listen(port) #同时提供手工处理端口
         from graphlab_kmeans import kmeans
-        kmeans.deal_old_news_clicks(5)
+        kmeans.deal_old_news_clicks(2)
         from redis_process import nid_queue
         nid_queue.consume_nid_kmeans(200)
 

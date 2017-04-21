@@ -327,7 +327,7 @@ def updateModel2():
     conn.close()
 
 #使用新模型处理旧新闻和点击
-def deal_old_news_clicks(day=10):
+def deal_old_news_clicks(day=3):
     try:
         from util import doc_process
         logger.info('deal_old_news_clicks begin....')
