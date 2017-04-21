@@ -328,34 +328,37 @@ def updateModel2():
 
 #使用新模型处理旧新闻和点击
 def deal_old_news_clicks(day=10):
-    from util import doc_process
-    logger.info('deal_old_news_clicks begin....')
-    print 'dddddddddd'
-    conn, cursor = doc_process.get_postgredb_query()
-    s_new = "select nid from newslist_v2 where (ctime > now() - interval '{} day') and chid not in (44,) and state=0"
-    cursor.execute(s_new.format(day))
-    rows = cursor.fetchall()
-    nids = []
-    for r in rows:
-        nids.append(r[0])
-    l = len(nids)
+    try:
+        from util import doc_process
+        logger.info('deal_old_news_clicks begin....')
+        print 'dddddddddd'
+        conn, cursor = doc_process.get_postgredb_query()
+        s_new = "select nid from newslist_v2 where (ctime > now() - interval '{} day') and chid not in (44) and state=0"
+        cursor.execute(s_new.format(day))
+        rows = cursor.fetchall()
+        nids = []
+        for r in rows:
+            nids.append(r[0])
+        l = len(nids)
 
-    if len(nids) < 1000:
-        kmeans_predict(nids)
-    else:
-        n = 0
-        while (n + 1000) < len(nids):
-            kmeans_predict(nids[n:n + 1000])
-            n += 1000
-            logger.info('{} of {} finished!'.format(n, l))
-        kmeans_predict(nids[n - 1000:len(nids)])
-    from redis_process import nid_queue
-    nid_queue.clear_queue_kmeans()
+        if len(nids) < 1000:
+            kmeans_predict(nids)
+        else:
+            n = 0
+            while (n + 1000) < len(nids):
+                kmeans_predict(nids[n:n + 1000])
+                n += 1000
+                logger.info('{} of {} finished!'.format(n, l))
+            kmeans_predict(nids[n - 1000:len(nids)])
+        from redis_process import nid_queue
+        nid_queue.clear_queue_kmeans()
 
-    logger.info('    deal_old_news_click--- predict click begin...')
-    s_click = "select uid, nid, ctime from newsrecommendclick where (ctime > now() - interval '{} day') "
-    cursor.execute(s_click.format(day))
-    clicks = tuple(cursor.fetchall())
-    predict_click(clicks)
-    nid_queue.clear_kmeans_queue_click()
-    logger.info('deal_old_news_clicks finished....')
+        logger.info('    deal_old_news_click--- predict click begin...')
+        s_click = "select uid, nid, ctime from newsrecommendclick where (ctime > now() - interval '{} day') "
+        cursor.execute(s_click.format(day))
+        clicks = tuple(cursor.fetchall())
+        predict_click(clicks)
+        nid_queue.clear_kmeans_queue_click()
+        logger.info('deal_old_news_clicks finished....')
+    except:
+        logger.exception(traceback.format_exc())
