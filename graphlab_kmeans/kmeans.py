@@ -13,14 +13,9 @@ from multiprocessing import Process
 import traceback
 
 #添加日志
-import logging
+from util.logger import Logger
 real_dir_path = os.path.split(os.path.realpath(__file__))[0]
-logger = logging.getLogger(__name__)
-handler = logging.FileHandler(os.path.join(real_dir_path, '../log/kmeans/kmeans.log'), 'w')
-formatter = logging.Formatter('%(asctime)s-%(name)s-%(levelname)s-%(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
-logger.setLevel(logging.INFO)
+logger = Logger('kmeans_update', os.path.join(real_dir_path, 'log/kmeans.log'))
 
 #定义全局变量
 data_dir = os.path.join(real_dir_path, 'data')
@@ -199,7 +194,7 @@ def get_chname_id_dict():
 insert_sql = "insert into news_kmeans  (nid, model_v, ch_name, cluster_id, chid, ctime) VALUES ({0}, '{1}', '{2}', {3}, {4}, '{5}')"
 def kmeans_predict(nid_list):
     global g_channel_kmeans_model_dict, chname_id_dict
-    print "****************************************************"  + model_v
+    logger.info('predict : {}'.format(nid_list))
     if len(g_channel_kmeans_model_dict) == 0:
         load_newest_models()
     if (len(chname_id_dict)) == 0:
@@ -231,7 +226,6 @@ def kmeans_predict(nid_list):
 
     #clstid_nid_dict = {}
     for chname in g_channel_kmeans_model_dict.keys():
-        print 'predict ---- ' + chname
         nids = []
         doc_list = []
         for nid in nid_info.keys():
@@ -240,6 +234,7 @@ def kmeans_predict(nid_list):
                 doc_list.append(nid_info[nid][1])
 
         print 'news num of ' + chname + ' is ' + str(len(chname))
+        logger.info('news num of {} is {}'.format(chname, len(chname)))
         if len(nids) == 0:
             continue
         ws = gl.SArray(doc_list)
@@ -248,7 +243,7 @@ def kmeans_predict(nid_list):
         docs = gl.SFrame(docs)
         pred = g_channel_kmeans_model_dict[chname].predict(docs, output_type = 'cluster_id')
         if len(nids) != len(pred):
-            print 'len(nids) != len(pred)'
+            logger.info('len(nids) != len(pred)')
             return
         conn, cursor = doc_process.get_postgredb()
         for i in xrange(0, len(pred)):
@@ -287,7 +282,7 @@ def predict_click(click_info):
     uid = click_info[0]
     nid = click_info[1]
     time_str = click_info[2]
-    print 'consume kmenas -----' + str(uid) + ' ' + str(nid) + ' '+time_str
+    logger.info('consume kmenas -----{} {} {}'.format(uid, nid, time_str))
     ctime = datetime.datetime.strptime(time_str, '%Y-%m-%d %H:%M:%S')
     valid_time = ctime + timedelta(days=15) #有效时间定为30天
     fail_time = valid_time.strftime('%Y-%m-%d %H:%M:%S')
@@ -303,10 +298,10 @@ def predict_click(click_info):
         rows2 = cursor2.fetchone()
         if rows2: #该用户已经关注过该topic_id, 更新probability即可
             times = 1 + rows2[0]
-            print "update '{0}' '{1}' '{2}' '{3}' '{4}'".format(uid, nid, model_v, ch_name, cluster_id)
+            logger.info("    update '{0}' '{1}' '{2}' '{3}' '{4}'".format(uid, nid, model_v, ch_name, cluster_id))
             cursor2.execute(ut_update_sql.format(times, time_str, fail_time, uid, local_model_v, ch_name, cluster_id))
         else:
-            print "insert '{0}' '{1}' '{2}' '{3}' '{4}'".format(uid, nid, model_v, ch_name, cluster_id)
+            logger.info("    insert '{0}' '{1}' '{2}' '{3}' '{4}'".format(uid, nid, model_v, ch_name, cluster_id))
             cursor2.execute(user_topic_insert_sql.format(uid, local_model_v, ch_name, cluster_id, '1', time_str, fail_time, chname_id_dict[ch_name]))
         conn2.commit()
         conn2.close()
@@ -334,6 +329,7 @@ def updateModel2():
 #使用新模型处理旧新闻和点击
 def deal_old_news_clicks(day=10):
     from util import doc_process
+    logger.info('deal_old_news_clicks begin....')
     conn, cursor = doc_process.get_postgredb_query()
     s_new = "select nid from newslist_v2 where (ctime > now() - interval '{} day') and chid not in (44,) and state=0"
     cursor.execute(s_new.format(day))
@@ -350,13 +346,15 @@ def deal_old_news_clicks(day=10):
         while (n + 1000) < len(nids):
             kmeans_predict(nids[n:n + 1000])
             n += 1000
-            print ('{} of {} finished!'.format(n, l))
+            logger.info('{} of {} finished!'.format(n, l))
         kmeans_predict(nids[n - 1000:len(nids)])
     from redis_process import nid_queue
     nid_queue.clear_queue_kmeans()
 
+    logger.info('    deal_old_news_click--- predict click begin...')
     s_click = "select uid, nid, ctime from newsrecommendclick where (ctime > now() - interval '{} day') "
     cursor.execute(s_click.format(day))
     clicks = tuple(cursor.fetchall())
     predict_click(clicks)
     nid_queue.clear_kmeans_queue_click()
+    logger.info('deal_old_news_clicks finished....')
