@@ -280,7 +280,7 @@ class EmptyApp(tornado.web.Application):
 
 if __name__ == '__main__':
     port = int(sys.argv[1])
-    if port == 9986:  #新闻入库后将nid加入到队列中,对外提供的接口
+    if port == 9986:  #新闻入库后将nid加入到队列中,对外提供的接口  #不再需要。 在base_service.py中同一入队列
         http_server = tornado.httpserver.HTTPServer(ProduceNewsApplication())
         http_server.listen(port)
     elif port == 9987: #包含手工的一些接口和新闻的消费逻辑
