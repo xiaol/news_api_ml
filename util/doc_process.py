@@ -577,6 +577,11 @@ def coll_chnal(chname, num, to_csv=True, save_path=''):
         soup = BeautifulSoup(txt, 'lxml')
         txt = soup.get_text()
         total_txt = title + ' ' + txt.encode('utf-8')
+        #去除三种特殊空格
+        total_txt = total_txt.replace('\xe2\x80\x8b', '')
+        total_txt = total_txt.replace('\xe2\x80\x8c', '')
+        total_txt = total_txt.replace('\xe2\x80\x8d', '')
+
         chnal.append(chname)
         nids.append(row[2])
         docs.append(''.join(total_txt.split())) #split主要去除回车符\r, 否则pandas.read_csv出错
@@ -611,7 +616,7 @@ def coll_cut_chnal(chname, num, save_dir, cut_save_file):
         docs_series = raw_df['doc']
         docs_series = docs_series.apply(cut_pos_ltp, (True, allow_pos_ltp, False))
         raw_df['doc'] = docs_series
-        raw_df = raw_df.dropna()
+        #raw_df = raw_df.dropna()
         raw_df.to_csv(cut_save_file, index=False)
         print '**************{} cut finished! '.format(chname)
     except:
@@ -640,6 +645,7 @@ def coll_cut_extract_multiprocess(chnl_num_dict,
     data_cut_path = os.path.join(save_dir, 'data_cut.csv')
     join_csv(chnl_cut_file, data_cut_path, columns=('chnl', 'nid', 'doc'))
     cut_df = pd.read_csv(data_cut_path)
+    cut_df = cut_df.dropna()
     cut_docs = cut_df['doc']
     get_idf_file(cut_docs, idf_save_path, 5000000)
     extract_docs = extract_keywords(idf_save_path, cut_docs.tolist(), topK, max_percent)
