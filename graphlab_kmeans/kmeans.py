@@ -233,8 +233,8 @@ def kmeans_predict(nid_list):
                 nids.append(nid)
                 doc_list.append(nid_info[nid][1])
 
-        print 'news num of ' + chname + ' is ' + str(len(chname))
-        logger.info('news num of {} is {}'.format(chname, len(chname)))
+        print 'news num of ' + chname + ' is ' + str(len(nids))
+        logger.info('news num of {} is {}'.format(chname, len(nids)))
         if len(nids) == 0:
             continue
         ws = gl.SArray(doc_list)
