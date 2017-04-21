@@ -15,7 +15,7 @@ import traceback
 #添加日志
 from util.logger import Logger
 real_dir_path = os.path.split(os.path.realpath(__file__))[0]
-logger = Logger('kmeans_update', os.path.join(real_dir_path, 'log/kmeans.log'))
+logger = Logger('kmeans', os.path.join(real_dir_path, 'log/kmeans.log'))
 
 #定义全局变量
 data_dir = os.path.join(real_dir_path, 'data')
