@@ -335,8 +335,8 @@ def updateModel2():
 def deal_old_news_clicks(day=10):
     from util import doc_process
     conn, cursor = doc_process.get_postgredb_query()
-    s_new = "select nid from newslist_v2 where ctime > now() - interval '10 day' and chid not in (44,) and state=0"
-    cursor.execute(s_new)
+    s_new = "select nid from newslist_v2 where (ctime > now() - interval '{} day') and chid not in (44,) and state=0"
+    cursor.execute(s_new.format(day))
     rows = cursor.fetchall()
     nids = []
     for r in rows:
@@ -352,8 +352,11 @@ def deal_old_news_clicks(day=10):
             n += 1000
             print ('{} of {} finished!'.format(n, l))
         kmeans_predict(nids[n - 1000:len(nids)])
+    from redis_process import nid_queue
+    nid_queue.clear_queue_kmeans()
 
-    s_click = "select uid, nid, ctime from newsrecommendclick where (ctime > now() - interval '10 day') "
-    cursor.execute(s_click)
+    s_click = "select uid, nid, ctime from newsrecommendclick where (ctime > now() - interval '{} day') "
+    cursor.execute(s_click.format(day))
     clicks = tuple(cursor.fetchall())
     predict_click(clicks)
+    nid_queue.clear_kmeans_queue_click()

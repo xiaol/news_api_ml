@@ -199,6 +199,20 @@ def get_old_clicks():
             raise
     return clicks
 
+def clear_queue_kmeans():
+    global redis_inst
+    while True:
+        nid = redis_inst.rpop(kmeans_queue)
+        if not nid:
+            break
+
+
+def clear_kmeans_queue_click():
+    global redis_inst
+    while True:
+        click = redis_inst.rpop(user_click_queue_kmeans)
+        if not click:
+            break
 
 def clear_queue_lda():
     global redis_inst
@@ -208,7 +222,7 @@ def clear_queue_lda():
             break
 
 
-def clear_queue_click():
+def clear_lda_queue_click():
     global redis_inst
     while True:
         click = redis_inst.rpop(user_click_queue_lda)

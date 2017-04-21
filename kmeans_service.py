@@ -83,5 +83,12 @@ if __name__ == '__main__':
         http_server.listen(port) #同时提供手工处理端口
         from redis_process import nid_queue
         nid_queue.consume_user_click_kmeans()
+    elif port == 9977:  #更新模型并重启nid消费
+        http_server = tornado.httpserver.HTTPServer(tornado.web.Application())
+        http_server.listen(port) #同时提供手工处理端口
+        from graphlab_kmeans import kmeans
+        kmeans.deal_old_news_clicks(5)
+        from redis_process import nid_queue
+        nid_queue.consume_nid_kmeans(200)
 
     tornado.ioloop.IOLoop.instance().start()
