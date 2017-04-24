@@ -348,11 +348,11 @@ def deal_old_news_clicks(day=10, deal_news=True, deal_click=True):
             l = len(nids)
 
             if len(nids) < 1000:
-                kmeans_predict(nids)
+                kmeans_predict(nids, logger_olddata)
             else:
                 n = 0
                 while (n + 1000) < len(nids):
-                    kmeans_predict(nids[n:n + 1000])
+                    kmeans_predict(nids[n:n + 1000], logger_olddata)
                     n += 1000
                     logger_olddata.info('{} of {} finished!'.format(n, l))
                 kmeans_predict(nids[n - 1000:len(nids)], logger_olddata)
