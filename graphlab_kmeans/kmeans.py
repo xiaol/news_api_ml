@@ -17,6 +17,7 @@ from util.logger import Logger
 real_dir_path = os.path.split(os.path.realpath(__file__))[0]
 logger = Logger('kmeans', os.path.join(real_dir_path, 'log/kmeans.log'))
 logger_click = Logger('kmeans_click', os.path.join(real_dir_path, 'log/kmeans_click.log'))
+logger_olddata = Logger('kmeans_olddata', os.path.join(real_dir_path, 'log/kmeans_olddata.log'))
 
 #定义全局变量
 data_dir = os.path.join(real_dir_path, 'data')
@@ -193,9 +194,9 @@ def get_chname_id_dict():
 
 
 insert_sql = "insert into news_kmeans  (nid, model_v, ch_name, cluster_id, chid, ctime) VALUES ({0}, '{1}', '{2}', {3}, {4}, '{5}')"
-def kmeans_predict(nid_list):
+def kmeans_predict(nid_list, log=logger):
     global g_channel_kmeans_model_dict, chname_id_dict
-    logger.info('predict : {}'.format(nid_list))
+    log.info('predict : {}'.format(nid_list))
     if len(g_channel_kmeans_model_dict) == 0:
         load_newest_models()
     if (len(chname_id_dict)) == 0:
@@ -235,7 +236,7 @@ def kmeans_predict(nid_list):
                 doc_list.append(nid_info[nid][1])
 
         print 'news num of ' + chname + ' is ' + str(len(nids))
-        logger.info('news num of {} is {}'.format(chname, len(nids)))
+        log.info('news num of {} is {}'.format(chname, len(nids)))
         if len(nids) == 0:
             continue
         ws = gl.SArray(doc_list)
@@ -244,7 +245,7 @@ def kmeans_predict(nid_list):
         docs = gl.SFrame(docs)
         pred = g_channel_kmeans_model_dict[chname].predict(docs, output_type = 'cluster_id')
         if len(nids) != len(pred):
-            logger.info('len(nids) != len(pred)')
+            log.info('len(nids) != len(pred)')
             return
         conn, cursor = doc_process.get_postgredb()
         for i in xrange(0, len(pred)):
@@ -276,14 +277,14 @@ user_topic_insert_sql = "insert into user_kmeans_cluster (uid, model_v, ch_name,
 #@brief : 添加用户点击
 ################################################################################
 from datetime import timedelta
-def predict_click(click_info):
+def predict_click(click_info, log=logger_click):
     global chname_id_dict
     if (len(chname_id_dict)) == 0:
         get_chname_id_dict()
     uid = click_info[0]
     nid = click_info[1]
     time_str = click_info[2]
-    logger_click.info('consume kmenas -----{} {} {}'.format(uid, nid, time_str))
+    log.info('consume kmenas -----{} {} {}'.format(uid, nid, time_str))
     ctime = datetime.datetime.strptime(time_str, '%Y-%m-%d %H:%M:%S')
     valid_time = ctime + timedelta(days=15) #有效时间定为30天
     fail_time = valid_time.strftime('%Y-%m-%d %H:%M:%S')
@@ -299,10 +300,10 @@ def predict_click(click_info):
         rows2 = cursor2.fetchone()
         if rows2: #该用户已经关注过该topic_id, 更新probability即可
             times = 1 + rows2[0]
-            logger_click.info("    update '{0}' '{1}' '{2}' '{3}' '{4}'".format(uid, nid, model_v, ch_name, cluster_id))
+            log.info("    update '{0}' '{1}' '{2}' '{3}' '{4}'".format(uid, nid, model_v, ch_name, cluster_id))
             cursor2.execute(ut_update_sql.format(times, time_str, fail_time, uid, local_model_v, ch_name, cluster_id))
         else:
-            logger_click.info("    insert '{0}' '{1}' '{2}' '{3}' '{4}'".format(uid, nid, model_v, ch_name, cluster_id))
+            log.info("    insert '{0}' '{1}' '{2}' '{3}' '{4}'".format(uid, nid, model_v, ch_name, cluster_id))
             cursor2.execute(user_topic_insert_sql.format(uid, local_model_v, ch_name, cluster_id, '1', time_str, fail_time, chname_id_dict[ch_name]))
         conn2.commit()
         conn2.close()
@@ -328,37 +329,47 @@ def updateModel2():
     conn.close()
 
 #使用新模型处理旧新闻和点击
-def deal_old_news_clicks(day=3):
+def deal_old_news_clicks(day=10, deal_news=True, deal_click=True):
     try:
         from util import doc_process
-        logger.info('deal_old_news_clicks begin....')
+        logger_olddata.info('deal_old_news_clicks begin....')
         from redis_process import nid_queue
-        nid_queue.clear_queue_kmeans()
         conn, cursor = doc_process.get_postgredb_query()
-        s_new = "select nid from newslist_v2 where (ctime > now() - interval '{} day') and chid not in (44) and state=0"
-        cursor.execute(s_new.format(day))
-        rows = cursor.fetchall()
-        nids = []
-        for r in rows:
-            nids.append(r[0])
-        l = len(nids)
+        if deal_news:
+            nid_queue.clear_queue_kmeans()
+            s_new = "select nid from newslist_v2 where (ctime > now() - interval '{} day') and chid not in (44) and state=0"
+            cursor.execute(s_new.format(day))
+            rows = cursor.fetchall()
+            nids = []
+            for r in rows:
+                nids.append(r[0])
+            l = len(nids)
 
-        if len(nids) < 1000:
-            kmeans_predict(nids)
-        else:
-            n = 0
-            while (n + 1000) < len(nids):
-                kmeans_predict(nids[n:n + 1000])
-                n += 1000
-                logger.info('{} of {} finished!'.format(n, l))
-            kmeans_predict(nids[n - 1000:len(nids)])
+            if len(nids) < 1000:
+                kmeans_predict(nids)
+            else:
+                n = 0
+                while (n + 1000) < len(nids):
+                    kmeans_predict(nids[n:n + 1000])
+                    n += 1000
+                    logger_olddata.info('{} of {} finished!'.format(n, l))
+                kmeans_predict(nids[n - 1000:len(nids)], logger_olddata)
 
-        nid_queue.clear_kmeans_queue_click()
-        logger.info('    deal_old_news_click--- predict click begin...')
-        s_click = "select uid, nid, ctime from newsrecommendclick where (ctime > now() - interval '{} day') "
-        cursor.execute(s_click.format(day))
-        clicks = tuple(cursor.fetchall())
-        predict_click(clicks)
-        logger.info('deal_old_news_clicks finished....')
+        if deal_click:
+            nid_queue.clear_kmeans_queue_click()
+            logger_olddata.info('    deal_old_news_click--- predict click begin...')
+            #s_click = "select uid, nid, ctime from newsrecommendclick where (ctime > now() - interval '{} day') "
+            s_click = "select uid, nid, ctime from newsrecommendclick where (ctime > now() - interval '10 day') and (ctime < now() - interval '3 day') "
+            #cursor.execute(s_click.format(day))
+            cursor.execute(s_click)
+            clicks = tuple(cursor.fetchall())
+            for click in clicks:
+                predict_click(click, logger_olddata)
+        conn.close()
+        logger_olddata.info('deal_old_news_clicks finished....')
     except:
-        logger.exception(traceback.format_exc())
+        conn.close()
+        logger_olddata.exception(traceback.format_exc())
+
+
+
