@@ -97,6 +97,6 @@ if __name__ == '__main__':
         http_server = tornado.httpserver.HTTPServer(EmptyApp())
         http_server.listen(port) #同时提供手工处理端口
         from graphlab_kmeans import kmeans
-        kmeans.deal_old_news_clicks(7, deal_news=False, deal_click=True) #计算七天数据
+        kmeans.deal_old_news_clicks(7, deal_news=True, deal_click=True) #计算七天数据
 
     tornado.ioloop.IOLoop.instance().start()
