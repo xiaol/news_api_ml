@@ -362,7 +362,11 @@ def deal_old_news_clicks(day=10, deal_news=True, deal_click=True):
             s_click = "select uid, nid, ctime from newsrecommendclick where (ctime > now() - interval '10 day') and (ctime < now() - interval '3 day') "
             #cursor.execute(s_click.format(day))
             cursor.execute(s_click)
-            clicks = tuple(cursor.fetchall())
+            clicks = []
+            for r in rows:
+                ctime_str = r[2].strftime('%Y-%m-%d %H:%M:%S')
+                clicks.append((r[0], r[1], ctime_str))
+
             for click in clicks:
                 predict_click(click, logger_olddata)
         conn.close()
