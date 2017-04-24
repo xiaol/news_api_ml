@@ -337,8 +337,10 @@ def deal_old_news_clicks(day=10, deal_news=True, deal_click=True):
         conn, cursor = doc_process.get_postgredb_query()
         if deal_news:
             nid_queue.clear_queue_kmeans()
-            s_new = "select nid from newslist_v2 where (ctime > now() - interval '{} day') and chid not in (44) and state=0"
-            cursor.execute(s_new.format(day))
+            #s_new = "select nid from newslist_v2 where (ctime > now() - interval '{} day') and chid not in (44) and state=0"
+            s_new = "select nid from newslist_v2 where (ctime > now() - interval '10 day') and (ctime < now() - interval '3 day')  and chid not in (44) and state=0"
+            #cursor.execute(s_new.format(day))
+            cursor.execute(s_new)
             rows = cursor.fetchall()
             nids = []
             for r in rows:
