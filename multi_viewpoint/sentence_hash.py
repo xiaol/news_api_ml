@@ -198,8 +198,6 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=999999):
                         continue
                     h = simhash.simhash(wl)
                     fir, sec, thi, fou, fir2, sec2, thi2, fou2 = simhash.get_4_segments(h.__long__())
-                    #将所有句子入库
-                    cursor.execute(insert_sentence_hash, (nid, str_no_html, n, h.__str__(), fir, sec, thi, fou, t, fir2, sec2, thi2, fou2))
                     if is_sentence_ads(h, fir, sec, thi, fou, fir2, sec2, thi2, fou2, nid_pname_dict[nid]):  #在广告db内
                         #  删除广告句子
                         log.info('find ads of {0}  : {1} '.format(nid, str_no_html.encode("utf-8")))
@@ -207,7 +205,9 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=999999):
                     cursor_query.execute(query_sen_sql_interval, (str(fir), str(sec), str(thi), str(fou), str(fir2), str(sec2), str(thi2), str(fou2), news_interval))
                     #print cursor.mogrify(query_sen_sql, (str(fir), str(sec), str(thi), str(fou), str(fir2), str(sec2), str(thi2), str(fou2)))
                     rows = cursor_query.fetchall()  #所有可能相同的段落
-                    if len(rows) == 0:
+                    if len(rows) == 0:  #没有相似的句子
+                        #将所有句子入库
+                        cursor.execute(insert_sentence_hash, (nid, str_no_html, n, h.__str__(), fir, sec, thi, fou, t, fir2, sec2, thi2, fou2))
                         logger_9965.info('len of potential same sentence is 0')
                         continue
                     else:
@@ -228,7 +228,7 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=999999):
                             sen = r2[0].decode('utf-8')
                             sen_without_html = filter_tags(sen)
                             if len(sen) == 1 or len(sen_without_html) > len(str_no_html)*1.5 or len(str_no_html) > len(sen_without_html)*1.5:
-                                logger_9965.info('sentence len mismatch: {} ----{}'.format(str_no_html, sen_without_html))
+                                logger_9965.info('sentence len mismatch: {} ----{}'.format(str_no_html.encode('utf-8'), sen_without_html))
                                 continue
                             wl1 = jieba.cut(str_no_html)
                             set1 = set(wl1)
@@ -244,9 +244,9 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=999999):
                             same_sentence_sql_para.append((nid, r[0], str_no_html, sen, t))
                             #cursor.execute(insert_same_sentence, (nid, r[0], str_no_html, sen, t))
                             #print cursor.mogrify(insert_same_sentence, (nid, r[0], str_no_html, sen_without_html, t))
-                    if len(nids_for_ads) == 0:
-                        #cursor.execute(insert_sentence_hash, (nid, str_no_html, n, h.__str__(), fir, sec, thi, fou, t, fir2, sec2, thi2, fou2))
-                        #conn.commit()
+                    if len(nids_for_ads) == 0:  #没有潜在相同的句子; 这些句子先做广告检测
+                        cursor.execute(insert_sentence_hash, (nid, str_no_html, n, h.__str__(), fir, sec, thi, fou, t, fir2, sec2, thi2, fou2))
+                        conn.commit()
                         continue
 
                     is_new_ads = False
@@ -275,7 +275,7 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=999999):
                                         max_time = ctime_list[kkk]
                                     if ctime_list[kkk] < min_time:
                                         min_time = ctime_list[kkk]
-                                if (max_time - min_time).days > 2:  #不是三天内的热点新闻
+                                if (max_time - min_time).days > 2:  #不是两天内的热点新闻
                                     is_new_ads = True
                             '''
                             nid_links = nid_para_links_dict[nid]
@@ -300,8 +300,8 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=999999):
                         else:
                             not_ads_but_ignore = True
                     nids_str = ','.join(nids_for_ads)
-                    if is_new_ads:
-                        if len(pname_set) <= PNAME_T:
+                    if is_new_ads:  #是否是新广告
+                        if len(pname_set) <= PNAME_T:  #源
                             pname_str = ','.join(pname_set)
                         else:
                             pname_str = ""
@@ -312,7 +312,7 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=999999):
                         if not_ads_but_ignore:  #相同的句子过多,认为是误判, 加入广告数据库,但state=1,即不是真广告,这样可以在下次碰到时减少计算
                             cursor.execute(ads_insert, (str_no_html, h.__str__(), t, fir, sec, thi, fou, fir2, sec2, thi2, fou2, nids_str, 1, "" ))
                         else:
-                            cursor.executemany(insert_same_sentence, same_sentence_sql_para)
+                            cursor.executemany(insert_same_sentence, same_sentence_sql_para)  #有效的重复句子
                     #多放观点  1. 句子长度>30.  2 不同源
                     if len(str_no_html) > 30 and n > 2 and (n < sen_len-3):
                         for same in same_sentence_sql_para:
@@ -328,7 +328,7 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=999999):
                                 log.info('get multi viewpoint :{}'.format(str_no_html.encode('utf-8')))
 
                     #将所有段落入库
-                    #cursor.execute(insert_sentence_hash, (nid, str_no_html, n, h.__str__(), fir, sec, thi, fou, t, fir2, sec2, thi2, fou2))
+                    cursor.execute(insert_sentence_hash, (nid, str_no_html, n, h.__str__(), fir, sec, thi, fou, t, fir2, sec2, thi2, fou2))
                 conn.commit()
                 cursor.close()
                 conn.close()
