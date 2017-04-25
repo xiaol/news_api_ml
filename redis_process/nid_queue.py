@@ -232,3 +232,9 @@ def clear_lda_queue_click():
         if not click:
             break
 
+def clear_sentence_simhash_queue():
+    global redis_inst
+    while True:
+        click = redis_inst.rpop(sentence_simhash_queue)
+        if not click:
+            break

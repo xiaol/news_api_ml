@@ -203,7 +203,7 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=999999):
                         log.info('find ads of {0}  : {1} '.format(nid, str_no_html.encode("utf-8")))
                         continue
                     cursor_query.execute(query_sen_sql_interval, (str(fir), str(sec), str(thi), str(fou), str(fir2), str(sec2), str(thi2), str(fou2), news_interval))
-                    print cursor.mogrify(query_sen_sql_interval, (str(fir), str(sec), str(thi), str(fou), str(fir2), str(sec2), str(thi2), str(fou2), news_interval))
+                    #print cursor.mogrify(query_sen_sql_interval, (str(fir), str(sec), str(thi), str(fou), str(fir2), str(sec2), str(thi2), str(fou2), news_interval))
                     rows = cursor_query.fetchall()  #所有可能相同的段落
                     if len(rows) == 0:  #没有相似的句子
                         #将所有句子入库
