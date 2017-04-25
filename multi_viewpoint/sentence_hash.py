@@ -28,6 +28,11 @@ logger_9965 = logger.Logger('9965', real_dir_path + '/../log/multi_vp/log_9965.t
 logger_9966 = logger.Logger('9966', real_dir_path + '/../log/multi_vp/log_9966.txt')
 
 
+channel_for_multi_vp = ('科技', '外媒', '社会', '财经', '体育', '国际',
+                        '娱乐', '养生', '育儿', '股票', '互联网', '健康',
+                        '影视', '军事', '历史', '点集', '自媒体')
+exclude_chnl = ['搞笑', '趣图', '美女', '萌宠', '时尚', '美食', '美文', '奇闻', '美食',
+                '旅游', '汽车', '游戏', '科学', '故事', '探索']
 
 
 def get_nid_sentence(nid):
@@ -67,11 +72,12 @@ def get_exist_nids():
 #      ...
 #    }
 ################################################################################
-get_sent_sql = "select nid, title, content, state, pname from newslist_v2 where nid in %s"
+get_sent_sql = "select nl.nid, nl.title, nl.content, nl.state, nl.pname from newslist_v2 nl" \
+               "inner join channlelist_v2 cl on nl.chid=cl.id where nid in %s and cl.cname in %s"
 def get_nids_sentences(nid_set):
     nid_tuple = tuple(nid_set)
     conn, cursor = get_postgredb_query()
-    cursor.execute(get_sent_sql, (nid_tuple, ))
+    cursor.execute(get_sent_sql, (nid_tuple, channel_for_multi_vp))
     rows = cursor.fetchall()
     nid_sentences_dict = {}
     nid_para_links_dict = {}
@@ -164,24 +170,21 @@ multo_vp_insert_sql = "insert into news_multi_vp (nid1, sentence1, nid2, sentenc
 ################################################################################
 #@brief: 计算子进程
 ################################################################################
-def cal_process(nid_set, log=None, same_t=3, news_interval=999999):
+def cal_process(nid_set, log=None, same_t=3, news_interval=999999, same_dict = {}):
     log = logger_9965
     log.info('there are {} news to calulate'.format(len(nid_set)))
+    log.info('calcute: {}'.format(nid_set))
     nid_sents_dict, nid_para_links_dict, nid_pname_dict = get_nids_sentences(nid_set)
-    same_dict = get_relate_same_news(nid_set)
+    #same_dict = get_relate_same_news(nid_set)
     kkkk = 0
-    ttt = datetime.datetime.now()
     try:
         for item in nid_sents_dict.items(): #每条新闻
             kkkk += 1
             n = 0
             nid = item[0]
-            log.info('--- consume :{}'.format(nid))
+            #log.info('--- consume :{}'.format(nid))
             t = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            #sents = []
             para_sent_dict = item[1]
-            #for para in para_sent_list:
-            #for pn in xrange(0, len(para_sent_dict)):
 
             sen_len = 0   #文章总句子数目
             for pa in para_sent_dict.items(): #每个段落
@@ -194,29 +197,31 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=999999):
                 for s in sents:  #每个句子
                     n += 1
                     str_no_html, wl = filter_html_stopwords_pos(s, False, True, True, False)
-                    if len(wl) == 0 or len(str_no_html) <= 2: #去除一个字的句子,因为有很多是特殊字符
+                    #if len(wl) == 0 or len(str_no_html) <= 2: #去除一个字的句子,因为有很多是特殊字符
+                    if len(wl) == 0 or len(str_no_html) <= 10: #去除一个字的句子,因为有很多是特殊字符
                         continue
                     h = simhash.simhash(wl)
                     check_exist_sql = "select nid from news_sentence_hash where nid=%s and hash_val=%s" #该新闻中已经有这个句子,即有重复句子存在
-                    cursor.execute(check_exist_sql, (nid, h.__str__()))
-                    if (len(list(cursor.fetchall()))) != 0:
-                        log.info('sentence has existed in this news: {}'.format(str_no_html.encode("utf-8")))
+                    cursor_query.execute(check_exist_sql, (nid, h.__str__()))
+                    if (len(cursor.fetchall())) != 0:
+                        #log.info('sentence has existed in this news: {}'.format(str_no_html.encode("utf-8")))
                         continue
                     fir, sec, thi, fou, fir2, sec2, thi2, fou2 = simhash.get_4_segments(h.__long__())
                     if is_sentence_ads(h, fir, sec, thi, fou, fir2, sec2, thi2, fou2, nid_pname_dict[nid]):  #在广告db内
                         #  删除广告句子
-                        log.info('find ads of {0}  : {1} '.format(nid, str_no_html.encode("utf-8")))
+                        #log.info('find ads of {0}  : {1} '.format(nid, str_no_html.encode("utf-8")))
                         continue
                     cursor_query.execute(query_sen_sql_interval, (str(fir), str(sec), str(thi), str(fou), str(fir2), str(sec2), str(thi2), str(fou2), news_interval))
                     #print cursor.mogrify(query_sen_sql_interval, (str(fir), str(sec), str(thi), str(fou), str(fir2), str(sec2), str(thi2), str(fou2), news_interval))
                     rows = cursor_query.fetchall()  #所有可能相同的段落
+                    print 'len of potential same sentence is {}'.format(len(rows))
                     if len(rows) == 0:  #没有相似的句子
                         #将所有句子入库
                         cursor.execute(insert_sentence_hash, (nid, str_no_html, n, h.__str__(), fir, sec, thi, fou, t, fir2, sec2, thi2, fou2))
-                        logger_9965.info('len of potential same sentence is 0')
+                        #logger_9965.info('len of potential same sentence is 0')
                         continue
-                    else:
-                        logger_9965.info('len of potential same sentence is {}'.format(len(rows)))
+                    #else:
+                        #logger_9965.info('len of potential same sentence is {}'.format(len(rows)))
 
                     same_sentence_sql_para = []
                     nids_for_ads = set()
@@ -225,7 +230,7 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=999999):
                             #break
                         #距离过大或者是同一篇新闻
                         if h.hamming_distance_with_val(long(r[1])) > same_t or (nid in same_dict.keys() and r[0] in same_dict[nid]) or nid == r[0]:
-                            logger_9965.info('distance is too big or same news of {} and {}'.format(nid, r[0]))
+                            #logger_9965.info('distance is too big or same news of {} and {}'.format(nid, r[0]))
                             continue
                         cursor_query.execute(same_sql2, (r[0], r[1]))
                         rs = cursor_query.fetchall()
@@ -233,7 +238,7 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=999999):
                             sen = r2[0].decode('utf-8')
                             sen_without_html = filter_tags(sen)
                             if len(sen) == 1 or len(sen_without_html) > len(str_no_html)*1.5 or len(str_no_html) > len(sen_without_html)*1.5:
-                                logger_9965.info('sentence len mismatch: {} ----{}'.format(str_no_html.encode('utf-8'), sen_without_html))
+                                #logger_9965.info('sentence len mismatch: {} ----{}'.format(str_no_html.encode('utf-8'), sen_without_html))
                                 continue
                             wl1 = jieba.cut(str_no_html)
                             set1 = set(wl1)
@@ -269,7 +274,7 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=999999):
                         chid_set.add(rk[1])
                         ctime_list.append(rk[2])
                         nid_pn[rk[3]] = rk[0]
-                    if len(nids_for_ads) >= 20:
+                    if len(nids_for_ads) >= 10:
                         #先处理同源潜在广告
                         if len(pname_set) <= PNAME_T or (len(pname_set) > 5 and len(chid_set) < 4):
                             if n > sen_len * .2 and n < sen_len * .8:
@@ -311,26 +316,26 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=999999):
                         else:
                             pname_str = ""
                         cursor.execute(ads_insert, (str_no_html, h.__str__(), t, fir, sec, thi, fou, fir2, sec2, thi2, fou2, nids_str, 0, pname_str))
-                        log.info('find new ads : {0}'.format(str_no_html.encode("utf-8")))
+                        #log.info('find new ads : {0}'.format(str_no_html.encode("utf-8")))
                     else:
                         #if len(same_sentence_sql_para) < 5:  #检测出过多的相同句子,又不是广告, 可能是误判, 不处理
                         if not_ads_but_ignore:  #相同的句子过多,认为是误判, 加入广告数据库,但state=1,即不是真广告,这样可以在下次碰到时减少计算
                             cursor.execute(ads_insert, (str_no_html, h.__str__(), t, fir, sec, thi, fou, fir2, sec2, thi2, fou2, nids_str, 1, "" ))
                         else:
                             cursor.executemany(insert_same_sentence, same_sentence_sql_para)  #有效的重复句子
-                    #多放观点  1. 句子长度>30.  2 不同源
-                    if len(str_no_html) > 30 and n > 2 and (n < sen_len-3):
-                        for same in same_sentence_sql_para:
-                            nn = same[1]  #nid
-                            if nid_pname_dict[nid] != nid_pn[nn]:
-                                ctime_sql = "select nid, ctime from newslist_v2 where nid = %s or nid=%s"
-                                cursor_query.execute(ctime_sql, (same[0], same[1]))
-                                ctimes = cursor_query.fetchall()
-                                ctime_dict = {}
-                                for ct in ctimes:
-                                    ctime_dict[str(ct[0])] = ct[1]
-                                cursor.execute(multo_vp_insert_sql, (str(same[0]), same[2], str(same[1]), same[3], t, ctime_dict[str(same[0])], ctime_dict[str(same[1])]))
-                                log.info('get multi viewpoint :{}'.format(str_no_html.encode('utf-8')))
+                            #多放观点  1. 句子长度>30.  2 不同源
+                            if len(str_no_html) > 30 and n > 2 and (n < sen_len-3):
+                                for same in same_sentence_sql_para:
+                                    nn = same[1]  #nid
+                                    if nid_pname_dict[nid] != nid_pn[nn]:
+                                        ctime_sql = "select nid, ctime from newslist_v2 where nid = %s or nid=%s"
+                                        cursor_query.execute(ctime_sql, (same[0], same[1]))
+                                        ctimes = cursor_query.fetchall()
+                                        ctime_dict = {}
+                                        for ct in ctimes:
+                                            ctime_dict[str(ct[0])] = ct[1]
+                                        cursor.execute(multo_vp_insert_sql, (str(same[0]), same[2], str(same[1]), same[3], t, ctime_dict[str(same[0])], ctime_dict[str(same[1])]))
+                                        #log.info('get multi viewpoint :{}'.format(str_no_html.encode('utf-8')))
 
                     #将所有段落入库
                     cursor.execute(insert_sentence_hash, (nid, str_no_html, n, h.__str__(), fir, sec, thi, fou, t, fir2, sec2, thi2, fou2))
@@ -341,7 +346,7 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=999999):
                 conn_query.close()
             if kkkk % 100 == 0:
                 ttt2 = datetime.datetime.now()
-                log.info('{0} finished! Last 100 takes {1} s'.format(kkkk, (ttt2-ttt).total_seconds()))
+                #log.info('{0} finished! Last 100 takes {1} s'.format(kkkk, (ttt2-ttt).total_seconds()))
                 ttt = ttt2
         del nid_sents_dict
         del nid_para_links_dict
@@ -355,8 +360,9 @@ def coll_sentence_hash_time(nid_list):
     # arr是被分割的list，n是每个chunk中含n元素。
     small_list = [nid_list[i:i + 20] for i in range(0, len(nid_list), 20)]
     pool = Pool(20)
+    same_dict = get_relate_same_news(set(nid_list))
     for nid_set in small_list:
-        pool.apply_async(cal_process, args=(set(nid_set), None, 3, 2))
+        pool.apply_async(cal_process, args=(set(nid_set), None, 3, 2, same_dict))
 
     pool.close()
     pool.join()
@@ -392,7 +398,8 @@ def coll_sentence_hash():
         need_to_cal_set = all_set - exist_set
         if len(need_to_cal_set) == 0:
             continue
-        pool.apply_async(cal_process, args=(need_to_cal_set, None, 3, 3)) #相同的阈值为3; 取2天内的新闻
+        same_dict = get_relate_same_news(need_to_cal_set)
+        pool.apply_async(cal_process, args=(need_to_cal_set, None, 3, 3, same_dict)) #相同的阈值为3; 取2天内的新闻
 
     pool.close()
     pool.join()
