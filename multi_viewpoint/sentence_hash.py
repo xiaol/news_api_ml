@@ -197,7 +197,7 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=999999):
                     if len(wl) == 0 or len(str_no_html) <= 2: #去除一个字的句子,因为有很多是特殊字符
                         continue
                     h = simhash.simhash(wl)
-                    check_exist_sql = "select nid from news_sentence_hash where nid=%s and hash_v=%s" #该新闻中已经有这个句子,即有重复句子存在
+                    check_exist_sql = "select nid from news_sentence_hash where nid=%s and hash_val=%s" #该新闻中已经有这个句子,即有重复句子存在
                     cursor.execute(check_exist_sql, (nid, h.__str__()))
                     if (len(list(cursor.fetchall()))) != 0:
                         log.info('sentence has existed in this news: {}'.format(str_no_html.encode("utf-8")))
