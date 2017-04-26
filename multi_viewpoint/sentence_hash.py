@@ -203,7 +203,8 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=999999, same_dict = {
                     h = simhash.simhash(wl)
                     check_exist_sql = "select nid from news_sentence_hash where nid=%s and hash_val=%s" #该新闻中已经有这个句子,即有重复句子存在
                     cursor_query.execute(check_exist_sql, (nid, h.__str__()))
-                    if (len(cursor.fetchall())) != 0:
+                    ex_rows = cursor.fetchall()
+                    if len(ex_rows) != 0:
                         #log.info('sentence has existed in this news: {}'.format(str_no_html.encode("utf-8")))
                         continue
                     fir, sec, thi, fou, fir2, sec2, thi2, fou2 = simhash.get_4_segments(h.__long__())
