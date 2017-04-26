@@ -174,6 +174,7 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=999999, same_dict = {
     log = logger_9965
     log.info('there are {} news to calulate'.format(len(nid_set)))
     log.info('calcute: {}'.format(nid_set))
+    ttt1 = datetime.datetime.now()
     nid_sents_dict, nid_para_links_dict, nid_pname_dict = get_nids_sentences(nid_set)
     #same_dict = get_relate_same_news(nid_set)
     kkkk = 0
@@ -348,6 +349,8 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=999999, same_dict = {
                 ttt2 = datetime.datetime.now()
                 #log.info('{0} finished! Last 100 takes {1} s'.format(kkkk, (ttt2-ttt).total_seconds()))
                 ttt = ttt2
+        ttt2 = datetime.datetime.now()
+        print 'it takes {}'.format((ttt2-ttt1).total_seconds())
         del nid_sents_dict
         del nid_para_links_dict
     except:
