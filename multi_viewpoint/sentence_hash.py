@@ -39,19 +39,19 @@ def get_nid_sentence(nid):
     get_sentences_on_nid(nid)
 
 
-#insert_sentence_hash = "insert into news_sentence_hash (nid, sentence, hash_val, ctime) VALUES({0}, '{1}', '{2}', '{3}')"
-insert_sentence_hash = "insert into news_sentence_hash (nid, sentence, sentence_id, hash_val, first_16, second_16, third_16, fourth_16, ctime, first2_16, second2_16, third2_16, fourth2_16) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-#query_sen_sql = "select nid, sentence, hash_val from news_sentence_hash"
-#query_sen_sql = "select nid, sentence, hash_val from news_sentence_hash where first_16=%s or second_16=%s or third_16=%s or fourth_16=%s"
-query_sen_sql = "select ns.nid, ns.hash_val from news_sentence_hash ns inner join newslist_v2 nl on ns.nid=nl.nid where (first_16=%s or second_16=%s or third_16=%s or fourth_16=%s) and" \
+#insert_sentence_hash = "insert into news_sentence_hash_copy (nid, sentence, hash_val, ctime) VALUES({0}, '{1}', '{2}', '{3}')"
+insert_sentence_hash = "insert into news_sentence_hash_copy (nid, sentence, sentence_id, hash_val, first_16, second_16, third_16, fourth_16, ctime, first2_16, second2_16, third2_16, fourth2_16) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+#query_sen_sql = "select nid, sentence, hash_val from news_sentence_hash_copy"
+#query_sen_sql = "select nid, sentence, hash_val from news_sentence_hash_copy where first_16=%s or second_16=%s or third_16=%s or fourth_16=%s"
+query_sen_sql = "select ns.nid, ns.hash_val from news_sentence_hash_copy ns inner join newslist_v2 nl on ns.nid=nl.nid where (first_16=%s or second_16=%s or third_16=%s or fourth_16=%s) and" \
                 " (first2_16=%s or second2_16=%s or third2_16=%s or fourth2_16=%s) and " \
                 "nl.state=0 group by ns.nid, ns.hash_val "
-query_sen_sql_interval = "select ns.nid, ns.hash_val from news_sentence_hash ns inner join newslist_v2 nl on ns.nid=nl.nid where (first_16=%s or second_16=%s or third_16=%s or fourth_16=%s) and" \
+query_sen_sql_interval = "select ns.nid, ns.hash_val from news_sentence_hash_copy ns inner join newslist_v2 nl on ns.nid=nl.nid where (first_16=%s or second_16=%s or third_16=%s or fourth_16=%s) and" \
                 " (first2_16=%s or second2_16=%s or third2_16=%s or fourth2_16=%s) and " \
                 "(nl.ctime > now() - interval '%s day') and nl.state=0 group by ns.nid, ns.hash_val "
 #insert_same_sentence = "insert into news_same_sentence_map (nid1, nid2, sentence1, sentence2, ctime) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')"
 insert_same_sentence = "insert into news_same_sentence_map (nid1, nid2, sentence1, sentence2, ctime) VALUES (%s, %s, %s, %s, %s)"
-s_nid_sql = "select distinct nid from news_sentence_hash "
+s_nid_sql = "select distinct nid from news_sentence_hash_copy "
 def get_exist_nids():
     conn, cursor = get_postgredb_query()
     cursor.execute(s_nid_sql)
@@ -163,14 +163,14 @@ def is_sentence_ads(hash_val, fir_16, sec_16, thi_16, fou_16, fir2_16, sec2_16, 
 
 
 get_pname = "select pname, chid, ctime, nid from newslist_v2 where nid in %s"
-same_sql2 = "select sentence from news_sentence_hash where nid=%s and hash_val=%s"
+same_sql2 = "select sentence from news_sentence_hash_copy where nid=%s and hash_val=%s"
 ads_insert = "insert into news_ads_sentence (ads_sentence, hash_val, ctime, first_16, second_16, third_16, four_16, first2_16, second2_16, third2_16, four2_16, nids, state, special_pname)" \
              "values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
 multo_vp_insert_sql = "insert into news_multi_vp (nid1, sentence1, nid2, sentence2, ctime, ctime1, ctime2) values (%s, %s, %s, %s, %s, %s, %s)"
 ################################################################################
 #@brief: 计算子进程
 ################################################################################
-def cal_process(nid_set, log=None, same_t=3, news_interval=999999, same_dict = {}):
+def cal_process(nid_set, log=None, same_t=3, news_interval=3, same_dict = {}):
     log = logger_9965
     log.info('there are {} news to calulate'.format(len(nid_set)))
     log.info('calcute: {}'.format(nid_set))
@@ -197,13 +197,24 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=999999, same_dict = {
                 conn_query, cursor_query = get_postgredb_query()
                 for s in sents:  #每个句子
                     n += 1
+                    #ts1 = datetime.datetime.now()
+                    #print '-------1'
+                    #print ts1
                     str_no_html, wl = filter_html_stopwords_pos(s, False, True, True, False)
                     #if len(wl) == 0 or len(str_no_html) <= 2: #去除一个字的句子,因为有很多是特殊字符
-                    if len(wl) == 0 or len(str_no_html) <= 10: #去除一个字的句子,因为有很多是特殊字符
+                    #if len(wl) == 0 or len(str_no_html) <= 15: #去除一个字的句子,因为有很多是特殊字符
+                    #if len(wl) == 10 or len(str_no_html) <= 15: #去除一个字的句子,因为有很多是特殊字符
+                    if len(wl) <= 10 : #去除一个字的句子,因为有很多是特殊字符
                         continue
+                    #ts2 = datetime.datetime.now()
+                    #print '-------2'
+                    #print ts2
                     h = simhash.simhash(wl)
-                    check_exist_sql = "select nid from news_sentence_hash where nid=%s and hash_val=%s" #该新闻中已经有这个句子,即有重复句子存在
+                    check_exist_sql = "select nid from news_sentence_hash_copy where nid=%s and hash_val=%s" #该新闻中已经有这个句子,即有重复句子存在
                     cursor_query.execute(check_exist_sql, (nid, h.__str__()))
+                    #ts3 = datetime.datetime.now()
+                    #print '-------3'
+                    #print ts3
                     if len(cursor_query.fetchall()) != 0:
                         #log.info('sentence has existed in this news: {}'.format(str_no_html.encode("utf-8")))
                         continue
@@ -212,10 +223,13 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=999999, same_dict = {
                         #  删除广告句子
                         #log.info('find ads of {0}  : {1} '.format(nid, str_no_html.encode("utf-8")))
                         continue
+                    #ts4 = datetime.datetime.now()
+                    #print '-------4'
+                    #print ts4
                     cursor_query.execute(query_sen_sql_interval, (str(fir), str(sec), str(thi), str(fou), str(fir2), str(sec2), str(thi2), str(fou2), news_interval))
                     #print cursor.mogrify(query_sen_sql_interval, (str(fir), str(sec), str(thi), str(fou), str(fir2), str(sec2), str(thi2), str(fou2), news_interval))
                     rows = cursor_query.fetchall()  #所有可能相同的段落
-                    print 'len of potential same sentence is {}'.format(len(rows))
+                    #print 'len of potential same sentence is {}'.format(len(rows))
                     if len(rows) == 0:  #没有相似的句子
                         #将所有句子入库
                         cursor.execute(insert_sentence_hash, (nid, str_no_html, n, h.__str__(), fir, sec, thi, fou, t, fir2, sec2, thi2, fou2))
@@ -224,6 +238,9 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=999999, same_dict = {
                     #else:
                         #logger_9965.info('len of potential same sentence is {}'.format(len(rows)))
 
+                    #ts5 = datetime.datetime.now()
+                    #print '-------5'
+                    #print ts5
                     same_sentence_sql_para = []
                     nids_for_ads = set()
                     for r in rows:
@@ -255,6 +272,9 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=999999, same_dict = {
                             same_sentence_sql_para.append((nid, r[0], str_no_html, sen, t))
                             #cursor.execute(insert_same_sentence, (nid, r[0], str_no_html, sen, t))
                             #print cursor.mogrify(insert_same_sentence, (nid, r[0], str_no_html, sen_without_html, t))
+                    #ts6 = datetime.datetime.now()
+                    #print '-------6'
+                    #print ts6
                     if len(nids_for_ads) == 0:  #没有潜在相同的句子; 这些句子先做广告检测
                         cursor.execute(insert_sentence_hash, (nid, str_no_html, n, h.__str__(), fir, sec, thi, fou, t, fir2, sec2, thi2, fou2))
                         conn.commit()
@@ -310,6 +330,9 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=999999, same_dict = {
                              '''
                         else:
                             not_ads_but_ignore = True
+                    #ts7 = datetime.datetime.now()
+                    #print '-------7'
+                    #print ts7
                     nids_str = ','.join(nids_for_ads)
                     if is_new_ads:  #是否是新广告
                         if len(pname_set) <= PNAME_T:  #源
@@ -351,7 +374,7 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=999999, same_dict = {
                 #log.info('{0} finished! Last 100 takes {1} s'.format(kkkk, (ttt2-ttt).total_seconds()))
                 ttt = ttt2
         ttt2 = datetime.datetime.now()
-        print 'it takes {}'.format((ttt2-ttt1).total_seconds())
+        #print 'it takes {}'.format((ttt2-ttt1).total_seconds())
         log.info('it takes {}'.format((ttt2-ttt1).total_seconds()))
         del nid_sents_dict
         del nid_para_links_dict
