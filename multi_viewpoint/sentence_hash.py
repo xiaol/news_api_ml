@@ -72,8 +72,8 @@ def get_exist_nids():
 #      ...
 #    }
 ################################################################################
-get_sent_sql = "select nl.nid, nl.title, nl.content, nl.state, nl.pname from newslist_v2 nl" \
-               "inner join channlelist_v2 cl on nl.chid=cl.id where nid in %s and cl.cname in %s"
+get_sent_sql = "select nl.nid, nl.title, nl.content, nl.state, nl.pname from newslist_v2 nl " \
+               "inner join channellist_v2 cl on nl.chid=cl.id where nid in %s and cl.cname in %s"
 def get_nids_sentences(nid_set):
     nid_tuple = tuple(nid_set)
     conn, cursor = get_postgredb_query()
