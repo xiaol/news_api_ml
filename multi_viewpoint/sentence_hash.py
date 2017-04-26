@@ -369,7 +369,6 @@ def coll_sentence_hash_time(nid_list):
     logger_9965.info("Congratulations! Finish to collect sentences.")
 
 
-
 cal_sql = "select nid from newslist_v2 limit %s offset %s"
 cal_sql2 ="SELECT a.nid \
 FROM newslist_v2 a \
