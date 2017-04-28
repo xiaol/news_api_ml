@@ -19,8 +19,10 @@ def generate_subject(sub_nids):
     row = cursor.fetchone()
     sub_name = row[0]
     data = {'name':sub_name}
+    print 'sub_name is ' + sub_name
     response = requests.post(create_url, data=data, cookies=cookie)
     content = json.loads(response.content)
+    print content
     id = content['id']
 
     topic_class_url = prefix + '/topic_classes'
