@@ -35,7 +35,7 @@ if __name__ == '__main__':
         #sentence_hash.coll_sentence_hash()
         from multi_viewpoint import sentence_hash
         sentence_hash.coll_sentence_hash()
-    elif port == 9955:  #生成专题
+    elif port == 9964:  #生成专题
         http_server = tornado.httpserver.HTTPServer(Application())
         http_server.listen(port)
         from multi_viewpoint import subject_queue
