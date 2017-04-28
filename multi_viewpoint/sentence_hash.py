@@ -364,7 +364,8 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=3, same_dict = {}):
                                             ctime_dict[str(ct[0])] = ct[1]
                                         cursor.execute(multo_vp_insert_sql, (str(same[0]), same[2], str(same[1]), same[3], t, ctime_dict[str(same[0])], ctime_dict[str(same[1])]))
                                         log.info('get multi viewpoint :{}'.format(str_no_html.encode('utf-8')))
-                                        nids_set.add(same[0], same[1])
+                                        nids_set.add(same[0])
+                                        nid_set.add(same[1])
                                 if len(nids_set) >= 5:  ## 专题新闻入队列
                                     subject_queue.product_subject(tuple(nid_set))
 
