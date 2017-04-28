@@ -349,10 +349,10 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=3, same_dict = {}):
                             cursor.execute(ads_insert, (str_no_html, h.__str__(), t, fir, sec, thi, fou, fir2, sec2, thi2, fou2, nids_str, 1, "" ))
                         else:
                             cursor.executemany(insert_same_sentence, same_sentence_sql_para)  #有效的重复句子
-                            log.info('get same sentence map :{}'.format(str_no_html.encode('utf-8')))
+                            #log.info('get same sentence map :{}'.format(str_no_html.encode('utf-8')))
                             #多放观点  1. 句子长度>30.  2 不同源  3. 去除首尾
                             if len(str_no_html) > 30 and n > 2 and (n < sen_len-3):
-                                nids_set = set()
+                                sub_nids_set = set()
                                 for same in same_sentence_sql_para:
                                     nn = same[1]  #nid
                                     if nid_pname_dict[nid] != nid_pn[nn]:
@@ -364,12 +364,12 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=3, same_dict = {}):
                                             ctime_dict[str(ct[0])] = ct[1]
                                         cursor.execute(multo_vp_insert_sql, (str(same[0]), same[2], str(same[1]), same[3], t, ctime_dict[str(same[0])], ctime_dict[str(same[1])]))
                                         log.info('get multi viewpoint :{}'.format(str_no_html.encode('utf-8')))
-                                        nids_set.add(same[0])
-                                        nids_set.add(same[1])
-                                log.info("num of mvp is {}".format(nids_set))
-                                if len(nids_set) >= 5:  ## 专题新闻入队列
-                                    log.info('generate subject for {}'.format(nid_set))
-                                    for i in nids_set:
+                                        sub_nids_set.add(same[0])
+                                        sub_nids_set.add(same[1])
+                                #log.info("num of mvp is {}".format(sub_nids_set))
+                                if len(sub_nids_set) >= 5:  ## 专题新闻入队列
+                                    #log.info('generate subject for {}'.format(sub_nids_set))
+                                    for i in sub_nids_set:
                                         subject_nids.add(i)
                                     #subject_queue.product_subject(tuple(nid_set))
 
@@ -385,10 +385,10 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=3, same_dict = {}):
                 #log.info('{0} finished! Last 100 takes {1} s'.format(kkkk, (ttt2-ttt).total_seconds()))
                 ttt = ttt2
             if len(subject_nids) >= 5:
-                log.info('generate subject for {} ------ {}'.format(nid, nid_set))
+                log.info('generate subject for {} ------ {}'.format(nid, subject_nids))
+                subject_queue.product_subject(tuple(subject_nids))
 
         ttt2 = datetime.datetime.now()
-        #print 'it takes {}'.format((ttt2-ttt1).total_seconds())
         log.info('it takes {}'.format((ttt2-ttt1).total_seconds()))
         del nid_sents_dict
         del nid_para_links_dict

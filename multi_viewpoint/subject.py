@@ -22,7 +22,10 @@ def generate_subject(sub_nids):
     print 'sub_name is ' + sub_name
     response = requests.post(create_url, data=data, cookies=cookie)
     content = json.loads(response.content)
-    print content
+    if 'id' not in content:
+        print 'error: ******  id not in content'
+        print content
+        return
     id = content['id']
 
     topic_class_url = prefix + '/topic_classes'
