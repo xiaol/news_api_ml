@@ -21,6 +21,7 @@ def consume_subject():
     while True:
         try:
             nids = json.loads(redis_inst.brpop(subject_queue)[1])
+            print nids
             generate_subject(nids)
 
         except :
