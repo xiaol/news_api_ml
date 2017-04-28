@@ -21,8 +21,8 @@ def consume_subject():
     while True:
         try:
             nids = json.loads(sub_redis.brpop(subject_queue)[1])
-            print nids
-            generate_subject(nids)
+            print 'consume {}'.format(nids)
+            #generate_subject(nids)
 
         except :
             traceback.print_exc()
