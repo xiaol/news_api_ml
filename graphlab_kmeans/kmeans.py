@@ -118,7 +118,10 @@ def get_newest_model_dir():
     for m in models:
         ms[m] = m.replace('-', '')
     ms_sort = sorted(ms.items(), key=lambda x:x[1])
-    return kmeans_model_save_dir + ms_sort.pop()[0]
+    if len(ms_sort) != 0:
+        return kmeans_model_save_dir + ms_sort.pop()[0]
+    else:
+        return kmeans_model_save_dir
 
 #初始化模型版本号为最新的保存的模型
 model_v = os.path.split(get_newest_model_dir())[1]
