@@ -9,14 +9,14 @@ import json
 import traceback
 
 
-redis_inst = Redis(host='localhost', port=6379)
+redis_inst = Redis(host='localhost', port=6378)
 subject_queue = 'subject_queue' #专题队列
 
 def product_subject(sub_nids):
     redis_inst.lpush(subject_queue, json.dumps(sub_nids))
 
 def consume_subject():
-    from multi_viewpoint.subject import generate_subject
+    from subject import generate_subject
     global redis_inst
     while True:
         try:
