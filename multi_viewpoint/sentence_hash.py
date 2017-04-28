@@ -366,7 +366,9 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=3, same_dict = {}):
                                         log.info('get multi viewpoint :{}'.format(str_no_html.encode('utf-8')))
                                         nids_set.add(same[0])
                                         nid_set.add(same[1])
+                                log.info("num of mvp is {}".format(nid_set))
                                 if len(nids_set) >= 5:  ## 专题新闻入队列
+                                    log.info('genete subject fro {}'.format(nid_set))
                                     subject_queue.product_subject(tuple(nid_set))
 
                     #将所有段落入库
