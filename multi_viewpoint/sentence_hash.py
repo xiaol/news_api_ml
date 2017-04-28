@@ -181,6 +181,7 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=3, same_dict = {}):
     kkkk = 0
     try:
         for item in nid_sents_dict.items(): #每条新闻
+            subject_nids = set()
             kkkk += 1
             n = 0
             nid = item[0]
@@ -351,7 +352,6 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=3, same_dict = {}):
                             log.info('get same sentence map :{}'.format(str_no_html.encode('utf-8')))
                             #多放观点  1. 句子长度>30.  2 不同源  3. 去除首尾
                             if len(str_no_html) > 30 and n > 2 and (n < sen_len-3):
-                                #如果相同的句子数量>=4, 生成专题
                                 nids_set = set()
                                 for same in same_sentence_sql_para:
                                     nn = same[1]  #nid
@@ -368,8 +368,10 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=3, same_dict = {}):
                                         nids_set.add(same[1])
                                 log.info("num of mvp is {}".format(nids_set))
                                 if len(nids_set) >= 5:  ## 专题新闻入队列
-                                    log.info('genete subject fro {}'.format(nid_set))
-                                    subject_queue.product_subject(tuple(nid_set))
+                                    log.info('generate subject for {}'.format(nid_set))
+                                    for i in nids_set:
+                                        subject_nids.add(i)
+                                    #subject_queue.product_subject(tuple(nid_set))
 
                     #将所有段落入库
                     cursor.execute(insert_sentence_hash, (nid, str_no_html, n, h.__str__(), fir, sec, thi, fou, t, fir2, sec2, thi2, fou2))
@@ -382,6 +384,9 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=3, same_dict = {}):
                 ttt2 = datetime.datetime.now()
                 #log.info('{0} finished! Last 100 takes {1} s'.format(kkkk, (ttt2-ttt).total_seconds()))
                 ttt = ttt2
+            if len(subject_nids) >= 5:
+                log.info('generate subject for {} ------ {}'.format(nid, nid_set))
+
         ttt2 = datetime.datetime.now()
         #print 'it takes {}'.format((ttt2-ttt1).total_seconds())
         log.info('it takes {}'.format((ttt2-ttt1).total_seconds()))
