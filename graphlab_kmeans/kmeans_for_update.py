@@ -163,9 +163,15 @@ def random_predict_nids():
     return kmeans_predict(list(rows))
 
 
+'''
 nid_sql = 'select a.title, a.content, c.cname \
 from (select * from newslist_v2 where nid=%s) a \
 inner join channellist_v2 c on a."chid"=c."id"'
+'''
+nid_sql = "select ni.title, ni.content, c.cname from info_news ni " \
+          "inner join channellist_v2 c on ni.chid=c.id " \
+          "inner join newslist_v2 nv on ni.nid=nv.nid " \
+          "where ni.nid=%s and nv.state=0"
 def kmeans_predict(nid_list):
     global g_channel_kmeans_model_dict, chname_id_dict
     print "****************************************************"  + model_v

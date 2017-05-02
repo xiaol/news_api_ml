@@ -483,11 +483,18 @@ def extract_keywords(idf_path, docs, topK=20, max_percent=1., single=False):
 #@input : chnl_num_dict------各频道取新闻数量
 #          save_dir--------csv保存目录
 ################################################################################
+'''
 channle_sql ='SELECT a.title, a.content, a.nid \
 FROM newslist_v2 a \
 INNER JOIN (select * from channellist_v2 where "cname"=%s) c \
 ON \
 a."chid"=c."id" where a.state=0 ORDER BY nid desc LIMIT %s'
+'''
+channle_sql = "select ni.title, ni.content, ni.nid from info_news ni " \
+              "inner join channellist_v2 c on ni.chid=c.id " \
+              "inner join newslist_v2 nv on ni.nid=nv.nid " \
+              "where c.cname=%s and nv.state=0 " \
+              "order by ni.nid desc limit %s"
 def coll_news(chnl_num_dict, save_dir, to_csv=True):
     import pandas as pd
     conn, cursor = get_postgredb_query()
