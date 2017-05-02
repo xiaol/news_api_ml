@@ -29,7 +29,6 @@ channel_for_topic_dict = {'社会':50000, '娱乐':44000, '科技':30000, '汽�
                          '健康':50000, '科学':20000, '美女':20000,'影视':50000, '奇闻':30000,
                          '萌宠':30000, '点集':30000, '自媒体':30000,'风水玄学':30000, '本地':50000,
                          '外媒':20000}
-
 #需要
 channel_for_topic = ['科技', '外媒', '社会', '财经', '体育', '汽车', '国际', '时尚', '探索', '科学',
                      '娱乐', '养生', '育儿', '股票', '互联网', '美食', '健康', '影视', '军事', '历史',
@@ -38,13 +37,13 @@ channel_for_topic = ['科技', '外媒', '社会', '财经', '体育', '汽车',
 excluded_chnl = ['视频', '趣图', '搞笑', ]
 
 
-channle_sql ='SELECT a.title, a.content, a.nid \
-FROM newslist_v2 a \
-INNER JOIN (select * from channellist_v2 where "cname"=%s) c \
-ON \
-a."chid"=c."id" where a.state=0 ORDER BY nid desc LIMIT %s'
+channle_sql ='SELECT ni.title, ni.content, ni.nid ' \
+             'FROM info_news ni ' \
+             'INNER JOIN (select * from channellist_v2 where "cname"=%s) c ON ni.chid=c.id ' \
+             'inner join newslist_v2 nv on ni.nid=nv.nid ' \
+             'where nv.state=0 ORDER BY nid desc LIMIT %s'
 
-news_word_sql = "select nid, title, content from newslist_v2 where nid in ({})"
+news_word_sql = "select nid, title, content from info_news where nid in ({})"
 
 def get_news_words(nid_list):
     conn, cursor = doc_process.get_postgredb_query()
@@ -176,7 +175,7 @@ def doc_preprocess_ltp(csv_path, save_path):
     for i in df.values:
         df_tfidf.append(' '.join(jieba.analyse.extract_tags(i, 50, withWeight=False, allowPOS=allow_pos)).encode('utf-8'))
     '''
-    df = pd.DataFrame({'nid': raw_df['nid'], 'doc': all_keywords}, columns=csv_columns)
+    #df = pd.DataFrame({'nid': raw_df['nid'], 'doc': all_keywords}, columns=csv_columns)
     df = pd.DataFrame({'doc': all_keywords}, columns=('doc',))
     df.to_csv(save_path, index=False)
 
@@ -235,18 +234,19 @@ class DocProcess(object):
         pool.close()
         pool.join()
         join_csv(chnl_file, self.data_file, csv_columns)
-        doc_preprocess_nlpir(self.data_file, os.path.join(self.save_dir, 'data_after_process.csv'))
+        #doc_preprocess_nlpir(self.data_file, os.path.join(self.save_dir, 'data_after_process.csv'))
+        doc_preprocess_ltp(self.data_file, os.path.join(self.save_dir, 'data_after_process.csv'))
         t1 = datetime.datetime.now()
         logger.info("coll_news_handler finished!, it takes {}s".format((t1 - t0).total_seconds()))
 
 
 def coll_news():
     try:
-        #dp = DocProcess(doc_num_per_chnl, doc_min_len)
-        #dp.coll_news_handler()
-        data_file = os.path.join('/root/workspace/news_api_ml/graphlab_lda/data/2017-04-01-15-42-57', 'raw.csv')
-        doc_preprocess_ltp(data_file, '/root/workspace/news_api_ml/graphlab_lda/data/2017-04-01-15-42-57/data_after.csv')
-        #doc_preprocess_jieba(dp.data_file, os.path.join(dp.save_dir, 'data_after_process.csv'))
+        dp = DocProcess(doc_num_per_chnl, doc_min_len)
+        dp.coll_news_handler()
+        #data_file = os.path.join('/root/workspace/news_api_ml/graphlab_lda/data/2017-04-01-15-42-57', 'raw.csv')
+        #doc_preprocess_ltp(data_file, '/root/workspace/news_api_ml/graphlab_lda/data/2017-04-01-15-42-57/data_after.csv')
+        #doc_preprocess_ltp(dp.data_file, os.path.join(dp.save_dir, 'data_after_process.csv'))
         print 'collect news finished!'
         logger.info('collect news finished!')
     except:
