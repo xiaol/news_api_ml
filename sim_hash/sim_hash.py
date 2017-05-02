@@ -86,10 +86,10 @@ def goal_to_del(contents, coment_num):
 ################################################################################
 #@brief : 删除重复的新闻
 ################################################################################
-get_comment_num_sql = 'select nid, comment, content from newslist_v2 where nid in ({0}, {1})'
+#get_comment_num_sql = 'select nid, comment, content from newslist_v2 where nid in ({0}, {1})'
+get_comment_num_sql = 'select nv.nid, nv.comment, ni.content from newslist_v2 nv inner join info_news ni on nv.nid=ni.nid where nv.nid in ({0}, {1})'
 recommend_sql = "select nid, rtime from newsrecommendlist where rtime > now() - interval '1 day' and nid in (%s, %s)"
-del_sql = 'delete from newslist_v2 where nid={0}'
-offonline_sql = 'update newslist_v2 set state=1 where nid={0}'
+#offonline_sql = 'update newslist_v2 set state=1 where nid={0}'
 url = "http://114.55.142.40:9001/news_delete"
 def del_nid_of_fewer_comment(nid, n):
     try:
