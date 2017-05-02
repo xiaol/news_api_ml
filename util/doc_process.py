@@ -233,9 +233,7 @@ nid_sql = 'select a.title, a.content, c.cname \
 from (select * from newslist_v2 where nid=%s) a \
 inner join channellist_v2 c on a."chid"=c."id"'
 '''
-nid_sql = "select ni.title, ni.content, c.cname from info_news ni " \
-          "inner join channellist_v2 c on ni.chid=c.id " \
-          "where ni.nid=%s"
+nid_sql = "select title, content from info_news where nid=%s "
 #获取nid的段落的字符串。
 def get_words_on_nid(nid):
     conn, cursor = get_postgredb_query()
