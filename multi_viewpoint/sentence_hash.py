@@ -21,8 +21,8 @@ import jieba
 from util import logger
 
 real_dir_path = os.path.split(os.path.realpath(__file__))[0]
-logger_9965 = logger.Logger('9965', real_dir_path + '/../log/multi_vp/log_9965.txt')
-logger_9966 = logger.Logger('9966', real_dir_path + '/../log/multi_vp/log_9966.txt')
+logger_9965 = logger.Logger('9965', os.path.join(real_dir_path,  'log/log_9965.txt'))
+logger_9966 = logger.Logger('9966', os.path.join(real_dir_path,  'log/log_9966.txt'))
 
 
 channel_for_multi_vp = ('科技', '外媒', '社会', '财经', '体育', '国际',
@@ -394,12 +394,16 @@ move_sentenct_sql = "insert into news_sentence_hash select * from news_sentence_
                     "where ctime <  to_timestamp(%s, 'yyyy-mm--dd hh24:mi:ss') - interval '3 day' "
 del_sentenct_sql = "delete from news_sentence_hash_copy " \
                    "where ctime < to_timestamp(%s, 'yyyy-mm--dd hh24:mi:ss') - interval '3 day'"
+logger_9963 = logger.Logger('9963', os.path.join(real_dir_path,  'log/log_9963.txt'))
 def move_sentence_data():
-    t = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    conn, cursor = get_postgredb_query()
-    cursor.execute(move_sentenct_sql, (t, ))
-    cursor.execute(del_sentenct_sql, (t, ))
-    conn.commit()
-    conn.close()
+    try:
+        t = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        conn, cursor = get_postgredb_query()
+        cursor.execute(move_sentenct_sql, (t, ))
+        cursor.execute(del_sentenct_sql, (t, ))
+        conn.commit()
+        conn.close()
+    except:
+        logger_9963.info(traceback.format_exc())
 
 
