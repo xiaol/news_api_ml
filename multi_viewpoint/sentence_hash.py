@@ -10,7 +10,8 @@ from util.doc_process import get_postgredb_query
 from util.doc_process import Cut
 from util.doc_process import filter_html_stopwords_pos
 from util.doc_process import filter_tags
-from util.doc_process import get_sentences_on_nid
+#from util.doc_process import get_sentences_on_nid
+from util.doc_process import get_nids_sentences
 from bs4 import BeautifulSoup
 import subject_queue
 
@@ -36,20 +37,18 @@ exclude_chnl = ['搞笑', '趣图', '美女', '萌宠', '时尚', '美食', '美
                 '旅游', '汽车', '游戏', '科学', '故事', '探索']
 
 
-def get_nid_sentence(nid):
-    get_sentences_on_nid(nid)
-
-
 #insert_sentence_hash = "insert into news_sentence_hash_copy (nid, sentence, hash_val, ctime) VALUES({0}, '{1}', '{2}', '{3}')"
 insert_sentence_hash = "insert into news_sentence_hash_copy (nid, sentence, sentence_id, hash_val, first_16, second_16, third_16, fourth_16, ctime, first2_16, second2_16, third2_16, fourth2_16) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
 #query_sen_sql = "select nid, sentence, hash_val from news_sentence_hash_copy"
 #query_sen_sql = "select nid, sentence, hash_val from news_sentence_hash_copy where first_16=%s or second_16=%s or third_16=%s or fourth_16=%s"
-query_sen_sql = "select ns.nid, ns.hash_val from news_sentence_hash_copy ns inner join newslist_v2 nl on ns.nid=nl.nid where (first_16=%s or second_16=%s or third_16=%s or fourth_16=%s) and" \
-                " (first2_16=%s or second2_16=%s or third2_16=%s or fourth2_16=%s) and " \
+query_sen_sql = "select ns.nid, ns.hash_val from news_sentence_hash_copy ns inner join newslist_v2 nl on ns.nid=nl.nid " \
+                "where (first_16=%s or second_16=%s or third_16=%s or fourth_16=%s) and " \
+                "(first2_16=%s or second2_16=%s or third2_16=%s or fourth2_16=%s) and " \
                 "nl.state=0 group by ns.nid, ns.hash_val "
-query_sen_sql_interval = "select ns.nid, ns.hash_val from news_sentence_hash_copy ns inner join newslist_v2 nl on ns.nid=nl.nid where (first_16=%s or second_16=%s or third_16=%s or fourth_16=%s) and" \
-                " (first2_16=%s or second2_16=%s or third2_16=%s or fourth2_16=%s) and " \
-                "(nl.ctime > now() - interval '%s day') and nl.state=0 group by ns.nid, ns.hash_val "
+query_sen_sql_interval = "select ns.nid, ns.hash_val from news_sentence_hash_copy ns inner join info_news nl on ns.nid=nl.nid " \
+                         "where (first_16=%s or second_16=%s or third_16=%s or fourth_16=%s) and " \
+                         "(first2_16=%s or second2_16=%s or third2_16=%s or fourth2_16=%s) and " \
+                         "(nl.ctime > now() - interval '%s day') and nl.state=0 group by ns.nid, ns.hash_val "
 #insert_same_sentence = "insert into news_same_sentence_map (nid1, nid2, sentence1, sentence2, ctime) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')"
 insert_same_sentence = "insert into news_same_sentence_map (nid1, nid2, sentence1, sentence2, ctime) VALUES (%s, %s, %s, %s, %s)"
 s_nid_sql = "select distinct nid from news_sentence_hash_copy "
@@ -63,56 +62,6 @@ def get_exist_nids():
     conn.close()
     return nid_set
 
-
-################################################################################
-#获取新闻句子,句子以分词list形式给出,方便后面直接算hash
-#@input ---- nid_set
-#@output --- nid_sentenct_dict  格式:
-#    {'11111': [['i', 'love', 'you'], ["好", "就", "这样"], ...],
-#     '22222': [['举例', '说明'], ['今天', '天气', '不错']...]
-#      ...
-#    }
-################################################################################
-get_sent_sql = "select nl.nid, nl.title, nl.content, nl.state, nl.pname from newslist_v2 nl " \
-               "inner join channellist_v2 cl on nl.chid=cl.id where nid in %s and cl.cname in %s"
-def get_nids_sentences(nid_set):
-    nid_tuple = tuple(nid_set)
-    conn, cursor = get_postgredb_query()
-    cursor.execute(get_sent_sql, (nid_tuple, channel_for_multi_vp))
-    rows = cursor.fetchall()
-    nid_sentences_dict = {}
-    nid_para_links_dict = {}
-    nid_pname_dict = {}
-    for r in rows:
-        if r[3] != 0: #已被下线
-            logger_9965.info('{} has been offline.'.format(r[0]))
-            continue
-        nid = r[0]
-        nid_sentences_dict[nid] = {}
-        nid_para_links_dict[nid] = {}
-        nid_pname_dict[nid] = r[4]
-        content_list = r[2]
-        pi = 0
-        for content in content_list:
-                if "txt" in content.keys():
-                    pi += 1
-                    #str_no_tags = filter_tags(content['txt'])
-                    #nid_sentences_dict[nid].extend(Cut(filter_tags(content['txt'])))
-                    soup = BeautifulSoup(content['txt'], 'lxml')
-                    pi_sents = []
-                    for link in soup.find_all('a'):
-                        pi_sents.append(link)  #记录每一段的链接
-                    nid_sentences_dict[nid][pi] = Cut(soup.text)
-                    nid_para_links_dict[nid][pi] = pi_sents
-                    #nid_sentences_dict[nid].extend(Cut(get_paragraph_text(content['txt'])))
-                    #for i in sents:
-                        #if len(i) > 20:  #20个汉字, i 是unicode, len代表汉字个数
-                    #    nid_sentences_dict[nid].append(i) #计算所有段落。 计算重复句子时再筛选掉字数少的句子; 去除广告时,对字数不做要求
-                        #wl = filter_html_stopwords_pos(i)
-                        #if len(wl) > 5:   #文本词数量<5, 不计算hash
-                        #    nid_sentences_dict[nid].append(wl)
-    conn.close()
-    return nid_sentences_dict, nid_para_links_dict, nid_pname_dict
 
 
 ################################################################################
@@ -163,7 +112,7 @@ def is_sentence_ads(hash_val, fir_16, sec_16, thi_16, fou_16, fir2_16, sec2_16, 
     return False
 
 
-get_pname = "select pname, chid, ctime, nid from newslist_v2 where nid in %s"
+get_pname = "select pname, chid, ctime, nid from info_news where nid in %s"
 same_sql2 = "select sentence from news_sentence_hash_copy where nid=%s and hash_val=%s"
 ads_insert = "insert into news_ads_sentence (ads_sentence, hash_val, ctime, first_16, second_16, third_16, four_16, first2_16, second2_16, third2_16, four2_16, nids, state, special_pname)" \
              "values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
@@ -177,7 +126,6 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=3, same_dict = {}):
     log.info('calcute: {}'.format(nid_set))
     ttt1 = datetime.datetime.now()
     nid_sents_dict, nid_para_links_dict, nid_pname_dict = get_nids_sentences(nid_set)
-    #same_dict = get_relate_same_news(nid_set)
     kkkk = 0
     try:
         for item in nid_sents_dict.items(): #每条新闻
@@ -356,7 +304,7 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=3, same_dict = {}):
                                 for same in same_sentence_sql_para:
                                     nn = same[1]  #nid
                                     if nid_pname_dict[nid] != nid_pn[nn]:
-                                        ctime_sql = "select nid, ctime from newslist_v2 where nid = %s or nid=%s"
+                                        ctime_sql = "select nid, ctime from info_news where nid = %s or nid=%s"
                                         cursor_query.execute(ctime_sql, (same[0], same[1]))
                                         ctimes = cursor_query.fetchall()
                                         ctime_dict = {}
@@ -400,6 +348,8 @@ def cal_process(nid_set, log=None, same_t=3, news_interval=3, same_dict = {}):
 def coll_sentence_hash_time(nid_list):
     #nid_set = set(nid_list)
     # arr是被分割的list，n是每个chunk中含n元素。
+    from util.doc_process import keep_nids_based_cnames
+    nid_list = keep_nids_based_cnames(tuple(nid_list), channel_for_multi_vp)
     small_list = [nid_list[i:i + 20] for i in range(0, len(nid_list), 20)]
     pool = Pool(20)
     same_dict = get_relate_same_news(set(nid_list))
@@ -411,9 +361,9 @@ def coll_sentence_hash_time(nid_list):
     logger_9965.info("Congratulations! Finish to collect sentences.")
 
 
-cal_sql = "select nid from newslist_v2 limit %s offset %s"
+cal_sql = "select nid from info_news limit %s offset %s"
 cal_sql2 ="SELECT a.nid \
-FROM newslist_v2 a \
+FROM info_news a \
 RIGHT OUTER JOIN (select * from channellist_v2 where cname not in %s) c \
 ON \
 a.chid =c.id where (a.ctime > now() - interval '2 day') and a.state=0 LIMIT %s offset %s"

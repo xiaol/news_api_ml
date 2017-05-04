@@ -667,6 +667,65 @@ def coll_cut_extract_multiprocess(chnl_num_dict,
 #########################  提供多进程版本结束  ####################################
 
 
+################################################################################
+#@brief: 根据频道过滤,只保留特定的频道
+#@input:  nids
+#         cnames
+#@output: nids of cnames
+################################################################################
+knbc_sql = "select nid from info_news ni inner join channellist_v2 cl " \
+           "on ni.chid=cl.id " \
+           "where nid in %s and cl.cname in %s "
+def keep_nids_based_cnames(nids_tuple, cname_tuple):
+    conn, cursor = get_postgredb_query()
+    cursor.execute(knbc_sql, (nids_tuple, cname_tuple))
+    rows = cursor.fetchall()
+    keep_nids = []
+    for r in rows:
+        keep_nids.append(r[0])
+    return keep_nids
+
+
+################################################################################
+#@brief: 获取新闻的句子
+#@input: set of nids
+#@output:
+#      nid_para_sentences_dict  ---  nid : paragraph index : list of sentence
+#      nid_para_links_dict      ---  nid : paragraph index : list of links
+#      nid_pname_dict           ---  nid : pname
+################################################################################
+get_sent_sql = "select nl.nid, nl.title, nl.content, nl.state, nl.pname from info_news nl " \
+               "inner join channellist_v2 cl on nl.chid=cl.id " \
+               "where nid in %s"
+def get_nids_sentences(nid_set):
+    nid_tuple = tuple(nid_set)
+    conn, cursor = get_postgredb_query()
+    cursor.execute(get_sent_sql, (nid_tuple, ))
+    rows = cursor.fetchall()
+    nid_sentences_dict = {}
+    nid_para_links_dict = {}
+    nid_pname_dict = {}
+    for r in rows:
+        if r[3] != 0:  # 已被下线
+            continue
+        nid = r[0]
+        nid_sentences_dict[nid] = {}
+        nid_para_links_dict[nid] = {}
+        nid_pname_dict[nid] = r[4]
+        content_list = r[2]
+        pi = 0
+        for content in content_list:
+            if "txt" in content.keys():
+                pi += 1  # paragraph index
+                soup = BeautifulSoup(content['txt'], 'lxml')
+                pi_sents = []
+                for link in soup.find_all('a'):
+                    pi_sents.append(link)  # 记录每一段的链接
+                nid_sentences_dict[nid][pi] = Cut(soup.text)
+                nid_para_links_dict[nid][pi] = pi_sents
+    conn.close()
+    return nid_sentences_dict, nid_para_links_dict, nid_pname_dict
+
 
 
 
