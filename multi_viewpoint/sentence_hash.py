@@ -389,5 +389,17 @@ def coll_sentence_hash():
     logger_9965.info("Congratulations! Finish to collect sentences.")
 
 
+#将3天前的数据从news_sentence_hash_copy 移动到news_sentenct_hash
+move_sentenct_sql = "insert into news_sentence_hash select * from news_sentence_hash_copy " \
+                    "where ctime <  to_timestamp(%s, 'yyyy-mm--dd hh24:mi:ss') - interval '3 day' "
+del_sentenct_sql = "delete from news_sentence_hash_copy " \
+                   "where ctime < to_timestamp(%s, 'yyyy-mm--dd hh24:mi:ss') - interval '3 day'"
+def move_sentence_data():
+    t = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    conn, cursor = get_postgredb_query()
+    cursor.execute(move_sentenct_sql, (t, ))
+    cursor.execute(del_sentenct_sql, (t, ))
+    conn.commit()
+    conn.close()
 
 
