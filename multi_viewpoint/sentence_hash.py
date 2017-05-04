@@ -7,20 +7,15 @@
 #from util  import doc_process
 from util.doc_process import get_postgredb
 from util.doc_process import get_postgredb_query
-from util.doc_process import Cut
 from util.doc_process import filter_html_stopwords_pos
 from util.doc_process import filter_tags
-#from util.doc_process import get_sentences_on_nid
 from util.doc_process import get_nids_sentences
-from bs4 import BeautifulSoup
 import subject_queue
 
 from util import simhash
 import datetime
 import os
-import logging
 import traceback
-from multiprocessing import Process
 from multiprocessing import Pool
 import jieba
 from util import logger
@@ -37,10 +32,7 @@ exclude_chnl = ['搞笑', '趣图', '美女', '萌宠', '时尚', '美食', '美
                 '旅游', '汽车', '游戏', '科学', '故事', '探索']
 
 
-#insert_sentence_hash = "insert into news_sentence_hash_copy (nid, sentence, hash_val, ctime) VALUES({0}, '{1}', '{2}', '{3}')"
 insert_sentence_hash = "insert into news_sentence_hash_copy (nid, sentence, sentence_id, hash_val, first_16, second_16, third_16, fourth_16, ctime, first2_16, second2_16, third2_16, fourth2_16) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-#query_sen_sql = "select nid, sentence, hash_val from news_sentence_hash_copy"
-#query_sen_sql = "select nid, sentence, hash_val from news_sentence_hash_copy where first_16=%s or second_16=%s or third_16=%s or fourth_16=%s"
 query_sen_sql = "select ns.nid, ns.hash_val from news_sentence_hash_copy ns inner join newslist_v2 nl on ns.nid=nl.nid " \
                 "where (first_16=%s or second_16=%s or third_16=%s or fourth_16=%s) and " \
                 "(first2_16=%s or second2_16=%s or third2_16=%s or fourth2_16=%s) and " \
@@ -49,7 +41,6 @@ query_sen_sql_interval = "select ns.nid, ns.hash_val from news_sentence_hash_cop
                          "where (first_16=%s or second_16=%s or third_16=%s or fourth_16=%s) and " \
                          "(first2_16=%s or second2_16=%s or third2_16=%s or fourth2_16=%s) and " \
                          "(nl.ctime > now() - interval '%s day') and nl.state=0 group by ns.nid, ns.hash_val "
-#insert_same_sentence = "insert into news_same_sentence_map (nid1, nid2, sentence1, sentence2, ctime) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')"
 insert_same_sentence = "insert into news_same_sentence_map (nid1, nid2, sentence1, sentence2, ctime) VALUES (%s, %s, %s, %s, %s)"
 s_nid_sql = "select distinct nid from news_sentence_hash_copy "
 def get_exist_nids():
